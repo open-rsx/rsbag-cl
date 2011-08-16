@@ -101,7 +101,9 @@
   :depends-on  (:cl-rsbag
 		:lift)
   :components  ((:module     "test"
-		 :components ((:file       "package"))))
+		 :components ((:file       "package")
+			      (:file       "bag"
+			       :depends-on ("package")))))
 
   :in-order-to ((test-op (load-op :cl-rsbag-test))))
 
@@ -110,7 +112,7 @@
   (funcall (find-symbol "RUN-TESTS" :lift) :config :generic))
 
 
-;;;
+;;; TIDE log backend
 ;;
 
 (defsystem :cl-rsbag-tidelog
@@ -118,7 +120,7 @@
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     "0.1.0"
   :license     "GPL3; see COPYING file for details."
-  :description "TIDElog support for rsbag."
+  :description "TIDE log file format backend for cl-rsbag."
   :depends-on  (:cl-rsbag)
   :components  ((:module     "tidelog"
 		 :pathname   "src/backend/tidelog"
@@ -136,6 +138,9 @@
 			      (:file       "io"
 			       :depends-on ("package" "spec"))
 
+
+			      (:file       "index"
+			       :depends-on ("package" "spec" "io"))
 			      (:file       "file"
 			       :depends-on ("package" "variables"
 					    "spec" "io"))))))
