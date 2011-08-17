@@ -66,7 +66,9 @@ the `(setf bag-channel)' method. "))
 			(if-does-not-exist :error))
   (or (gethash name (%bag-channels bag))
       (ecase if-does-not-exist
-	(:error (error "No such channel ~S" name)) ;;; TODO(jmoringe):
+	(:error (error 'no-such-channel
+		       :bag  bag
+		       :name name))
 	((nil)  nil))))
 
 (defmethod (setf bag-channel) :before ((new-value t)
@@ -74,7 +76,8 @@ the `(setf bag-channel)' method. "))
 				       (name      t)
 				       &key &allow-other-keys)
   (when (eq (bag-direction bag) :input)
-    (error "Bag ~A has not been opened for output." bag))) ;;; TODO(jmoringe):
+    (error 'read-only-bag
+	   :bag bag)))
 
 (defmethod (setf bag-channel) ((new-value list)
 			       (bag       bag)

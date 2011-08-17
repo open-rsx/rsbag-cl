@@ -26,6 +26,24 @@
 
    :rsbag.backend)
 
+  ;; Conditions
+  (:export
+   :rsbag-error
+
+   :bag-error
+   :bag-error-bag
+
+   :no-such-channel
+   :no-such-channel-name
+
+   :read-only-bag
+
+   :channel-error
+   :channel-error-channel
+
+   :no-such-entry
+   :no-such-entry-key)
+
   ;; Types
   (:export
    :direction)

@@ -18,3 +18,83 @@
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
 (in-package :rsbag)
+
+(define-condition rsbag-error (error)
+  ()
+  (:documentation
+   "This calls is intended to be mixed into all rsbag-related error
+condition classes."))
+
+(define-condition bag-error (rsbag-error)
+  ((bag :initarg  :bag
+	:reader   bag-error-bag
+	:documentation
+	"The bag instance in the context of which the error
+occurred."))
+  (:default-initargs
+   :bag (required-argument :bag))
+  (:documentation
+   "Subclasses of this class are signaled when an error can be
+associated to a specific bag."))
+
+(define-condition no-such-channel (bag-error)
+  ((name :initarg  :name
+	 :type     string
+	 :reader   no-such-channel-name
+	 :documentation
+	 "Stores the name of the channel that has been requested."))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<There is no channel named ~S in the bag ~
+~A~@:>"
+	     (no-such-channel-name condition)
+	     (bag-error-bag        condition))))
+  (:default-initargs
+   :name (required-argument :name))
+  (:documentation
+   "This error is signaled when a requested channel does not exist
+within a bag an cannot or may not be created."))
+
+(define-condition read-only-bag (bag-error)
+  ()
+  (:report
+   (lambda (condition stream)
+     (bind (((:accessors-r/o (bag bag-error-bag)) condition))
+       (format stream "~@<The bag ~A has not been opened for output (but ~
+~A).~@:>"
+	       bag
+	       (bag-direction bag)))))
+  (:documentation
+   "This error is signaled when an attempt is made to write to a bag
+that has not been opened for output."))
+
+(define-condition channel-error (bag-error)
+  ((channel :initarg  :channel
+	    :reader   channel-error-channel
+	    :documentation
+	    "Stores the channel in the context of which the error
+occurred."))
+  (:default-initargs
+   :channel (required-argument :channel))
+  (:documentation
+   "Subclasses of this class are signaled when an error can be
+associated to a specific channel within a bag."))
+
+(define-condition no-such-entry (channel-error)
+  ((key :initarg  :key
+	:reader   no-such-entry-key
+	:documentation
+	"Stores the key for which no entry could be found in the
+channel and bag in question."))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<No entry could be found for key ~S in the ~
+channel ~A of bag ~A~@:>"
+	     (bag-error-bag         condition)
+	     (channel-error-channel condition)
+	     (no-such-entry-key     condition))))
+  (:default-initargs
+   :key (required-argument :key))
+  (:documentation
+   "This error is signaled if a specified entry cannot be found in a
+channel."))
