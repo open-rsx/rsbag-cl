@@ -37,7 +37,10 @@
     (ensure-same (map 'list #'channel-name (bag-channels bag))
 		 '("MYCHAN")
 		 :test #'equal)
-    (ensure-same (coerce (first (bag-channels bag)) 'list)
-		 '(#(1 2 3))
-		 :test #'equalp)
+    (let ((channel (first (bag-channels bag))))
+      (ensure-same (length (channel-timestamps channel)) 1
+		   :test #'=)
+      (ensure-same (coerce channel 'list)
+		   '(#(1 2 3))
+		   :test #'equalp))
     (close bag)))

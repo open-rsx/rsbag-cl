@@ -19,6 +19,38 @@
 
 (in-package :rsbag.backend.tidelog)
 
+
+;;; Lazy timestamp sequence
+;;
+
+#+sbcl
+(defclass timestamps (standard-object
+		      sequence)
+  ((entries :initarg  :entries
+	    :type     vector
+	    :reader   timestamps-entries
+	    :documentation
+	    "Points to the list of entries of the associated index."))
+  (:default-initargs
+   :entries (required-argument :entries))
+  (:documentation
+   "Instances of this class are sequence of `local-time:timestamp'
+instances that produced lazily."))
+
+#+sbcl
+(defmethod sequence:length ((timestamps timestamps))
+  (ash (length (timestamps-entries timestamps)) -1))
+
+#+sbcl
+(defmethod sequence:elt ((timestamps timestamps)
+			 (index      integer))
+  (uint64->timestamp
+   (aref (timestamps-entries timestamps) (* 2 index))))
+
+
+;;;
+;;
+
 (defclass index ()
   ((channel :initarg  :channel
 	    :type     non-negative-integer

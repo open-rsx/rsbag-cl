@@ -47,6 +47,7 @@
    :channel-bag
    :channel-id
    :channel-name
+   :channel-timestamps
 
    :entry)
 

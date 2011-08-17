@@ -120,6 +120,15 @@
 			    (channel integer))
   (index-num-entries (gethash channel (%file-indices file))))
 
+(defmethod get-timestamps ((file    file)
+			   (channel integer))
+  #+sbcl
+  (make-instance 'timestamps
+		 :entries (index-entries
+			   (gethash channel (%file-indices file))))
+  #-sbcl
+  #.(error "Not implemented."))
+
 (defmethod put-entry ((file      file)
 		      (channel   integer)
 		      (timestamp local-time:timestamp)
