@@ -52,7 +52,9 @@
 				       indices
 				       chunks)
   (setf (index-entries instance)
-	(make-entries indices chunks)))
+	(make-entries indices chunks)
+	(indx-channel-id (index-buffer instance))
+	(index-channel instance)))
 
 (defmethod close ((index index)
 		  &key &allow-other-keys)
