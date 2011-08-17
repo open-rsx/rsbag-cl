@@ -189,23 +189,6 @@
   (unless (zerop (chnk-count buffer))
     (pack buffer (backend-stream file))))
 
-(defmethod write-index ((file file))
-  (bind (((:accessors (stream  backend-stream)
-		      (indices %file-indices)) file)
-	 ((:flet make-entry (entry))
-	  (bind (((timestamp offset chunk) entry))
-	    (make-instance 'index-entry
-			   :chunk-id  chunk
-			   :timestamp timestamp
-			   :offset    offset))))
-    (iter (for (channel entries) in-hashtable indices)
-	  (let ((index (make-instance
-			'indx
-			:channel-id channel
-			:count      (length entries)
-			:entries    (map 'list #'make-entry entries))))
-	    (pack index stream)))))
-
 
 ;;; Utility functions
 ;;
