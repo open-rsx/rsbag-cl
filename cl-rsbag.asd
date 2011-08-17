@@ -69,6 +69,8 @@
 
 			      (:file       "stream-mixin"
 			       :depends-on ("package" "protocol"))
+			      (:file       "direction-mixin"
+			       :depends-on ("package" "protocol"))
 			      (:file       "buffering-writer-mixin"
 			       :depends-on ("package" "protocol"))))
 
@@ -76,16 +78,19 @@
 		 :depends-on ("backend")
 		 :components ((:file "package")
 
+
+			      (:file       "types"
+			       :depends-on ("package"))
 			      (:file       "conditions"
 			       :depends-on ("package"))
 			      (:file       "protocol"
-			       :depends-on ("package"))
+			       :depends-on ("package" "types"))
 
 			      (:file       "channel"
 			       :depends-on ("package" "protocol"))
 			      (:file       "bag"
-			       :depends-on ("package" "protocol" "channel"))
-
+			       :depends-on ("package" "types"
+					    "protocol" "channel"))
 
 			      (:file       "macros"
 			       :depends-on ("package" "protocol")))))

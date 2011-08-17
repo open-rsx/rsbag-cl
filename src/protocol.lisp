@@ -26,12 +26,14 @@
 (defgeneric open-bag (source
 		      &rest args
 		      &key
+		      direction
 		      backend
 		      &allow-other-keys)
   (:documentation
    "Open the data source SOURCE and return a bag object using the
 backend designated by BACKEND and passing ARGS (expect the keyword
-argument :backend) to the backend.
+argument :backend) to the backend. DIRECTION can be any
+of :input, :output and :io.
 
 Example:
 RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
@@ -44,17 +46,23 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 (defmethod open-bag ((source pathname)
 		     &rest args
 		     &key
-		     (backend (error (required-argument :backend))))
+		     (direction :io)
+		     (backend   (error (required-argument :backend))))
+  (check-type direction direction "either :input, :output or :it")
   (let* ((stream  (open source
-			     :element-type      '(unsigned-byte 8)
-			     :direction         :io
-			     :if-exists         :append
-			     :if-does-not-exist :create))
+			:element-type      '(unsigned-byte 8)
+			:direction         direction
+			:if-exists         :append
+			:if-does-not-exist :create))
 	 (backend (apply #'make-instance
 			 backend
-			 :stream stream
-			 (remove-from-plist args :backend :stream))))
-    (make-instance 'bag :backend backend)))
+			 :stream    stream
+			 :direction direction
+			 (remove-from-plist
+			  args :direction :backend :stream))))
+    (make-instance 'bag
+		   :backend   backend
+		   :direction direction)))
 
 (defmethod open-bag ((source string)
 		     &rest args
@@ -64,6 +72,10 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 
 ;;; Bag protocol
 ;;
+
+(defgeneric bag-direction (bag)
+  (:documentation
+   "Return the direction of BAG. One of :input, :output, :io."))
 
 (defgeneric bag-channels (bag)
   (:documentation
@@ -109,6 +121,10 @@ implement the channel protocol."))
 
 ;;; Channel protocol
 ;;
+
+(defgeneric channel-bag (channel)
+  (:documentation
+   "Return the bag containing CHANNEL."))
 
 (defgeneric channel-name (channel)
   (:documentation

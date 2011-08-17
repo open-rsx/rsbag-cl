@@ -1,4 +1,4 @@
-;;; package.lisp --- Package definition for backend module.
+;;; direction-mixin.lisp --- Mixin class for direction-sensitive backends
 ;;
 ;; Copyright (C) 2011 Jan Moringen
 ;;
@@ -17,44 +17,17 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(cl:defpackage :rsbag.backend
-  (:use
-   :cl
-   :alexandria
-   :bind)
+(in-package :rsbag.backend)
 
-  ;; backend protocol
-  (:export
-   :get-channels
-   :make-channel-id
-   :put-channel
-
-   :get-num-entries
-   :get-timestamps
-
-   :get-entry
-   :put-entry)
-
-  ;; `stream-mixin' class
-  (:export
-   :stream-mixin
-
-   :backend-stream)
-
-  ;; `direction-mixin' class
-  (:export
-   :direction-mixin
-
-   :backend-direction)
-
-  ;; `buffering-writer-mixin' class and protocol
-  (:export
-   :buffering-writer-mixin
-
-   :backend-buffer
-   :make-buffer
-   :write-buffer)
-
+(defclass direction-mixin ()
+  ((direction :initarg  :direction
+	      :type     (member :input :output :io)
+	      :reader   backend-direction
+	      :documentation
+	      ""))
+  (:default-initargs
+   :direction (required-argument :direction))
   (:documentation
-   "This package contains protocol and implementation aids for file
-format backends for cl-rsbag."))
+   "This class is intended to be mixed into backend classes that have
+to keep track of the direction for which the data source has been
+opened."))

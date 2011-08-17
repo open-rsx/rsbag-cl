@@ -20,8 +20,13 @@
 (in-package :rsbag)
 
 (defclass channel (#+sbcl standard-object
-		   #+sbcl sequence)
-  ((name    :initarg  :name
+			  #+sbcl sequence)
+  ((bag     :initarg  :bag
+	    :reader   channel-bag
+	    :documentation
+	    "Stores the bag instance in which this channel is
+contained.")
+   (name    :initarg  :name
 	    :type     string
 	    :reader   channel-name
 	    :documentation
@@ -35,6 +40,7 @@
 	    :documentation
 	    ""))
   (:default-initargs
+   :bag     (required-argument :bag)
    :name    (required-argument :name)
    :id      (required-argument :id)
    :backend (required-argument :backend))
@@ -68,6 +74,14 @@ data items."))
 	(case if-does-not-exist
 	  (:error (error "No entry for timestamp ~A" timestamp))
 	  ((nil)  nil)))))
+
+(defmethod (setf entry) :before ((new-value t)
+				 (channel   t)
+				 (index     t)
+				 &key &allow-other-keys)
+  (when (eq (bag-direction (channel-bag channel)) :input)
+    (error "Bag ~A (containing channel ~A) has not been opened for output."
+	   (channel-bag channel) channel)))
 
 (defmethod (setf entry) ((new-value t)
 			 (channel   channel)

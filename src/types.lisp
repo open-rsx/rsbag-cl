@@ -1,4 +1,4 @@
-;;; package.lisp --- Package definition for backend module.
+;;; types.lisp --- Types used in the cl-rsbag system.
 ;;
 ;; Copyright (C) 2011 Jan Moringen
 ;;
@@ -17,44 +17,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(cl:defpackage :rsbag.backend
-  (:use
-   :cl
-   :alexandria
-   :bind)
+(in-package :rsbag)
 
-  ;; backend protocol
-  (:export
-   :get-channels
-   :make-channel-id
-   :put-channel
-
-   :get-num-entries
-   :get-timestamps
-
-   :get-entry
-   :put-entry)
-
-  ;; `stream-mixin' class
-  (:export
-   :stream-mixin
-
-   :backend-stream)
-
-  ;; `direction-mixin' class
-  (:export
-   :direction-mixin
-
-   :backend-direction)
-
-  ;; `buffering-writer-mixin' class and protocol
-  (:export
-   :buffering-writer-mixin
-
-   :backend-buffer
-   :make-buffer
-   :write-buffer)
-
-  (:documentation
-   "This package contains protocol and implementation aids for file
-format backends for cl-rsbag."))
+(deftype direction ()
+  "Values of this type are used to indicate whether a bag should be
+opened for reading, writing or both."
+  '(member :input :output :io))

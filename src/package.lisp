@@ -26,10 +26,15 @@
 
    :rsbag.backend)
 
+  ;; Types
+  (:export
+   :direction)
+
   ;; `bag' class and file protocol
   (:export
    :bag
 
+   :bag-direction
    :bag-channels
    :bag-channel
 
@@ -39,6 +44,7 @@
   (:export
    :channel
 
+   :channel-bag
    :channel-id
    :channel-name
 

@@ -20,6 +20,7 @@
 (in-package :rsbag.backend.tidelog)
 
 (defclass file (stream-mixin
+		direction-mixin
 		buffering-writer-mixin)
   ((channels        :type     list
 		    :reader   get-channels
@@ -50,7 +51,8 @@
                                      (slot-names t)
                                      &key)
   ;; If the file is completely empty, add a TIDE header.
-  (maybe-write-header (backend-stream instance))
+  (when (member (backend-direction instance) '(:output :io))
+    (maybe-write-header (backend-stream instance)))
 
   ;; Scan through the TIDElog file collecting deserialized CHAN and
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.

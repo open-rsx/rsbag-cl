@@ -20,19 +20,25 @@
 (in-package :rsbag)
 
 (defclass bag ()
-  ((channels :type     hash-table
-	     :reader   %bag-channels
-	     :initform (make-hash-table :test #'equal)
-	     :documentation
-	     "Stores a mapping of channel names to `channel'
+  ((channels  :type     hash-table
+	      :reader   %bag-channels
+	      :initform (make-hash-table :test #'equal)
+	      :documentation
+	      "Stores a mapping of channel names to `channel'
 instances.")
-   (backend  :initarg  :backend
-	     :reader   %bag-backend
-	     :documentation
-	     "Stores an object which is responsible for accessing the
+   (direction :initarg  :direction
+	      :type     direction
+	      :reader   bag-direction
+	      :documentation
+	      "Stores the direction of the bag.")
+   (backend   :initarg  :backend
+	      :reader   %bag-backend
+	      :documentation
+	      "Stores an object which is responsible for accessing the
 stream associated to this bag."))
   (:default-initargs
-   :backend (required-argument :backend))
+   :direction (required-argument :direction)
+   :backend   (required-argument :backend))
   (:documentation
    "Instances of this class represent a TIDE file. A TIDE file
 consists of named channels which can be retrieved using the
@@ -63,6 +69,13 @@ the `(setf bag-channel)' method. "))
 	(:error (error "No such channel ~S" name)) ;;; TODO(jmoringe):
 	((nil)  nil))))
 
+(defmethod (setf bag-channel) :before ((new-value t)
+				       (bag       t)
+				       (name      t)
+				       &key &allow-other-keys)
+  (when (eq (bag-direction bag) :input)
+    (error "Bag ~A has not been opened for output." bag))) ;;; TODO(jmoringe):
+
 (defmethod (setf bag-channel) ((new-value list)
 			       (bag       bag)
 			       (name      string)
@@ -81,8 +94,13 @@ the `(setf bag-channel)' method. "))
     channel))
 
 (defmethod print-object ((object bag) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "(~D)" (hash-table-count (%bag-channels object)))))
+  (bind (((:accessors-r/o (direction bag-direction)
+			  (channels  %bag-channels)) object))
+   (print-unreadable-object (object stream :type t :identity t)
+     (format stream "~:[-~;r~]~:[-~;w~] (~D)"
+	     (member direction '(:input :io))
+	     (member direction '(:output :io))
+	     (hash-table-count channels)))))
 
 
 ;;;
@@ -99,6 +117,7 @@ the `(setf bag-channel)' method. "))
   (bind (((:accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
     (make-instance channel-class
+		   :bag       bag
 		   :name      name
 		   :id        (or id (make-channel-id backend name))
 		   ;; :meta-data meta-data
