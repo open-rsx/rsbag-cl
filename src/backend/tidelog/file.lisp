@@ -26,26 +26,30 @@
 		    :reader   get-channels
 		    :accessor %file-channels
 		    :documentation
-		    "")
+		    "Stores information of the channels present in the
+file. Entries are of the form (ID NAME META-DATA).")
    (indices         :type     hash-table
 		    :reader   %file-indices
 		    :initform (make-hash-table :test #'eq)
 		    :documentation
-		    "")
+		    "Maps channel ids to index objects.")
    (next-channel-id :type     non-negative-integer
 		    :accessor %file-next-channel-id
 		    :initform 0
 		    :documentation
-		    "")
+		    "Stores the id that will be assigned to the next
+new channel.")
    (next-chunk-id   :type     non-negative-integer
 		    :accessor %file-next-chunk-id
 		    :initform 0
 		    :documentation
-		    ""))
+		    "Stores the id that will be assigned to the next
+new chunk."))
   (:default-initargs
    :flush?-func (rcurry #'buffer-size-> 100))
   (:documentation
-   "TODO(jmoringe): document"))
+   "Instances of this class represent files using the TIDE log file
+format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod shared-initialize :after ((instance   file)
                                      (slot-names t)
