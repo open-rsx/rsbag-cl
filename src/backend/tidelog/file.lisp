@@ -19,6 +19,9 @@
 
 (in-package :rsbag.backend.tidelog)
 
+(defmethod find-backend-class ((spec (eql :tide)))
+  (find-class 'file))
+
 (defclass file (stream-mixin
 		direction-mixin
 		buffering-writer-mixin)

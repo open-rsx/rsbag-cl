@@ -58,6 +58,7 @@
   :depends-on  (:alexandria
 		:metabang-bind
 		:iterate
+		:cl-dynamic-classes
 		:local-time
 		:cl-protobuf ;; for binio
 		)

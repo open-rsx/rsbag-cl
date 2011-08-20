@@ -81,3 +81,10 @@ buffer PREVIOUS. PREVIOUS can be nil, for the initial allocation."))
   (:documentation
    "Commit the entries accumulated in BUFFER to the data source
 represented by BACKEND."))
+
+
+;;; Finding backend classes
+;;
+
+(dynamic-classes:define-findable-class-family backend
+    "This class family consists of file format backends.")

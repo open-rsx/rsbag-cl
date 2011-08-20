@@ -35,6 +35,12 @@
    :get-entry
    :put-entry)
 
+  ;; Backend findable class family
+  (:export
+   :no-such-backend-class
+   :find-backend-class
+   :backend-classes)
+
   ;; `stream-mixin' class
   (:export
    :stream-mixin

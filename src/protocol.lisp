@@ -47,15 +47,17 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 		     &rest args
 		     &key
 		     (direction :io)
-		     (backend   (error (required-argument :backend))))
+		     (backend   (make-keyword
+				 (string-upcase (pathname-type source)))))
   (check-type direction direction "either :input, :output or :it")
+
   (let* ((stream  (open source
 			:element-type      '(unsigned-byte 8)
 			:direction         direction
 			:if-exists         :append
 			:if-does-not-exist :create))
 	 (backend (apply #'make-instance
-			 backend
+			 (find-backend-class backend)
 			 :stream    stream
 			 :direction direction
 			 (remove-from-plist
