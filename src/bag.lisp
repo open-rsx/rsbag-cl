@@ -84,10 +84,13 @@ the `(setf bag-channel)' method. "))
 			       (name      string)
 			       &key
 			       (if-exists :error))
-  (when (gethash name (%bag-channels bag))
-    (case if-exists
-      (:error     (error "Channel ~S already exists" name)) ;;; TODO(jmoringe): condition
-      (:supersede (error "Superseding not implemented")))) ;;; TODO(jmoringe): implement
+  (let ((channel (gethash name (%bag-channels bag))))
+   (when channel
+     (case if-exists
+       (:error     (error 'channel-exists
+			  :bag     bag
+			  :channel channel))
+       (:supersede (error "Superseding not implemented"))))) ;;; TODO(jmoringe): implement
 
   (bind (((:accessors-r/o (channels %bag-channels)
 			  (backend  %bag-backend)) bag)

@@ -41,6 +41,8 @@
    :channel-error
    :channel-error-channel
 
+   :channel-exists
+
    :no-such-entry
    :no-such-entry-key)
 

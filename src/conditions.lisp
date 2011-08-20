@@ -80,6 +80,18 @@ occurred."))
    "Subclasses of this class are signaled when an error can be
 associated to a specific channel within a bag."))
 
+(define-condition channel-exists (channel-error)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<The channel ~A already exists in bag ~A.~@:>"
+	     (channel-error-channel condition)
+	     (bag-error-bag         condition))))
+
+  (:documentation
+   "This error is signaled when a channel cannot be created because it
+already exists."))
+
 (define-condition no-such-entry (channel-error)
   ((key :initarg  :key
 	:reader   no-such-entry-key
