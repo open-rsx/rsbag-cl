@@ -60,6 +60,9 @@
 		:iterate
 		:cl-dynamic-classes
 		:local-time
+
+		:bordeaux-threads
+
 		:cl-protobuf ;; for binio
 		)
   :components  ((:module     "backend"
@@ -92,6 +95,12 @@
 			      (:file       "bag"
 			       :depends-on ("package" "types"
 					    "protocol" "channel"))
+
+			      (:file       "synchronized-channel"
+			       :depends-on ("package" "channel"))
+			      (:file       "synchronized-bag"
+			       :depends-on ("package" "bag"
+					    "synchronized-channel"))
 
 			      (:file       "macros"
 			       :depends-on ("package" "protocol")))))
