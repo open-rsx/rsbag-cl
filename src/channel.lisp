@@ -109,6 +109,18 @@ data items."))
 	    (length       object))))
 
 
+;;; Time range protocol
+;;
+
+(defmethod start ((channel channel))
+  (unless (emptyp channel)
+    (elt (channel-timestamps channel) 0)))
+
+(defmethod end ((channel channel))
+  (unless (emptyp channel)
+    (elt (channel-timestamps channel) (1- (length channel)))))
+
+
 ;;; Sequence protocol
 ;;
 

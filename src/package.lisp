@@ -71,6 +71,11 @@
 
    :entry)
 
+  ;; Time range protocol
+  (:export
+   :start
+   :end)
+
   ;; Convenience macros
   (:export
    :with-bag)

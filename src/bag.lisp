@@ -109,6 +109,24 @@ the `(setf bag-channel)' method. "))
 	     (hash-table-count channels)))))
 
 
+;;; Time range protocol
+;;
+
+(macrolet ((define-bound-method (name comparator)
+	     `(defmethod ,name ((bag bag))
+		(flet ((safe-compare (left right)
+			 (cond
+			   ((not left)               right)
+			   ((not right)              left)
+			   ((,comparator left right) left)
+			   (t                        right))))
+		  (reduce #'safe-compare (bag-channels bag)
+			  :key           (function ,name)
+			  :initial-value nil)))))
+  (define-bound-method start local-time:timestamp<)
+  (define-bound-method end   local-time:timestamp>))
+
+
 ;;;
 ;;
 

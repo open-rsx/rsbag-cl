@@ -167,3 +167,18 @@ replaced."))
 ;; When available, channels additionally implement the sequence
 ;; protocol such that the channel appears as a sequence of its
 ;; entries.
+
+
+;;; Time range protocol
+;;
+;; Applicable to at least channels and whole bags.
+
+(defgeneric start (bag-or-channel)
+  (:documentation
+   "Return the earliest timestamp for which an entry exists in
+BAG-OR-CHANNEL."))
+
+(defgeneric end (bag-or-channel)
+  (:documentation
+   "Return the earliest timestamp for which an entry exists in
+BAG-OR-CHANNEL."))
