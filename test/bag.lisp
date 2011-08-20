@@ -32,8 +32,7 @@
   (let* ((pathname (asdf:system-relative-pathname
 		    (asdf:find-system :cl-rsbag-test)
 		    "test/data/minimal.tide"))
-	 (bag (open-bag pathname
-			:backend 'rsbag.backend.tidelog::file)))
+	 (bag (open-bag pathname)))
     (ensure-same (map 'list #'channel-name (bag-channels bag))
 		 '("MYCHAN")
 		 :test #'equal)
