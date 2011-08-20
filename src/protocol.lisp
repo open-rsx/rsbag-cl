@@ -28,6 +28,7 @@
 		      &key
 		      direction
 		      backend
+		      bag-class
 		      &allow-other-keys)
   (:documentation
    "Open the data source SOURCE and return a bag object using the
@@ -48,7 +49,8 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 		     &key
 		     (direction :io)
 		     (backend   (make-keyword
-				 (string-upcase (pathname-type source)))))
+				 (string-upcase (pathname-type source))))
+		     (bag-class 'bag))
   (check-type direction direction "either :input, :output or :it")
 
   (let* ((stream  (open source
@@ -61,8 +63,8 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 			 :stream    stream
 			 :direction direction
 			 (remove-from-plist
-			  args :direction :backend :stream))))
-    (make-instance 'bag
+			  args :direction :backend :stream :bag-class))))
+    (make-instance bag-class
 		   :backend   backend
 		   :direction direction)))
 
