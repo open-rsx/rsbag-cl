@@ -82,10 +82,16 @@
 			      (:file       "buffering-writer-mixin"
 			       :depends-on ("package" "protocol"))))
 
-		(:module     "src"
-		 :depends-on ("backend")
-		 :components ((:file "package")
+		(:module     "transform"
+		 :pathname   "src/transform"
+		 :components ((:file       "package")
 
+			      (:file       "protocol"
+			       :depends-on ("package"))))
+
+		(:module     "src"
+		 :depends-on ("backend" "transform")
+		 :components ((:file "package")
 
 			      (:file       "types"
 			       :depends-on ("package"))
@@ -156,7 +162,6 @@
 			       :depends-on ("package" "macros"))
 			      (:file       "io"
 			       :depends-on ("package" "spec"))
-
 
 			      (:file       "index"
 			       :depends-on ("package" "spec" "io"))
