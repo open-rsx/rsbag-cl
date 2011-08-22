@@ -68,7 +68,8 @@
 		:bordeaux-threads
 
 		:cl-protobuf ;; for binio
-		)
+
+		(:version :cl-rsb "0.5.0"))
   :components  ((:module     "backend"
 		 :pathname   "src/backend"
 		 :components ((:file       "package")
@@ -113,7 +114,24 @@
 					    "synchronized-channel"))
 
 			      (:file       "macros"
-			       :depends-on ("package" "protocol")))))
+			       :depends-on ("package" "protocol"))))
+
+		(:module     "rsb"
+		 :pathname   "src/rsb"
+		 :depends-on ("src" "transform")
+		 :components ((:file       "package")
+			      (:file       "protocol"
+			       :depends-on ("package"))
+
+			      (:file       "channel-connection"
+			       :depends-on ("package" "protocol"))
+			      (:file       "bag-connection"
+			       :depends-on ("package" "protocol"))
+
+			      (:file       "construction"
+			       :depends-on ("package" "protocol"
+					    "bag-connection"
+					    "channel-connection")))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))
 
