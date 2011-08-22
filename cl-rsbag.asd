@@ -20,7 +20,11 @@
 (cl:defpackage :cl-rsbag-system
   (:use
    :cl
-   :asdf))
+   :asdf)
+
+  (:export
+   :version/list
+   :version/string))
 
 (cl:in-package :cl-rsbag-system)
 
