@@ -35,7 +35,7 @@
 (defconstant +version-major+ 0
   "Major component of version number.")
 
-(defconstant +version-minor+ 1
+(defconstant +version-minor+ 4
   "Minor component of version number.")
 
 (defconstant +version-revision+ 0
@@ -69,7 +69,7 @@
 
 		:cl-protobuf ;; for binio
 
-		(:version :cl-rsb "0.5.0"))
+		(:version :cl-rsb "0.4.0"))
   :components  ((:module     "backend"
 		 :pathname   "src/backend"
 		 :components ((:file       "package")
