@@ -59,6 +59,7 @@
   :version     #.(version/string)
   :license     "GPL3; see COPYING file for details."
   :description "Common Lisp implementation of rsbag."
+  :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
 		:split-sequence
 		:metabang-bind
@@ -68,7 +69,7 @@
 
 		:bordeaux-threads
 
-		:cl-protobuf ;; for binio
+		:cl-protobuf
 
 		(:version :cl-rsb "0.5.0"))
   :components  ((:module     "backend"
@@ -117,9 +118,24 @@
 			      (:file       "macros"
 			       :depends-on ("package" "protocol"))))
 
+		(:module     "rsb-serialization"
+		 :pathname   "."
+		 :depends-on ("transform")
+		 :components ((:protocol-buffer-descriptor-directory "protocol"
+			       :pathname   "data"
+			       :components ((:file       "MetaData"
+					     :pathname   "rsb/protocol/MetaData")
+					    (:file       "Event"
+					     :pathname   "rsb/serialization/Event"
+					     :depends-on ("MetaData"))))
+
+			      (:file       "transform"
+			       :pathname   "src/transform/rsb-event"
+			       :depends-on ("protocol"))))
+
 		(:module     "rsb"
 		 :pathname   "src/rsb"
-		 :depends-on ("src" "transform")
+		 :depends-on ("src" "transform" "rsb-serialization")
 		 :components ((:file       "package")
 			      (:file       "protocol"
 			       :depends-on ("package"))

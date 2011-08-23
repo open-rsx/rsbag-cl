@@ -21,7 +21,8 @@
   (:use
    :cl
    :alexandria
-   :bind)
+   :bind
+   :iterate)
 
   ;; Transform protocol
   (:export
