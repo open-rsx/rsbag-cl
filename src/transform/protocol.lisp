@@ -23,6 +23,10 @@
 ;;; Transform protocol
 ;;
 
+(defgeneric transform-name (transform)
+  (:documentation
+   "Return a keyword identifying TRANSFORM."))
+
 (defgeneric encode (transform domain-object)
   (:documentation
    "Encode DOMAIN-OBJECT using TRANSFORM and return the result."))
@@ -33,6 +37,15 @@
 domain-object."))
 
 
+;;; Default behavior
+;;
+
+(defmethod transform-name ((transform standard-object))
+  "Default behavior is to use the class name of TRANSFORM to identify
+TRANSFORM."
+  (nth-value 0 (make-keyword (class-name (class-of transform)))))
+
+
 ;;; Findable transform class family
 ;;
 
@@ -40,3 +53,13 @@ domain-object."))
     "This class family consists of transformations that are applied to
 entries prior to serializing/after deserializing them to/from bag
 channels.")
+
+(defgeneric make-transform (spec
+			    &rest args)
+  (:documentation
+   "Make and return an instance of the transform class designated by
+SPEC passing ARGS to the constructed instance."))
+
+(defmethod make-transform ((spec symbol)
+			   &rest args)
+  (apply #'make-instance (find-transform-class spec) args))

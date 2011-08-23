@@ -21,7 +21,7 @@
 
 (defclass synchronized-channel (channel)
   ((lock :initarg  :lock
-	 :reader   %channel-lock
+	 :accessor %channel-lock
 	 :documentation
 	 "The lock that is used to synchronize accesses to the
 channel. Usually points to a lock owned by the containing bag."))

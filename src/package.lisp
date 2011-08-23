@@ -24,7 +24,8 @@
    :iterate
    :bind
 
-   :rsbag.backend)
+   :rsbag.backend
+   :rsbag.transform)
 
   ;; Conditions
   (:export
@@ -50,6 +51,14 @@
   (:export
    :direction)
 
+  ;; meta-data protocol
+  (:export
+   :meta-data-count
+   :meta-data-keys
+   :meta-data-values
+   :meta-data-plist
+   :meta-data-alist)
+
   ;; `bag' class and file protocol
   (:export
    :bag
@@ -60,6 +69,14 @@
 
    :open-bag)
 
+  ;; `synchronized-channel' class
+  (:export
+   :synchronized-channel)
+
+  ;; `synchronized-bag' class
+  (:export
+   :synchronized-bag)
+
   ;; `channel' class and channel protocol
   (:export
    :channel
@@ -67,6 +84,7 @@
    :channel-bag
    :channel-id
    :channel-name
+   :channel-meta-data
    :channel-timestamps
 
    :entry)

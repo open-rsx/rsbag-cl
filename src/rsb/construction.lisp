@@ -26,14 +26,17 @@
 (defmethod events->bag ((source listener)
 			(dest   bag)
 			&key
-			(timestamp :create)
+			(wire-schema (required-argument :wire-schema))
+			(timestamp   :create)
 			&allow-other-keys)
   (bind (((:accessors-r/o (scope participant-scope)
 			  (id    participant-id)) source)
 	 (name    (scope-string scope))
-	 (channel (setf (bag-channel dest name :if-exists :error)
-			(list :type          "TODO"
-			      :source-name   (princ-to-string id)
+	 (channel (setf (bag-channel dest name
+				     :if-exists :error
+				     :transform (make-transform :rsb-event
+								(make-keyword wire-schema)))
+			(list :source-name   (princ-to-string id)
 			      :source-config (princ-to-string
 					      (abstract-uri source))
 			      :format        "TODO"))))
@@ -48,17 +51,27 @@
 				    :participant source
 				    :channel     channel)))))
 
-(macrolet ((define-make-listener-method (type)
-	     `(defmethod events->bag ((source ,type)
-				      (dest   bag)
-				      &rest args &key)
-		(bind (((:plist transports) args)
-		       (listener (make-listener source
-						:transports '((:spread :converter :fundamental-null)))))
-		  (apply #'events->bag listener
-			 dest (remove-from-plist args :transports))))))
-  (define-make-listener-method string)
-  (define-make-listener-method puri:uri))
+(defmethod events->bag ((source puri:uri)
+			(dest   bag)
+			&rest args &key)
+  (bind ((options (rsb:uri-options source))
+	 ((:plist wire-schema) options)
+	 ((:plist transports) args)
+	 (listener (make-listener
+		    (puri:merge-uris
+		     (format nil "?~{~(~A~)=~A~^;~}"
+			     (remove-from-plist options :wire-schema))
+		     source)
+		    :transports '((:spread :converter :fundamental-null)))))
+    (apply #'events->bag listener
+	   dest
+	   :wire-schema wire-schema
+	   (remove-from-plist args :transports))))
+
+(defmethod events->bag ((source string)
+			(dest   bag)
+			&rest args &key)
+  (apply #'events->bag (puri:parse-uri source) dest args))
 
 (defmethod events->bag ((source sequence)
 			(dest   bag)

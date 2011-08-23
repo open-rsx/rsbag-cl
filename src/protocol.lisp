@@ -97,14 +97,20 @@ returned."))
 
 (defgeneric (setf bag-channel) (spec bag name
 				&key
-				if-exists)
+				if-exists
+				transform)
   (:documentation
    "Add or update and return the channel named NAME in BAG. SPEC is a
 plist which specifies properties of the created or updated
-channel. IF-EXISTS controls the behavior in case a channel named NAME
-already exists in BAG. Valid values are :error, which causes an error
-to be signaled, and :supersede, which causes the existing channel to
-be updated."))
+channel.
+IF-EXISTS controls the behavior in case a channel named NAME already
+exists in BAG. Valid values are :error, which causes an error to be
+signaled, and :supersede, which causes the existing channel to be
+updated.
+TRANSFORM can be used to specify a transformation that should be
+applied to all value read from/written to the channel. Valid values
+are nil or an object implementing the transform protocol specified in
+rsbag.transform."))
 
 
 ;;; Bag behind-the-scenes protocol ;)
@@ -114,13 +120,21 @@ be updated."))
   (:documentation
    "Return the channel class used by bag."))
 
-(defgeneric %make-channel (bag name meta-data
+(defgeneric %make-channel (bag name meta-data transform
 			   &optional
 			   id)
   (:documentation
    "Create and return a new channel named NAME with id ID and
-associated meta-data META-DATA for BAG. The returned object has to
-implement the channel protocol."))
+associated meta-data META-DATA and TRANSFORM for BAG. TRANSFORM can be
+nil in which case raw data from the underlying source is used. The
+returned object has to implement the channel protocol."))
+
+(defgeneric %make-channel-transform (bag name meta-data
+				     &optional
+				     id)
+  (:documentation
+   "Make and return a suitable transformation for the channel in BAG
+described by NAME META-DATA and ID."))
 
 
 ;;; Channel protocol

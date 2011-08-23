@@ -21,10 +21,13 @@
   (:use
    :cl
    :alexandria
-   :bind)
+   :bind
+   :iterate)
 
   ;; Transform protocol
   (:export
+   :transform-name
+
    :decode
    :encode)
 
@@ -32,7 +35,9 @@
   (:export
    :no-such-transform-class
    :find-transform-class
-   :transform-classes)
+   :transform-classes
+
+   :make-transform)
 
   (:documentation
    "This package contains the transformation protocol and
