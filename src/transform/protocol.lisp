@@ -55,12 +55,11 @@ entries prior to serializing/after deserializing them to/from bag
 channels.")
 
 (defgeneric make-transform (spec
-			    &rest args
-			    &key &allow-other-keys)
+			    &rest args)
   (:documentation
    "Make and return an instance of the transform class designated by
 SPEC passing ARGS to the constructed instance."))
 
 (defmethod make-transform ((spec symbol)
-			   &rest args &key)
+			   &rest args)
   (apply #'make-instance (find-transform-class spec) args))

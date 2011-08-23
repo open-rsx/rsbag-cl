@@ -19,10 +19,16 @@
 
 (in-package :rsbag.transform)
 
-(declaim (optimize (speed 3) (space 0) (safety 0) (debug 0) (compilation-speed 0)))
-
 (defmethod find-transform-class ((spec (eql :rsb-event)))
   (find-class 'rsb-event))
+
+(defmethod make-transform ((spec (eql :rsb-event))
+			   &rest args)
+  "Handle ARGS appropriately."
+  (check-type args (cons keyword null) "a single wire-schema keyword")
+
+  (make-instance (find-transform-class spec)
+		 :wire-schema (first args)))
 
 (defclass rsb-event ()
   ((wire-schema :initarg  :wire-schema

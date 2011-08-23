@@ -34,9 +34,8 @@
 	 (name    (scope-string scope))
 	 (channel (setf (bag-channel dest name
 				     :if-exists :error
-				     :transform (make-transform
-						 :rsb-event
-						 :wire-schema wire-schema))
+				     :transform (make-transform :rsb-event
+								(make-keyword wire-schema)))
 			(list :source-name   (princ-to-string id)
 			      :source-config (princ-to-string
 					      (abstract-uri source))

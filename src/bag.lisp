@@ -165,7 +165,7 @@ the `(setf bag-channel)' method. "))
 	 ((class-name &rest args) (ensure-list type)))
     (when class-name
       (handler-case ;;; TODO(jmoringe): add :error? nil in find-transform-class
-	  (apply #'make-transform class-name (cons :wire-schema args)) ;;; TODO(jmoringe): wire-schema
+	  (apply #'make-transform class-name args)
 	(no-such-transform-class (condition)
 	  (declare (ignore condition))
 	  nil)))))
