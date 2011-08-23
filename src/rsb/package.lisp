@@ -28,6 +28,7 @@
    :iterate
 
    :rsbag
+   :rsbag.transform
 
    :rsb)
 
