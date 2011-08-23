@@ -65,6 +65,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.
   ;; Use the INDX blocks to build per-channel indices.
   (bind (((:accessors (stream          backend-stream)
+		      (buffer          backend-buffer)
 		      (channels        %file-channels)
 		      (indices         %file-indices)
 		      (next-channel-id %file-next-channel-id)
@@ -73,13 +74,14 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks           (sort (coerce chnks 'vector) #'<
 				:key #'car)
-	  next-chunk-id   (reduce #'max chnks
-				  :initial-value 1
-				  :key           #'car)
-	  next-channel-id (reduce #'max chans
-				  :initial-value 0
-				  :key           #'chan-id)
+	  next-chunk-id   (1+ (reduce #'max chnks
+				      :initial-value -1
+				      :key           #'car))
+	  next-channel-id (1+ (reduce #'max chans
+				      :initial-value -1
+				      :key           #'chan-id))
 	  channels        (map 'list #'make-channel chans))
+    (setf (chnk-chunk-id buffer) next-chunk-id)
 
     ;; Create indices for all channels.
     (iter (for (id name meta-data) in channels)
@@ -94,7 +96,9 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod make-channel-id ((file file)
 			    (name string))
-  (incf (%file-next-channel-id file)))
+  (prog1
+      (%file-next-channel-id file)
+    (incf (%file-next-channel-id file))))
 
 (defmethod put-channel ((file      file)
 			(channel   integer)
