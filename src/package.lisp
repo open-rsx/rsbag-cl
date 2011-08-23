@@ -60,6 +60,14 @@
 
    :open-bag)
 
+  ;; `synchronized-channel' class
+  (:export
+   :synchronized-channel)
+
+  ;; `synchronized-bag' class
+  (:export
+   :synchronized-bag)
+
   ;; `channel' class and channel protocol
   (:export
    :channel
