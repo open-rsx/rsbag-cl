@@ -53,9 +53,9 @@ the `(setf bag-channel)' method. "))
     (iter (for (id name meta-data) in (get-channels backend))
 	  (setf (gethash name channels)
 		(%make-channel instance name
+			       meta-data
 			       (%make-channel-transform
-				instance name meta-data id)
-			       meta-data id)))))
+				instance name meta-data id) id)))))
 
 (defmethod close ((bag bag)
 		  &key &allow-other-keys)
@@ -101,7 +101,7 @@ the `(setf bag-channel)' method. "))
 	 (meta-data (append (when transform
 			      (list :type (transform-name transform)))
 			    new-value))
-	 (channel   (%make-channel bag name transform meta-data)))
+	 (channel   (%make-channel bag name meta-data transform)))
     (put-channel backend (%channel-id channel) name meta-data)
     (setf (gethash name channels) channel)
     channel))
@@ -142,8 +142,8 @@ the `(setf bag-channel)' method. "))
 
 (defmethod %make-channel ((bag       bag)
 			  (name      string)
-			  (transform t)
 			  (meta-data list)
+			  (transform t)
 			  &optional
 			    id)
   (bind (((:accessors-r/o (backend       %bag-backend)
