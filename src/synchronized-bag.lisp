@@ -58,11 +58,7 @@ in comparison to the single-threaded case."))
 			  (meta-data list)
 			  &optional
 			  id)
-  (bind (((:accessors-r/o (backend       %bag-backend)
-			  (channel-class %channel-class)) bag))
-    (make-instance channel-class
-		   :bag     bag
-		   :name    name
-		   :id      (or id (make-channel-id backend name))
-		   :backend backend
-		   :lock    (%bag-lock bag))))
+  (declare (ignore id))
+  (let ((channel (call-next-method)))
+    (setf (%channel-lock channel) (%bag-lock bag))
+    channel))
