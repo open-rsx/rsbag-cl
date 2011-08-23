@@ -41,8 +41,7 @@
 					      (abstract-uri source))
 			      :format        "TODO"))))
     (push #'(lambda (event)
-	      (setf (entry channel (timestamp event timestamp))
-		    (event-data event)))
+	      (setf (entry channel (timestamp event timestamp)) event))
 	  (rsb.ep:handlers source))
     (make-instance 'bag-connection
 		   :bag      dest
