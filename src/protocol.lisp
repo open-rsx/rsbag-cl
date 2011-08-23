@@ -97,14 +97,20 @@ returned."))
 
 (defgeneric (setf bag-channel) (spec bag name
 				&key
-				if-exists)
+				if-exists
+				transform)
   (:documentation
    "Add or update and return the channel named NAME in BAG. SPEC is a
 plist which specifies properties of the created or updated
-channel. IF-EXISTS controls the behavior in case a channel named NAME
-already exists in BAG. Valid values are :error, which causes an error
-to be signaled, and :supersede, which causes the existing channel to
-be updated."))
+channel.
+IF-EXISTS controls the behavior in case a channel named NAME already
+exists in BAG. Valid values are :error, which causes an error to be
+signaled, and :supersede, which causes the existing channel to be
+updated.
+TRANSFORM can be used to specify a transformation that should be
+applied to all value read from/written to the channel. Valid values
+are nil or an object implementing the transform protocol specified in
+rsbag.transform."))
 
 
 ;;; Bag behind-the-scenes protocol ;)
