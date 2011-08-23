@@ -114,13 +114,21 @@ be updated."))
   (:documentation
    "Return the channel class used by bag."))
 
-(defgeneric %make-channel (bag name meta-data
+(defgeneric %make-channel (bag name meta-data transform
 			   &optional
 			   id)
   (:documentation
    "Create and return a new channel named NAME with id ID and
-associated meta-data META-DATA for BAG. The returned object has to
-implement the channel protocol."))
+associated meta-data META-DATA and TRANSFORM for BAG. TRANSFORM can be
+nil in which case raw data from the underlying source is used. The
+returned object has to implement the channel protocol."))
+
+(defgeneric %make-channel-transform (bag name meta-data
+				     &optional
+				     id)
+  (:documentation
+   "Make and return a suitable transformation for the channel in BAG
+described by NAME META-DATA and ID."))
 
 
 ;;; Channel protocol

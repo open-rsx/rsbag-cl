@@ -21,24 +21,29 @@
 
 (defclass channel (#+sbcl standard-object
 		   #+sbcl sequence)
-  ((bag     :initarg  :bag
-	    :reader   channel-bag
-	    :documentation
-	    "Stores the bag instance in which this channel is
+  ((bag       :initarg  :bag
+	      :reader   channel-bag
+	      :documentation
+	      "Stores the bag instance in which this channel is
 contained.")
-   (name    :initarg  :name
-	    :type     string
-	    :reader   channel-name
-	    :documentation
-	    "")
-   (id      :initarg  :id
-	    :reader   %channel-id
-	    :documentation
-	    "")
-   (backend :initarg  :backend
-	    :reader   %channel-backend
-	    :documentation
-	    ""))
+   (name      :initarg  :name
+	      :type     string
+	      :reader   channel-name
+	      :documentation
+	      "")
+   (transform :initarg  :transform
+	      :reader   channel-transform
+	      :initform nil
+	      :documentation
+	      "")
+   (id        :initarg  :id
+	      :reader   %channel-id
+	      :documentation
+	      "")
+   (backend   :initarg  :backend
+	      :reader   %channel-backend
+	      :documentation
+	      ""))
   (:default-initargs
    :bag     (required-argument :bag)
    :name    (required-argument :name)
@@ -56,16 +61,20 @@ data items."))
 (defmethod entry ((channel channel)
 		  (index   integer)
 		  &key
-		  if-does-not-exist)
+		  if-does-not-exist
+		  (transform        (channel-transform channel)))
   (bind (((:accessors-r/o (id      %channel-id)
-			  (backend %channel-backend)) channel))
-    (or (get-entry backend id index)
-	(ecase if-does-not-exist
-	  (:error (error 'no-such-entry
-			 :bag     (channel-bag channel)
-			 :channel channel
-			 :key     index))
-	  ((nil)  nil)))))
+			  (backend %channel-backend)) channel)
+	 (raw (or (get-entry backend id index)
+		  (ecase if-does-not-exist
+		    (:error (error 'no-such-entry
+				   :bag     (channel-bag channel)
+				   :channel channel
+				   :key     index))
+		    ((nil)  nil)))))
+    (if transform
+	(decode transform raw)
+	raw)))
 
 (defmethod entry ((channel   channel)
 		  (timestamp local-time:timestamp)
@@ -93,13 +102,17 @@ data items."))
 			 (channel   channel)
 			 (index     local-time:timestamp)
 			 &key
-			 if-exists)
+			 if-exists
+			 (transform (channel-transform channel)))
   (when (eq if-exists :supersede)
     (error "Supersede entries is not supported yes"))
 
   (bind (((:accessors-r/o (id      %channel-id)
-			  (backend %channel-backend)) channel))
-    (put-entry backend id index new-value)
+			  (backend %channel-backend)) channel)
+	 (raw (if transform
+		  (rsbag.transform:encode transform new-value)
+		  new-value)))
+    (put-entry backend id index raw)
     new-value))
 
 (defmethod print-object ((object channel) stream)

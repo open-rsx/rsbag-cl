@@ -52,7 +52,10 @@ the `(setf bag-channel)' method. "))
 			  (backend  %bag-backend)) instance))
     (iter (for (id name meta-data) in (get-channels backend))
 	  (setf (gethash name channels)
-		(%make-channel instance name meta-data id)))))
+		(%make-channel instance name
+			       (%make-channel-transform
+				instance name meta-data id)
+			       meta-data id)))))
 
 (defmethod close ((bag bag)
 		  &key &allow-other-keys)
@@ -83,19 +86,23 @@ the `(setf bag-channel)' method. "))
 			       (bag       bag)
 			       (name      string)
 			       &key
-			       (if-exists :error))
+			       (if-exists :error)
+			       transform)
   (let ((channel (gethash name (%bag-channels bag))))
-   (when channel
-     (case if-exists
-       (:error     (error 'channel-exists
-			  :bag     bag
-			  :channel channel))
-       (:supersede (error "Superseding not implemented"))))) ;;; TODO(jmoringe): implement
+    (when channel
+      (case if-exists
+	(:error     (error 'channel-exists
+			   :bag     bag
+			   :channel channel))
+	(:supersede (error "Superseding not implemented"))))) ;;; TODO(jmoringe): implement
 
   (bind (((:accessors-r/o (channels %bag-channels)
 			  (backend  %bag-backend)) bag)
-	 (channel (%make-channel bag name new-value)))
-    (put-channel backend (%channel-id channel) name new-value)
+	 (meta-data (append (when transform
+			      (list :type (transform-name transform)))
+			    new-value))
+	 (channel   (%make-channel bag name transform meta-data)))
+    (put-channel backend (%channel-id channel) name meta-data)
     (setf (gethash name channels) channel)
     channel))
 
@@ -135,14 +142,33 @@ the `(setf bag-channel)' method. "))
 
 (defmethod %make-channel ((bag       bag)
 			  (name      string)
+			  (transform t)
 			  (meta-data list)
 			  &optional
-			  id)
+			    id)
   (bind (((:accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
     (make-instance channel-class
 		   :bag       bag
 		   :name      name
+		   :transform transform
 		   :id        (or id (make-channel-id backend name))
 		   ;; :meta-data meta-data
 		   :backend   backend)))
+
+(defmethod %make-channel-transform ((bag       bag)
+				    (name      string)
+				    (meta-data list)
+				    &optional
+				    id)
+  (bind (((:plist type) meta-data)
+	 ((class-name &rest args) (ensure-list type))
+	 (class (when class-name
+		  (handler-case
+		      (find-transform-class class-name)
+		    (no-such-transform-class (condition)
+		      (declare (ignore condition))
+		      nil))))) ;;; TODO(jmoringe): add :error? nil in find-transform-class
+    (when class
+      (apply #'make-instance class
+	     (cons :wire-schema args))))) ;;; TODO(jmoringe): wire-schema

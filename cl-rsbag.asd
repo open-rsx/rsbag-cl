@@ -60,6 +60,7 @@
   :license     "GPL3; see COPYING file for details."
   :description "Common Lisp implementation of rsbag."
   :depends-on  (:alexandria
+		:split-sequence
 		:metabang-bind
 		:iterate
 		:cl-dynamic-classes

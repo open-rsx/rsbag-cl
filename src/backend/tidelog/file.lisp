@@ -107,7 +107,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   (bind (((:accessors (stream   backend-stream)
 		      (channels %file-channels)
 		      (indices  %file-indices)) file)
-	 ((:plist (type          :type          "")
+	 ((:plist (type          :type)
 		  (source-name   :source-name   "")
 		  (source-config :source-config "")
 		  (format        :format        "")) meta-data)
@@ -115,7 +115,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 		   'chan
 		   :id            channel
 		   :name          name
-		   :type          type
+		   :type          (encode-type type)
 		   :source-name   source-name
 		   :source-config source-config
 		   :format        format)))
@@ -226,12 +226,14 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
     (file-position stream 0)))
 
 (defun make-channel (chan)
-  (list (chan-id chan)
-	(chan-name chan)
-	(list :type          (chan-type          chan)
-	      :source-name   (chan-source-name   chan)
-	      :source-config (chan-source-config chan)
-	      :format        (chan-format        chan))))
+  (let ((type (decode-type (chan-type chan))))
+   (list (chan-id chan)
+	 (chan-name chan)
+	 (append (when type
+		   (list :type type))
+		 (list :source-name   (chan-source-name   chan)
+		       :source-config (chan-source-config chan)
+		       :format        (chan-format        chan))))))
 
 (defun make-index (channel-id indices chunks stream)
   (bind ((relevant (remove channel-id indices
@@ -242,6 +244,31 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 		   :channel channel-id
 		   :indices relevant
 		   :chunks  chunks)))
+
+(defun encode-type (type)
+  "Encode the keyword or list TYPE as a channel type string."
+  (etypecase type
+    (null    "")
+    (keyword type)
+    (list    (format nil "~{~A~^:~}" type))))
+
+(defun decode-type (type)
+  "Decode the channel type string TYPE as nil, a keyword of a list of
+type information."
+  (cond
+    ((emptyp type)
+     nil)
+    ((find #\: type)
+     (bind (((class-name &rest arg-strings) (split-sequence #\: type))
+	    (class (make-keyword class-name))
+	    (*package*   (find-package :keyword))
+	    (*readtable* (copy-readtable))
+	    (args (progn
+		    (setf (readtable-case *readtable*) :invert)
+		    (map 'list #'read-from-string arg-strings))))
+       (cons class args )))
+    (t
+     (make-keyword type))))
 
 (declaim (ftype (function ((unsigned-byte 32)
 			   (array (cons (unsigned-byte 32) (unsigned-byte 64)) (*))

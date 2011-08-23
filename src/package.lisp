@@ -24,7 +24,8 @@
    :iterate
    :bind
 
-   :rsbag.backend)
+   :rsbag.backend
+   :rsbag.transform)
 
   ;; Conditions
   (:export

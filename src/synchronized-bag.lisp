@@ -56,6 +56,7 @@ in comparison to the single-threaded case."))
 (defmethod %make-channel ((bag       synchronized-bag)
 			  (name      string)
 			  (meta-data list)
+			  (transform t)
 			  &optional
 			  id)
   (declare (ignore id))
