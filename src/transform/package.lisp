@@ -35,7 +35,9 @@
   (:export
    :no-such-transform-class
    :find-transform-class
-   :transform-classes)
+   :transform-classes
+
+   :make-transform)
 
   (:documentation
    "This package contains the transformation protocol and

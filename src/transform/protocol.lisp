@@ -53,3 +53,14 @@ TRANSFORM."
     "This class family consists of transformations that are applied to
 entries prior to serializing/after deserializing them to/from bag
 channels.")
+
+(defgeneric make-transform (spec
+			    &rest args
+			    &key &allow-other-keys)
+  (:documentation
+   "Make and return an instance of the transform class designated by
+SPEC passing ARGS to the constructed instance."))
+
+(defmethod make-transform ((spec symbol)
+			   &rest args &key)
+  (apply #'make-instance (find-transform-class spec) args))

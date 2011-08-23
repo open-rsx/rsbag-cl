@@ -170,5 +170,4 @@ the `(setf bag-channel)' method. "))
 		      (declare (ignore condition))
 		      nil))))) ;;; TODO(jmoringe): add :error? nil in find-transform-class
     (when class
-      (apply #'make-instance class
-	     (cons :wire-schema args))))) ;;; TODO(jmoringe): wire-schema
+      (apply #'make-transform class (cons :wire-schema args))))) ;;; TODO(jmoringe): wire-schema
