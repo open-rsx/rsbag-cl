@@ -162,12 +162,10 @@ the `(setf bag-channel)' method. "))
 				    &optional
 				    id)
   (bind (((:plist type) meta-data)
-	 ((class-name &rest args) (ensure-list type))
-	 (class (when class-name
-		  (handler-case
-		      (find-transform-class class-name)
-		    (no-such-transform-class (condition)
-		      (declare (ignore condition))
-		      nil))))) ;;; TODO(jmoringe): add :error? nil in find-transform-class
-    (when class
-      (apply #'make-transform class (cons :wire-schema args))))) ;;; TODO(jmoringe): wire-schema
+	 ((class-name &rest args) (ensure-list type)))
+    (when class-name
+      (handler-case ;;; TODO(jmoringe): add :error? nil in find-transform-class
+	  (apply #'make-transform class-name (cons :wire-schema args)) ;;; TODO(jmoringe): wire-schema
+	(no-such-transform-class (condition)
+	  (declare (ignore condition))
+	  nil)))))
