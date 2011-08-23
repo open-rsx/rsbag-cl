@@ -103,8 +103,12 @@
 			      (:file       "protocol"
 			       :depends-on ("package" "types"))
 
+			      (:file       "util"
+			       :depends-on ("package"))
+
 			      (:file       "channel"
-			       :depends-on ("package" "protocol"))
+			       :depends-on ("package" "protocol"
+					    "util"))
 			      (:file       "bag"
 			       :depends-on ("package" "types"
 					    "protocol" "channel"))

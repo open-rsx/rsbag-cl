@@ -51,6 +51,14 @@
   (:export
    :direction)
 
+  ;; meta-data protocol
+  (:export
+   :meta-data-count
+   :meta-data-keys
+   :meta-data-values
+   :meta-data-plist
+   :meta-data-alist)
+
   ;; `bag' class and file protocol
   (:export
    :bag
@@ -76,6 +84,7 @@
    :channel-bag
    :channel-id
    :channel-name
+   :channel-meta-data
    :channel-timestamps
 
    :entry)

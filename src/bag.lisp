@@ -153,7 +153,7 @@ the `(setf bag-channel)' method. "))
 		   :name      name
 		   :transform transform
 		   :id        (or id (make-channel-id backend name))
-		   ;; :meta-data meta-data
+		   :meta-data meta-data
 		   :backend   backend)))
 
 (defmethod %make-channel-transform ((bag       bag)

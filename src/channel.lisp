@@ -19,7 +19,7 @@
 
 (in-package :rsbag)
 
-(defclass channel (#+sbcl standard-object
+(defclass channel (plist-meta-data-mixin
 		   #+sbcl sequence)
   ((bag       :initarg  :bag
 	      :reader   channel-bag
@@ -31,6 +31,7 @@ contained.")
 	      :reader   channel-name
 	      :documentation
 	      "")
+   (meta-data :reader   channel-meta-data)
    (transform :initarg  :transform
 	      :reader   channel-transform
 	      :initform nil
