@@ -25,6 +25,8 @@
 
   ;; Transform protocol
   (:export
+   :transform-name
+
    :decode
    :encode)
 

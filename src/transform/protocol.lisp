@@ -23,6 +23,10 @@
 ;;; Transform protocol
 ;;
 
+(defgeneric transform-name (transform)
+  (:documentation
+   "Return a keyword identifying TRANSFORM."))
+
 (defgeneric encode (transform domain-object)
   (:documentation
    "Encode DOMAIN-OBJECT using TRANSFORM and return the result."))
@@ -31,6 +35,15 @@
   (:documentation
    "Decode DATA using TRANSFORM and return the decoded
 domain-object."))
+
+
+;;; Default behavior
+;;
+
+(defmethod transform-name ((transform standard-object))
+  "Default behavior is to use the class name of TRANSFORM to identify
+TRANSFORM."
+  (nth-value 0 (make-keyword (class-name (class-of transform)))))
 
 
 ;;; Findable transform class family
