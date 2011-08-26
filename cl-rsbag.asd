@@ -162,6 +162,9 @@
 			      (:file       "protocol"
 			       :depends-on ("package"))
 
+			      (:file       "replay-strategies"
+			       :depends-on ("package" "protocol"))
+
 			      (:file       "channel-connection"
 			       :depends-on ("package" "protocol"))
 			      (:file       "bag-connection"

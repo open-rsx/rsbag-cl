@@ -35,6 +35,7 @@
 
    :rsbag
    :rsbag.transform
+   :rsbag.view
 
    :rsb)
 
@@ -68,8 +69,12 @@
    :connection-channel
    :connection-participant)
 
-  ;; replay strategy protocol
+    ;; replay strategy protocol
   (:export
+   :replay
+
+   :schedule-event
+
    :no-such-replay-strategy-class
    :find-replay-strategy-class
    :replay-strategy-classes)

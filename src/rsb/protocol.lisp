@@ -63,6 +63,34 @@ to its destination, then return."))
 ;; connections also implement a method on cl:close
 
 
+;;; Replay protocol
+;;
+
+(defgeneric replay (connection strategy)
+  (:documentation
+   "Replay the events contained in the associated bag of CONNECTION
+according to STRATEGY. Usually, STRATEGY will mostly influence the
+timing of the replay. However, things like simulated loss of events or
+transformations are also possible."))
+
+
+;;; Timed replay protocol
+;;
+
+(defgeneric schedule-event (strategy event previous next)
+  (:documentation
+   "Return a relative time in seconds at which EVENT should be
+replayed according to STRATEGY given timestamps PREVIOUS and NEXT of
+the previous and current event when recorded. PREVIOUS can be nil at
+the start of a replay."))
+
+(defmethod schedule-event ((strategy t)
+			   (event    t)
+			   (previous (eql nil))
+			   (next     local-time:timestamp))
+  0)
+
+
 ;;; Replay strategy class family
 ;;
 
