@@ -127,6 +127,8 @@
 		 :pathname   "src/view"
 		 :depends-on ("src")
 		 :components ((:file       "package")
+			      (:file       "protocol"
+			       :depends-on ("package"))
 
 			      (:file       "multi-sequence-mixins"
 			       :depends-on ("package"))
@@ -134,7 +136,7 @@
 			       :depends-on ("package"))
 
 			      (:file       "serialized"
-			       :depends-on ("package"
+			       :depends-on ("package" "protocol"
 					    "multi-sequence-mixins"
 					    "elt-via-iterator-mixin"))))
 

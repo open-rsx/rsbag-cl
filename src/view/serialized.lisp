@@ -20,6 +20,57 @@
 (in-package :rsbag.view)
 
 
+;;; Construction methods
+;;
+
+(defmethod make-serialized-view ((sequences bag)
+				 &key
+				 (selector #'identity))
+  "Create a serialized view for the channels of a bag."
+  (make-serialized-view (bag-channels sequences)
+			:selector selector))
+
+(defmethod make-serialized-view ((sequences sequence)
+				 &key
+				 (selector #'identity))
+  (let* ((transformed (map 'list selector sequences))
+	 (key         (%make-key-function (first transformed))))
+    (make-instance 'serialized
+		   :sequences transformed
+		   :key       key)))
+
+
+;;; Key creation methods
+;;
+
+(defmethod %make-key-function ((sequence sequence))
+  "When SEQUENCE is just a `sequence', we assume it consists of
+timestamps."
+  #'(lambda (sequence iterator limit from-end)
+      (unless (sequence:iterator-endp sequence iterator limit from-end)
+	(sequence:iterator-element sequence iterator))))
+
+(defmethod %make-key-function ((sequence channel))
+  "When SEQUENCE is a `channel', we can use timestamps as keys by
+using the index of the iterator and looking up the corresponding
+timestamp in `channel-timestamps'."
+  #'(lambda (sequence iterator limit from-end)
+      (unless (sequence:iterator-endp sequence iterator limit from-end)
+	(sequence:elt
+	 (channel-timestamps sequence)
+	 (sequence:iterator-index sequence iterator)))))
+
+(defmethod %make-key-function ((sequence channel-items))
+  "When SEQUENCE is of type `channel-items', we can use the index of
+the iterator and look up the corresponding timestamp in the timestamp
+sequence."
+  #'(lambda (sequence iterator limit from-end)
+      (unless (sequence:iterator-endp sequence iterator limit from-end)
+	(sequence:elt
+	 (rsbag::%channel-items-timestamps sequence)
+	 (sequence:iterator-index sequence iterator)))))
+
+
 ;;; `serialized' class
 ;;
 

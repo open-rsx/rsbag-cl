@@ -30,9 +30,13 @@
   (:export
    :view-sequences)
 
-  ;; `serialized' view class
+  ;; `serialized' view class and construction function
   (:export
-   :serialized)
+   :serialized
+
+   :make-serialized-view
+
+   :%make-key-function)
 
   (:documentation
    "This module contains functions and classes that implement
