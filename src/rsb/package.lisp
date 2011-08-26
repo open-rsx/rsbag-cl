@@ -55,7 +55,7 @@
    :connection-bag
    :connection-channels)
 
-  ;; `replay-bag-concetion' subclass and protocol
+  ;; `replay-bag-connection' subclass and protocol
   (:export
    :replay-bag-connection
 
@@ -67,6 +67,12 @@
 
    :connection-channel
    :connection-participant)
+
+  ;; replay strategy protocol
+  (:export
+   :no-such-replay-strategy-class
+   :find-replay-strategy-class
+   :replay-strategy-classes)
 
   (:documentation
    "This package contains functions and classes that enable the

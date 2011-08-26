@@ -61,3 +61,12 @@ from its source to its destination."))
 to its destination, then return."))
 
 ;; connections also implement a method on cl:close
+
+
+;;; Replay strategy class family
+;;
+
+(dynamic-classes:define-findable-class-family replay-strategy
+    "This family consists of classes that implement event replay
+strategies. The main difference between strategies is the handling of
+timing.")
