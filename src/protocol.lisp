@@ -153,6 +153,15 @@ described by NAME META-DATA and ID."))
    "Return a sequence of `local-time:timestamp' objects representing
 the points in time for which CHANNEL contains entries."))
 
+(defgeneric channel-entries (channel)
+  (:documentation
+   "Return a sequence of the entries of CHANNEL."))
+
+(defgeneric channel-items (channel)
+  (:documentation
+   "Return a sequence of elements of the form (TIMESTAMP ENTRY) for
+the timestamps and associated entries of CHANNEL."))
+
 (defgeneric entry (channel index
 		   &key
 		   if-does-not-exist)

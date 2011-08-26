@@ -59,6 +59,18 @@ data items."))
 			  (backend %channel-backend)) channel))
     (get-timestamps backend id)))
 
+#+sbcl
+(defmethod channel-entries ((channel channel))
+  "Since CHANNEL is a sequence of its entries, nothing has to be done."
+  channel)
+
+#+sbcl
+(defmethod channel-items ((channel channel))
+  "Return an instance of `channel-items' which presents pairs of
+timestamps and entries."
+  (make-instance 'channel-items
+		 :channel channel))
+
 (defmethod entry ((channel channel)
 		  (index   integer)
 		  &key
@@ -148,3 +160,43 @@ data items."))
 (defmethod sequence:elt ((channel channel)
 			 (index   integer))
   (entry channel index))
+
+
+;;; `channel-items' sequence class
+;;
+
+#+sbcl
+(defclass channel-items (standard-object
+			 sequence)
+  ((channel    :initarg  :channel
+	       :reader   %channel-items-channel
+	       :documentation
+	       "Stores the channel the items of which are used.")
+   (timestamps :accessor %channel-items-timestamps
+	       :documentation
+	       "Stores the sequence of associated timestamps for the
+entries of the channel."))
+  (:default-initargs
+   :channel (required-argument :channel))
+  (:documentation
+   "Instances of this class can be used to access the timestamps and
+associated entries of a channel."))
+
+#+sbcl
+(defmethod shared-initialize :after ((instance   channel-items)
+                                     (slot-names t)
+                                     &key
+				     channel)
+  (setf (%channel-items-timestamps instance)
+	(channel-timestamps channel)))
+
+#+sbcl
+(defmethod sequence:length ((items channel-items))
+  (length (%channel-items-channel items)))
+
+#+sbcl
+(defmethod sequence:elt ((items channel-items)
+			 (index integer))
+  (bind (((:accessors-r/o (channel    %channel-items-channel)
+			  (timestamps %channel-items-timestamps)) items))
+    (list (elt timestamps index) (elt channel index))))
