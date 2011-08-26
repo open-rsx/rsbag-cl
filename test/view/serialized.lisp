@@ -40,8 +40,8 @@
 		     'serialized
 		     :sequences sequences
 		     :compare   #'<
-		     :key       (compose #'first
-					 #'sequence:iterator-element))))
+		     :key       (lambda (sequence iterator limit from-end)
+				  (first (sequence:iterator-element sequence iterator))))))
       (ensure-same (length sequence) expected-length)
       (iter (for (timestamp   value)   each  sequence       :from start)
 	    (for (e-timestamp e-value) each  expected-items)

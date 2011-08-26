@@ -29,15 +29,19 @@
   ((compare :initarg  :compare
 	    :type     function
 	    :accessor view-compare
-	    :initform #'%iterator-timestamp
+	    :initform #'local-time:timestamp<
 	    :documentation
-	    "")
+	    "Stores a function that is used to compare keys extracted
+from iterator states in order to decide which iterator has to be
+stepped.")
    (key     :initarg  :key
 	    :type     function
 	    :accessor view-key
-	    :initform #'first
 	    :documentation
-	    ""))
+	    "Stores a function that extracts keys from iterator states
+which are used to decide which iterator has to be stepped."))
+  (:default-initargs
+   :key (required-argument :key))
   (:documentation
    "Instances of this class provide the data of multiple channels as a
 single sequence in which items from different channels are serialized
@@ -57,15 +61,15 @@ according to their timestamps."))
 			  (compare   view-compare)
 			  (key       view-key)) view)
 	 ((:flet make-iterator (sequence))
-	  (cons sequence
-		(multiple-value-list
-		 (sequence:make-simple-sequence-iterator
-		  sequence :from-end from-end))))
+	  (bind (((:values iterator limit from-end)
+		  (sequence:make-simple-sequence-iterator
+		   sequence :from-end from-end)))
+	    (list (funcall key sequence iterator limit from-end)
+		  sequence iterator limit from-end)))
 	 (iterator (make-instance
 		    'serialized-iterator
 		    :iterators (map 'list #'make-iterator sequences)
-		    :compare   compare
-		    :key       key)))
+		    :compare   compare)))
     (iter (repeat start)
 	  (setf iterator (sequence:iterator-step view iterator from-end)))
     iterator))
@@ -87,59 +91,59 @@ are serialized views on multiple sequences."))
 (defmethod shared-initialize :after ((instance   serialized-iterator)
                                      (slot-names t)
                                      &key
-				     compare
-				     key)
+				     compare)
   (setf (%iterator-current instance)
-	(%next-iterator (%iterator-iterators instance) compare key)))
+	(%next-iterator (%iterator-iterators instance) compare)))
 
 (defmethod sequence:iterator-endp ((sequence serialized)
 				   (iterator serialized-iterator)
 				   (limit    t)
 				   (from-end t))
-  (bind (((:accessors-r/o (current %iterator-current)) iterator))
-    (or (null current)
-	(apply #'sequence:iterator-endp current))))
+  (null (first (%iterator-current iterator))))
 
 (defmethod sequence:iterator-step ((sequence serialized)
 				   (iterator serialized-iterator)
 				   (from-end t))
-  (bind (((:accessors-r/o (compare   view-compare)
-			  (key       view-key)) sequence)
+  (bind (((:accessors-r/o (compare view-compare)
+			  (key     view-key)) sequence)
 	 (current (%iterator-current iterator))
-	 ((sequence* iterator* _ from-end*) current))
-    (setf (second current)
+	 ((_ sequence* iterator* _ from-end*) current))
+    (declare (type function key))
+    (setf (third current)
 	  (sequence:iterator-step sequence* iterator* from-end*)
+	  (first current)
+	  (apply key (rest current))
 	  (%iterator-current iterator)
-	  (%next-iterator (%iterator-iterators iterator) compare key)))
+	  (%next-iterator (%iterator-iterators iterator) compare)))
   iterator)
 
 (defmethod sequence:iterator-element ((sequence serialized)
 				      (iterator serialized-iterator))
   (bind (((:accessors-r/o (current %iterator-current)) iterator))
-    (sequence:iterator-element (first current) (second current))))
+    (sequence:iterator-element (second current) (third current))))
 
 
 ;;; Utility functions
 ;;
 
-(defun %next-iterator (iterators compare key)
+(declaim (inline %next-iterator)
+	 (ftype (function (list function) t) %next-iterator))
+
+(defun %next-iterator (iterators compare)
   "Return the iterator in ITERATORS that should be used to retrieve
 the next element of the serialized sequence or nil."
   (when iterators
-    (reduce (rcurry #'%iterator-min compare key) iterators)))
+    (reduce (rcurry #'%iterator-min compare) iterators)))
 
-(defun %iterator-min (left right compare key)
+(declaim (ftype (function (list list function) t) %iterator-min))
+
+(defun %iterator-min (left right compare)
   (cond
-    ((apply #'sequence:iterator-endp left)
+    ((null (first left))
      right)
-    ((apply #'sequence:iterator-endp right)
+    ((null (first right))
      left)
-    ((funcall compare
-	      (funcall key (first left) (second left))
-	      (funcall key (first right) (second right)))
+    ((funcall compare (first left) (first right))
      left)
     (t
      right)))
-
-(defun %iterator-timestamp (sequence iterator)
-  (first (sequence:iterator-element sequence iterator)))
