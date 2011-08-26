@@ -155,9 +155,11 @@
 			       :pathname   "src/transform/rsb-event"
 			       :depends-on ("protocol"))))
 
+		#+sbcl
 		(:module     "rsb"
 		 :pathname   "src/rsb"
-		 :depends-on ("src" "transform" "rsb-serialization")
+		 :depends-on ("src" "transform" "view"
+			      "rsb-serialization")
 		 :components ((:file       "package")
 			      (:file       "protocol"
 			       :depends-on ("package"))
