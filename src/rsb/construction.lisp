@@ -99,3 +99,70 @@
 			 (remove-from-plist args :backend :bag-class))))))
   (define-open-bag-method string)
   (define-open-bag-method pathname))
+
+
+;;; bag -> RSB events
+;;
+
+(macrolet ((define-open-bag-method (type)
+	     `(defmethod bag->events ((source ,type)
+				      (dest   t)
+				      &rest args
+				      &key
+				      backend
+				      (bag-class 'synchronized-bag))
+		(let ((bag (apply #'open-bag source
+				  :bag-class bag-class
+				  :direction :input
+				  (append (when backend
+					    (list :backend backend)))) ))
+		  (apply #'bag->events bag dest
+			 (remove-from-plist args :backend :bag-class))))))
+  (define-open-bag-method string)
+  (define-open-bag-method pathname))
+
+(defmethod bag->events ((source bag)
+			(dest   puri:uri)
+			&rest args
+			&key
+			(strategy    :recorded-timing)
+			(start-index 0)
+			end-index)
+  (bind (((:flet do-channel (channel))
+	  (apply #'bag->events channel dest
+		 (remove-from-plist args :strategy)))
+	 (connections (map 'list #'do-channel (bag-channels source)))
+	 (strategy    (make-instance
+		       (find-replay-strategy-class strategy)
+		       :start-index start-index
+		       :end-index   end-index)))
+    (make-instance 'replay-bag-connection
+		   :bag      source
+		   :channels connections
+		   :strategy strategy)))
+
+(defmethod bag->events ((source bag)
+			(dest   string)
+			&rest args &key)
+  (apply #'bag->events source (puri:parse-uri dest) args))
+
+(defmethod bag->events ((source channel)
+			(dest   puri:uri)
+			&key)
+  (bind ((name (if (starts-with #\/ (channel-name source))
+		   (subseq (channel-name source) 1)
+		   (channel-name source)))
+	 (uri  (puri:merge-uris name dest))
+	 ((:plist type) (channel-meta-data source))
+	 (converter   (make-instance
+		       'rsb.converter:force-wire-schema
+		       :wire-schema (if (listp type)
+					(second type)
+					:bytes)))
+	 (participant (make-informer
+		       uri t
+		       :transports `((:spread :converter ,converter
+					      &inherit)))))
+    (make-instance 'channel-connection
+		   :channel     source
+		   :participant participant)))
