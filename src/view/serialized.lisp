@@ -34,7 +34,9 @@
 				 &key
 				 (selector #'identity))
   (let* ((transformed (map 'list selector sequences))
-	 (key         (%make-key-function (first transformed))))
+	 (key         (if transformed
+			  (%make-key-function (first transformed))
+			  #'identity)))
     (make-instance 'serialized
 		   :sequences transformed
 		   :key       key)))

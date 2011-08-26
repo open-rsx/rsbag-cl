@@ -127,11 +127,14 @@
 			&key
 			(strategy    :recorded-timing)
 			(start-index 0)
-			end-index)
-  (bind (((:flet do-channel (channel))
+			end-index
+			channels)
+  (bind ((predicate (if (eq channels t) (constantly t) channels))
+	 (channels  (remove-if-not predicate (bag-channels source)))
+	 ((:flet do-channel (channel))
 	  (apply #'bag->events channel dest
 		 (remove-from-plist args :strategy)))
-	 (connections (map 'list #'do-channel (bag-channels source)))
+	 (connections (map 'list #'do-channel channels))
 	 (strategy    (make-instance
 		       (find-replay-strategy-class strategy)
 		       :start-index start-index

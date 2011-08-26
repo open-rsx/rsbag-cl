@@ -45,7 +45,7 @@ recording."))
 
 (defmethod print-object ((object bounds-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "[~D, ~:[*~;~D~]]"
+    (format stream "[~D, ~:[*~;~D~]["
 	    (strategy-start-index object)
 	    (strategy-end-index   object))))
 
@@ -64,7 +64,8 @@ classes perform time-based scheduling of replayed events."))
   (bind (((:accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence (make-serialized-view
-		    (connection-bag connection)
+		    (map 'list #'connection-channel
+			 (connection-channels connection))
 		    :selector (rcurry #'inject-informer connection))))
     (iter (for (timestamp event informer) each     sequence
 	       :from start-index
