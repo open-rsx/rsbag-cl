@@ -55,6 +55,12 @@
    :connection-bag
    :connection-channels)
 
+  ;; `replay-bag-concetion' subclass and protocol
+  (:export
+   :replay-bag-connection
+
+   :connection-strategy)
+
   ;; `channel-connection' class and protocol
   (:export
    :channel-connection

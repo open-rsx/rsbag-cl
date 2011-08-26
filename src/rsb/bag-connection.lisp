@@ -19,6 +19,10 @@
 
 (in-package :rsbag.rsb)
 
+
+;;; `bag-connection' class
+;;
+
 (defclass bag-connection ()
   ((bag      :initarg :bag
 	     :reader  connection-bag
@@ -52,3 +56,18 @@ RSB participants. "))
 (defmethod print-object ((object bag-connection) (stream t))
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "(~D)" (length (connection-channels object)))))
+
+
+;;; `replay-bag-connection' class
+;;
+
+(defclass replay-bag-connection (bag-connection)
+  ((strategy :initarg  :strategy
+	     :reader    connection-strategy
+	     :documentation
+	     "Stores the strategy that is used for replaying events
+from the associated bag of the connection."))
+  (:documentation
+   "Instances of this class associated an event replay strategy, a
+source bag and `rsb:informer' instances to collaboratively replay the
+events from the bag."))
