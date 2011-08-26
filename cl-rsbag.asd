@@ -122,6 +122,22 @@
 			      (:file       "macros"
 			       :depends-on ("package" "protocol"))))
 
+		#+sbcl
+		(:module     "view"
+		 :pathname   "src/view"
+		 :depends-on ("src")
+		 :components ((:file       "package")
+
+			      (:file       "multi-sequence-mixins"
+			       :depends-on ("package"))
+			      (:file       "elt-via-iterator-mixin"
+			       :depends-on ("package"))
+
+			      (:file       "serialized"
+			       :depends-on ("package"
+					    "multi-sequence-mixins"
+					    "elt-via-iterator-mixin"))))
+
 		(:module     "rsb-serialization"
 		 :pathname   "."
 		 :depends-on ("transform")
@@ -167,6 +183,14 @@
   :components  ((:module     "test"
 		 :components ((:file       "package")
 			      (:file       "bag"
+			       :depends-on ("package"))))
+
+		#+sbcl
+		(:module     "view"
+		 :pathname   "test/view"
+		 :depends-on ("test")
+		 :components ((:file       "package")
+			      (:file       "serialized"
 			       :depends-on ("package")))))
 
   :in-order-to ((test-op (load-op :cl-rsbag-test))))
