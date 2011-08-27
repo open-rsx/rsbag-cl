@@ -57,7 +57,9 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 			:element-type      '(unsigned-byte 8)
 			:direction         direction
 			:if-exists         :append
-			:if-does-not-exist :create))
+			:if-does-not-exist (case direction
+					     (:input        :error)
+					     ((:output :io) :create))))
 	 (backend (apply #'make-instance
 			 (find-backend-class backend)
 			 :stream    stream
