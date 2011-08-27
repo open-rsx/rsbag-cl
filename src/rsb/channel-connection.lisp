@@ -41,6 +41,6 @@ or sinks of RSB informers."))
 		  &key
 		  (close-bag? t)
 		  &allow-other-keys)
-  (detach (connection-participant connection))
+  (detach/ignore-errors (connection-participant connection))
   (when close-bag?
     (close (channel-bag (connection-channel connection)))))
