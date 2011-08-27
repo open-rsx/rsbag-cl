@@ -67,6 +67,8 @@ RSB participants. "))
 	     :documentation
 	     "Stores the strategy that is used for replaying events
 from the associated bag of the connection."))
+  (:default-initargs
+   :strategy (required-argument :strategy))
   (:documentation
    "Instances of this class associated an event replay strategy, a
 source bag and `rsb:informer' instances to collaboratively replay the
