@@ -249,7 +249,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   "Encode the keyword or list TYPE as a channel type string."
   (etypecase type
     (null    "")
-    (keyword type)
+    (keyword (string type))
     (list    (format nil "~{~A~^:~}" type))))
 
 (defun decode-type (type)
