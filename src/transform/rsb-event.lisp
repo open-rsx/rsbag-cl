@@ -49,8 +49,7 @@ during (de)serialization for efficiency reasons."))
 octet vectors."))
 
 (defmethod transform-name ((transform rsb-event))
-  (list (make-keyword (class-name (class-of transform)))
-	(transform-wire-schema transform)))
+  (list (call-next-method) (transform-wire-schema transform)))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder      %transform-holder)
