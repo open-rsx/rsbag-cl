@@ -30,6 +30,8 @@ participant.")
 		:documentation
 		"Stores the RSB participant that is connected to a bag
 channel."))
+  (:default-initargs
+   :participant (required-argument :participant))
   (:documentation
    "Instances of this class represent the connections being
 established when individual channels of bags are used as data sources
