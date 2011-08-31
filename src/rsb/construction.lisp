@@ -52,10 +52,11 @@
 
 (defmethod events->bag ((source puri:uri)
 			(dest   bag)
-			&rest args &key)
+			&rest args
+			&key
+			transports)
   (bind ((options (rsb:uri-options source))
 	 ((:plist wire-schema) options)
-	 ((:plist transports) args)
 	 (listener (make-listener
 		    (puri:merge-uris
 		     (format nil "?~{~(~A~)=~A~^;~}"
@@ -87,16 +88,17 @@
 (macrolet ((define-open-bag-method (type)
 	     `(defmethod events->bag ((source t)
 				      (dest   ,type)
-				      &rest args &key)
-		(bind (((:plist backend
-				(bag-class :bag-class 'synchronized-bag)) args)
-		       (bag (apply #'open-bag dest
-				   :bag-class bag-class
-				   :direction :io
-				   (append (when backend
-					     (list :backend backend))))))
-		  (apply #'events->bag source bag
-			 (remove-from-plist args :backend :bag-class))))))
+				      &rest args
+				      &key
+				      backend
+				      (bag-class 'synchronized-bag))
+		(apply #'events->bag source
+		       (apply #'open-bag dest
+			      :bag-class bag-class
+			      :direction :io
+			      (append (when backend
+					(list :backend backend))))
+		       (remove-from-plist args :backend :bag-class)))))
   (define-open-bag-method string)
   (define-open-bag-method pathname))
 
@@ -111,13 +113,14 @@
 				      &key
 				      backend
 				      (bag-class 'synchronized-bag))
-		(let ((bag (apply #'open-bag source
-				  :bag-class bag-class
-				  :direction :input
-				  (append (when backend
-					    (list :backend backend)))) ))
-		  (apply #'bag->events bag dest
-			 (remove-from-plist args :backend :bag-class))))))
+		(apply #'bag->events
+		       (apply #'open-bag source
+			      :bag-class bag-class
+			      :direction :input
+			      (append (when backend
+					(list :backend backend))))
+		       dest
+		       (remove-from-plist args :backend :bag-class)))))
   (define-open-bag-method string)
   (define-open-bag-method pathname))
 
