@@ -66,12 +66,17 @@ to its destination, then return."))
 ;;; Replay protocol
 ;;
 
-(defgeneric replay (connection strategy)
+(defgeneric replay (connection strategy
+		    &key
+		    progress)
   (:documentation
    "Replay the events contained in the associated bag of CONNECTION
 according to STRATEGY. Usually, STRATEGY will mostly influence the
 timing of the replay. However, things like simulated loss of events or
-transformations are also possible."))
+transformations are also possible.
+If PROGRESS is non-nil it has to be a function accepting five
+arguments: progress ratio, current index, start index, end index and
+current timestamp."))
 
 
 ;;; Timed replay protocol

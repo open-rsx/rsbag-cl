@@ -60,19 +60,33 @@ recording."))
 classes perform time-based scheduling of replayed events."))
 
 (defmethod replay ((connection replay-bag-connection)
-		   (strategy   timed-replay-mixin))
+		   (strategy   timed-replay-mixin)
+		   &key
+		   progress)
   (bind (((:accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence (make-serialized-view
 		    (map 'list #'connection-channel
 			 (connection-channels connection))
-		    :selector (rcurry #'inject-informer connection))))
+		    :selector (rcurry #'inject-informer connection)))
+	 (update-progress
+	  (if progress
+	      (bind (((start end) (list 0 (1- (length sequence)))))
+		#'(lambda (index timestamp)
+		    (funcall progress
+			     (/ (- index start) (- end start))
+			     index start end
+			     timestamp)))
+	      #'(lambda (index timestamp)
+		  (declare (ignore index timestamp))))))
     (iter (for (timestamp event informer) each     sequence
 	       :from start-index
 	       :to   end-index)
 	  (for previous-timestamp         previous timestamp)
+	  (for i :from start-index)
 	  (sleep (schedule-event strategy event previous-timestamp timestamp))
-	  (rsb:send informer event))))
+	  (rsb:send informer event)
+	  (funcall update-progress i timestamp))))
 
 
 ;;; `recorded-timing' replay strategy class
