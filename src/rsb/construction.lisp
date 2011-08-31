@@ -128,7 +128,7 @@
 			(strategy    :recorded-timing)
 			(start-index 0)
 			end-index
-			channels)
+			(channels    t))
   (bind ((predicate (if (eq channels t) (constantly t) channels))
 	 (channels  (remove-if-not predicate (bag-channels source)))
 	 ((:flet do-channel (channel))
