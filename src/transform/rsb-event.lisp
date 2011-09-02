@@ -54,7 +54,7 @@ octet vectors."))
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder      %transform-holder)
 			  (wire-schema transform-wire-schema)) transform)
-	 (meta-data (rsb.serialization::event-meta-data holder))
+	 (meta-data (rsb.serialization:event-meta-data holder))
 	 ((:flet process-timestamp (name))
 	  (let ((value (rsb:timestamp domain-object name)))
 	    (if value
@@ -66,8 +66,8 @@ octet vectors."))
 			   :send-time    (process-timestamp :send)
 			   :receive-time (process-timestamp :receive)
 			   :deliver-time (process-timestamp :deliver))
-    (setf (fill-pointer (rsb.protocol::meta-data-user-infos meta-data)) 0
-	  (fill-pointer (rsb.protocol::meta-data-user-times meta-data)) 0)
+    (setf (fill-pointer (rsb.protocol:meta-data-user-infos meta-data)) 0
+	  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0)
 
     ;; Add user meta-data.
     (iter (for (key value) on (rsb:event-meta-data domain-object) :by #'cddr)
@@ -133,7 +133,7 @@ octet vectors."))
     (iter (for item each (rsb.protocol::meta-data-user-infos meta-data))
 	  (setf (rsb:meta-data
 		 event (bytes->keyword (rsb.protocol::user-info-key item)))
-		(bytes->string (rsb.protocol::user-info-key item))))
+		(bytes->string (rsb.protocol::user-info-value item))))
 
     ;; Add user timestamps.
     (iter (for time each (rsb.protocol::meta-data-user-times meta-data))
