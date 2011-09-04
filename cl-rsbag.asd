@@ -164,6 +164,8 @@
 			      (:file       "protocol"
 			       :depends-on ("package"))
 
+			      (:file       "channel-strategies"
+			       :depends-on ("package" "protocol"))
 			      (:file       "replay-strategies"
 			       :depends-on ("package" "protocol"))
 

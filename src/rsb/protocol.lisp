@@ -50,6 +50,10 @@ keyword part."))
 ;;; Connection protocol
 ;;
 
+(defgeneric connection-bag (connection)
+  (:documentation
+   "Return the associated bag of CONNECTION."))
+
 (defgeneric done? (connection)
   (:documentation
    "Return non-nil, if CONNECTION has finished transferring events
@@ -103,3 +107,61 @@ the start of a replay."))
     "This family consists of classes that implement event replay
 strategies. The main difference between strategies is the handling of
 timing.")
+
+(defgeneric make-replay-strategy (thing &rest args)
+  (:documentation
+   "Return (potentially creating it first) an instance of the replay
+strategy designated by THING."))
+
+(defmethod make-replay-strategy ((thing symbol) &rest args)
+  (if (keywordp thing)
+      (apply #'make-replay-strategy
+	     (find-replay-strategy-class thing) args)
+      (apply #'make-replay-strategy (find-class thing) args)))
+
+(defmethod make-replay-strategy ((thing class) &rest args)
+  (apply #'make-instance thing args))
+
+(defmethod make-replay-strategy ((thing t) &rest args)
+  (declare (ignore args))
+  thing)
+
+
+;;; Channel allocation protocol
+;;
+
+(defgeneric channel-name-for (bag event strategy)
+  (:documentation
+   "Return a channel name string designating the channel within BAG in
+which EVENT should be stored according to STRATEGY."))
+
+(defgeneric make-channel-for (bag event strategy)
+  (:documentation
+   "Make and return a channel in BAG in which EVENT can be stored
+according to STRATEGY."))
+
+
+;;; Channel allocation strategy class family
+;;
+
+(dynamic-classes:define-findable-class-family channel-strategy
+    "This family consists of classes that implement channel selection
+and allocation strategies.")
+
+(defgeneric make-channel-strategy (thing &rest args)
+  (:documentation
+   "Return (potentially creating it first) an instance of the channel
+strategy designated by THING."))
+
+(defmethod make-channel-strategy ((thing symbol) &rest args)
+  (if (keywordp thing)
+      (apply #'make-channel-strategy
+	     (find-channel-strategy-class thing) args)
+      (apply #'make-channel-strategy (find-class thing) args)))
+
+(defmethod make-channel-strategy ((thing class) &rest args)
+  (apply #'make-instance thing args))
+
+(defmethod make-channel-strategy ((thing t) &rest args)
+  (declare (ignore args))
+  thing)

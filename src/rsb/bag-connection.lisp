@@ -44,10 +44,8 @@ RSB participants. "))
 (defmethod close ((connection bag-connection)
 		  &key &allow-other-keys)
   "Close all channel connections, then close the bag."
-  (bind (((:accessors-r/o (bag      connection-bag)
-			  (channels connection-channels)) connection))
-    (map nil (rcurry #'close :close-bag? nil) channels)
-    (close bag)))
+  (map nil #'close (connection-channels connection))
+  (close (connection-bag connection)))
 
 (defmethod wait ((connection bag-connection))
   "Wait for all channel connections."

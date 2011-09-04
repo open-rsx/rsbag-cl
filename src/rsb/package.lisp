@@ -67,10 +67,20 @@
   (:export
    :channel-connection
 
-   :connection-channel
    :connection-participant)
 
-    ;; replay strategy protocol
+  ;; channel allocation strategy protocol
+  (:export
+   :channel-name-for
+   :make-channel-for
+
+   :no-such-channel-strategy-class
+   :find-channel-strategy-class
+   :channel-strategy-classes
+
+   :make-channel-strategy)
+
+  ;; replay strategy protocol
   (:export
    :replay
 
@@ -78,7 +88,9 @@
 
    :no-such-replay-strategy-class
    :find-replay-strategy-class
-   :replay-strategy-classes)
+   :replay-strategy-classes
+
+   :make-replay-strategy)
 
   (:documentation
    "This package contains functions and classes that enable the

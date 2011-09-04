@@ -66,8 +66,8 @@ classes perform time-based scheduling of replayed events."))
   (bind (((:accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence (make-serialized-view
-		    (map 'list #'connection-channel
-			 (connection-channels connection))
+		    (mappend #'connection-channels
+			     (connection-channels connection))
 		    :selector (rcurry #'inject-informer connection)))
 	 (update-progress
 	  (if progress
@@ -136,4 +136,5 @@ sequence."))
 		 :channel  channel
 		 :informer (connection-participant
 			    (find channel (connection-channels connection)
-				  :key #'connection-channel))))
+				  :test #'member
+				  :key  #'connection-channels))))

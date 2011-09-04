@@ -26,47 +26,26 @@
 (defmethod events->bag ((source listener)
 			(dest   bag)
 			&key
-			(wire-schema (required-argument :wire-schema))
-			(timestamp   :create)
+			(timestamp        :create)
+			(channel-strategy :scope-and-type)
 			&allow-other-keys)
-  (bind (((:accessors-r/o (scope participant-scope)
-			  (id    participant-id)) source)
-	 (name    (scope-string scope))
-	 (channel (setf (bag-channel dest name
-				     :if-exists :error
-				     :transform (make-transform :rsb-event
-								(make-keyword wire-schema)))
-			(list :source-name   (princ-to-string id)
-			      :source-config (princ-to-string
-					      (abstract-uri source))
-			      :format        "TODO"))))
-    (push #'(lambda (event)
-	      (setf (entry channel (timestamp event timestamp)) event))
-	  (rsb.ep:handlers source))
-    (make-instance 'bag-connection
-		   :bag      dest
-		   :channels (list (make-instance
-				    'channel-connection
-				    :participant source
-				    :channel     channel)))))
+  (make-instance
+   'recording-channel-connection
+   :bag         dest
+   :channels    nil
+   :participant source
+   :strategy    (make-channel-strategy channel-strategy)))
 
 (defmethod events->bag ((source puri:uri)
 			(dest   bag)
 			&rest args
 			&key
-			transports)
-  (bind ((options (rsb:uri-options source))
-	 ((:plist wire-schema) options)
-	 (listener (make-listener
-		    (puri:merge-uris
-		     (format nil "?~{~(~A~)=~A~^;~}"
-			     (remove-from-plist options :wire-schema))
-		     source)
-		    :transports '((:spread :converter :fundamental-null)))))
-    (apply #'events->bag listener
-	   dest
-	   :wire-schema wire-schema
-	   (remove-from-plist args :transports))))
+			(transports '((:spread :expose-wire-schema? t
+				               :converter           :fundamental-null))))
+  (apply #'events->bag
+	 (make-listener source :transports transports)
+	 dest
+	 (remove-from-plist args :transports)))
 
 (defmethod events->bag ((source string)
 			(dest   bag)
@@ -76,14 +55,12 @@
 (defmethod events->bag ((source sequence)
 			(dest   bag)
 			&rest args &key)
-  (let ((connections
-	 (map 'list #'(lambda (source)
-			(apply #'events->bag source dest args))
-	      source)))
-    (make-instance
-     'bag-connection
-     :bag      (connection-bag (first connections))
-     :channels (mappend #'connection-channels connections))))
+  (make-instance 'bag-connection
+		 :bag      dest
+		 :channels (map 'list
+				#'(lambda (source)
+				    (apply #'events->bag source dest args))
+				source)))
 
 (macrolet ((define-open-bag-method (type)
 	     `(defmethod events->bag ((source t)
@@ -128,20 +105,19 @@
 			(dest   puri:uri)
 			&rest args
 			&key
-			(strategy    :recorded-timing)
-			(start-index 0)
+			(replay-strategy :recorded-timing)
+			(start-index     0)
 			end-index
 			(channels    t))
   (bind ((predicate (if (eq channels t) (constantly t) channels))
 	 (channels  (remove-if-not predicate (bag-channels source)))
 	 ((:flet do-channel (channel))
 	  (apply #'bag->events channel dest
-		 (remove-from-plist args :strategy)))
+		 (remove-from-plist args :replay-strategy)))
 	 (connections (map 'list #'do-channel channels))
-	 (strategy    (make-instance
-		       (find-replay-strategy-class strategy)
-		       :start-index start-index
-		       :end-index   end-index)))
+	 (strategy    (make-replay-strategy replay-strategy
+					    :start-index start-index
+					    :end-index   end-index)))
     (make-instance 'replay-bag-connection
 		   :bag      source
 		   :channels connections
@@ -158,6 +134,10 @@
   (bind ((name (if (starts-with #\/ (channel-name source))
 		   (subseq (channel-name source) 1)
 		   (channel-name source)))
+	 (name (let ((colon-index (position #\: name)))
+		 (if colon-index
+		     (subseq name 0 colon-index)
+		     name)))
 	 (uri  (puri:merge-uris name dest))
 	 ((:plist type) (channel-meta-data source))
 	 (converter   (make-instance
@@ -170,5 +150,6 @@
 		       :transports `((:spread :converter ,converter
 					      &inherit)))))
     (make-instance 'channel-connection
-		   :channel     source
+		   :bag         (channel-bag source)
+		   :channels    (list source)
 		   :participant participant)))

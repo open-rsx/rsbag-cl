@@ -52,8 +52,7 @@ octet vectors."))
   (list (call-next-method) (transform-wire-schema transform)))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (bind (((:accessors-r/o (holder      %transform-holder)
-			  (wire-schema transform-wire-schema)) transform)
+  (bind (((:accessors-r/o (holder %transform-holder)) transform)
 	 (meta-data (rsb.serialization:event-meta-data holder))
 	 ((:flet process-timestamp (name))
 	  (let ((value (rsb:timestamp domain-object name)))
@@ -98,7 +97,6 @@ octet vectors."))
 			   (rsb:event-method domain-object))
 			  (load-time-value
 			   (binio:make-octet-vector 0)))
-     :wire-schema     (wire-schema->bytes wire-schema)
      :data            (rsb:event-data domain-object))
     (pb:pack* holder)))
 
@@ -198,12 +196,3 @@ integer which counts the number of microseconds since UNIX epoch."
       (let ((*package*   #.(find-package :keyword))
 	    (*readtable* *keyword-readtable*))
 	(read-from-string (bytes->string bytes)))))
-
-(defun wire-schema->bytes (wire-schema)
-  "Convert WIRE-SCHEMA to an ASCII representation stored in an
-octet-vector."
-  (keyword->bytes wire-schema))
-
-(defun bytes->wire-schema (bytes)
-  "Return a keyword representing the wire-schema encoded in bytes."
-  (bytes->keyword bytes))

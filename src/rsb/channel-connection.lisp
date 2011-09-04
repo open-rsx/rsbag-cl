@@ -19,11 +19,22 @@
 
 (in-package :rsbag.rsb)
 
+
+;;; `channel-connection' class
+;;
+
 (defclass channel-connection ()
-  ((channel     :initarg  :channel
-		:reader   connection-channel
+  ((bag         :initarg  :bag
+		:reader connection-bag
 		:documentation
-		"Stores the bag channel that is connected to an RSB
+		"Stores the bag object that is connected to RSB
+participants as a data source or sink.")
+   (channels    :initarg  :channels
+		:type     list
+		:accessor connection-channels
+		:initform nil
+		:documentation
+		"Stores the bag channels that are connected to an RSB
 participant.")
    (participant :initarg  :participant
 		:reader   connection-participant
@@ -38,9 +49,44 @@ established when individual channels of bags are used as data sources
 or sinks of RSB informers."))
 
 (defmethod close ((connection channel-connection)
-		  &key
-		  (close-bag? t)
-		  &allow-other-keys)
-  (detach/ignore-errors (connection-participant connection))
-  (when close-bag?
-    (close (channel-bag (connection-channel connection)))))
+		  &key &allow-other-keys)
+  (detach/ignore-errors (connection-participant connection)))
+
+
+;;; `recording-channel-connection' class
+;;
+
+(defclass recording-channel-connection (channel-connection)
+  ((timestamp :initarg  :timestamp
+	      :type     keyword
+	      :reader   connection-timestamp
+	      :initform :create
+	      :documentation
+	      "Stores the key of the event timestamp that should be
+used to index events in the associated channel. Defaults to the create
+timestamp.")
+   (strategy  :initarg  :strategy
+	      :reader   connection-strategy
+	      :documentation
+	      "Stores a channel allocation/selection strategy."))
+  (:default-initargs
+   :strategy (required-argument :strategy))
+  (:documentation
+   "Instances of this represent class represent connections being
+established between RSB listeners and bag channels when RSB events are
+recorded into bag channels."))
+
+(defmethod initialize-instance :after ((instance recording-channel-connection)
+                                       &key)
+  (bind (((:accessors-r/o (participant connection-participant)) instance))
+    (push instance (rsb.ep:handlers participant))))
+
+(defmethod rsb.ep:handle ((sink  recording-channel-connection)
+			  (event event))
+  (bind (((:accessors-r/o (timestamp connection-timestamp)
+			  (strategy  connection-strategy)) sink)
+	 ((:values channel found?)
+	  (ensure-channel-for sink event strategy)))
+    (unless found?
+      (push channel (connection-channels sink)))
+    (setf (entry channel (timestamp event timestamp)) event)))
