@@ -53,6 +53,7 @@
 
   ;; meta-data protocol
   (:export
+   :meta-data
    :meta-data-count
    :meta-data-keys
    :meta-data-values
