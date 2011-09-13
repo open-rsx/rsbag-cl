@@ -44,31 +44,41 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 ;;; Default behavior
 ;;
 
+(defmethod open-bag ((source stream)
+		     &rest args
+		     &key
+		     (direction (required-argument :direction))
+		     (backend   (required-argument :backend))
+		     (bag-class 'bag))
+  (check-type direction direction "either :input, :output or :it")
+
+  (let ((backend (apply #'make-instance
+			(find-backend-class backend)
+			:stream    source
+			:direction direction
+			(remove-from-plist
+			 args :direction :backend :bag-class))))
+    (make-instance bag-class
+		   :backend   backend
+		   :direction direction)))
+
 (defmethod open-bag ((source pathname)
 		     &rest args
 		     &key
 		     (direction :io)
 		     (backend   (make-keyword
-				 (string-upcase (pathname-type source))))
-		     (bag-class 'bag))
-  (check-type direction direction "either :input, :output or :it")
-
-  (let* ((stream  (open source
-			:element-type      '(unsigned-byte 8)
-			:direction         direction
-			:if-exists         :overwrite
-			:if-does-not-exist (case direction
-					     (:input        :error)
-					     ((:output :io) :create))))
-	 (backend (apply #'make-instance
-			 (find-backend-class backend)
-			 :stream    stream
-			 :direction direction
-			 (remove-from-plist
-			  args :direction :backend :stream :bag-class))))
-    (make-instance bag-class
-		   :backend   backend
-		   :direction direction)))
+				 (string-upcase (pathname-type source)))))
+  (let ((stream (open source
+		      :element-type      '(unsigned-byte 8)
+		      :direction         direction
+		      :if-exists         :overwrite
+		      :if-does-not-exist (case direction
+					   (:input        :error)
+					   ((:output :io) :create)))))
+    (apply #'open-bag stream
+	   :direction direction
+	   :backend   backend
+	   args)))
 
 (defmethod open-bag ((source string)
 		     &rest args
