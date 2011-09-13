@@ -69,16 +69,7 @@ classes perform time-based scheduling of replayed events."))
 		    (mappend #'connection-channels
 			     (connection-channels connection))
 		    :selector (rcurry #'inject-informer connection)))
-	 (update-progress
-	  (if progress
-	      (bind (((start end) (list 0 (1- (length sequence)))))
-		#'(lambda (index timestamp)
-		    (funcall progress
-			     (/ (- index start) (- end start))
-			     index start end
-			     timestamp)))
-	      #'(lambda (index timestamp)
-		  (declare (ignore index timestamp))))))
+	 (update-progress (%make-progress-reporter sequence progress)))
     (iter (for (timestamp event informer) each     sequence
 	       :from start-index
 	       :to   end-index)
@@ -166,6 +157,40 @@ as precisely as possible, with a specified fixed rate."))
     (format stream "~A Hz" (strategy-rate object))))
 
 
+;;; `as-fast-as-possible' replay strategy class
+;;
+
+(defmethod find-replay-strategy-class ((spec (eql :as-fast-as-possible)))
+  (find-class 'as-fast-as-possible))
+
+(defclass as-fast-as-possible (bounds-mixin)
+  ()
+  (:documentation
+   "This strategy replays events in the order they were recorded, but
+as fast as possible. Consequently, recorded timestamps are only used
+to establish the playback order of events, but not for any kind of
+replay timing."))
+
+;;; TODO(jmoringe): avoid duplication; see timed-replay-mixin
+(defmethod replay ((connection replay-bag-connection)
+		   (strategy   as-fast-as-possible)
+		   &key
+		   progress)
+  (bind (((:accessors-r/o (start-index strategy-start-index)
+			  (end-index   strategy-end-index)) strategy)
+	 (sequence (make-serialized-view
+		    (mappend #'connection-channels
+			     (connection-channels connection))
+		    :selector (rcurry #'inject-informer connection)))
+	 (update-progress (%make-progress-reporter sequence progress)))
+    (iter (for (timestamp event informer) each sequence
+	       :from start-index
+	       :to   end-index)
+	  (for i :from start-index)
+	  (rsb:send informer event)
+	  (funcall update-progress i timestamp))))
+
+
 ;;; `informer-injector' helper class
 ;;
 
@@ -194,3 +219,19 @@ sequence."))
 			    (find channel (connection-channels connection)
 				  :test #'member
 				  :key  #'connection-channels))))
+
+
+;;; Utility functions
+;;
+
+(defun %make-progress-reporter (sequence callback)
+  "Return a function with two parameters that calls CALLBACK in the appropriate way if CALLBACK is non-nil"
+  (if callback
+      (bind (((start end) (list 0 (1- (length sequence)))))
+	#'(lambda (index timestamp)
+	    (funcall callback
+		     (/ (- index start) (- end start))
+		     index start end
+		     timestamp)))
+      #'(lambda (index timestamp)
+	  (declare (ignore index timestamp)))))

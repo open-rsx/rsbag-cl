@@ -99,6 +99,10 @@
    :strategy-rate
    :strategy-delay)
 
+  ;; `as-fast-as-possible' replay strategy class
+  (:export
+   :as-fast-as-possible)
+
   (:documentation
    "This package contains functions and classes that enable the
 recording and playback of RSB events into/from rsbag log files."))
