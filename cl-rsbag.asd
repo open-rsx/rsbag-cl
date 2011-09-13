@@ -200,6 +200,14 @@
 		 :depends-on ("test")
 		 :components ((:file       "package")
 			      (:file       "serialized"
+			       :depends-on ("package"))))
+
+		#+sbcl
+		(:module     "rsb"
+		 :pathname   "test/rsb"
+		 :depends-on ("test")
+		 :components ((:file       "package")
+			      (:file       "fixed-rate"
 			       :depends-on ("package")))))
 
   :in-order-to ((test-op (load-op :cl-rsbag-test))))
