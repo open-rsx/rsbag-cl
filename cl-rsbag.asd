@@ -191,6 +191,8 @@
 		:lift)
   :components  ((:module     "test"
 		 :components ((:file       "package")
+			      (:file       "protocol"
+			       :depends-on ("package"))
 			      (:file       "bag"
 			       :depends-on ("package"))))
 
