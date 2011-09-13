@@ -92,6 +92,13 @@
 
    :make-replay-strategy)
 
+  ;; `fixed-rate' replay strategy class
+  (:export
+   :fixed-rate
+
+   :strategy-rate
+   :strategy-delay)
+
   (:documentation
    "This package contains functions and classes that enable the
 recording and playback of RSB events into/from rsbag log files."))

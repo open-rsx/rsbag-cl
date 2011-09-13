@@ -110,6 +110,62 @@ between first and last event) is not attempted explicitly."))
   (* 0.95 (local-time:timestamp-difference next previous)))
 
 
+;;; `fixed-rate' replay strategy class
+;;
+
+(defmethod find-replay-strategy-class ((spec (eql :fixed-rate)))
+  (find-class 'fixed-rate))
+
+(defclass fixed-rate (timed-replay-mixin)
+  ((delay :initarg  :delay
+	  :type     positive-real
+	  :accessor strategy-delay
+	  :initform .1
+	  :documentation
+	  "Stores the fixed delay in seconds between publishing
+subsequent events."))
+  (:documentation
+   "This strategy replays events in the order they were recorded and,
+as precisely as possible, with a specified fixed rate."))
+
+(defmethod shared-initialize :before ((instance   fixed-rate)
+				      (slot-names t)
+				      &key
+				      delay
+				      rate)
+  (cond
+    ((and (null delay) (null rate))
+     (required-argument :delay-or-rate))
+    ((and delay rate)
+     (error "The initargs ~S and ~S are mutually exclusive"
+	    :delay :rate))))
+
+(defmethod shared-initialize :after ((instance   fixed-rate)
+                                     (slot-names t)
+                                     &key
+				     rate)
+  (when rate
+    (setf (strategy-rate instance) rate)))
+
+(defmethod strategy-rate ((strategy fixed-rate))
+  (/ (strategy-delay strategy)))
+
+(defmethod (setf strategy-rate) ((new-value real)
+				 (strategy  fixed-rate))
+  (check-type new-value positive-real "a positive real number")
+  (setf (strategy-delay strategy) (/ new-value)))
+
+(defmethod schedule-event ((strategy fixed-rate)
+			   (event    t)
+			   (previous local-time:timestamp)
+			   (next     local-time:timestamp))
+  (strategy-delay strategy))
+
+(defmethod print-object ((object fixed-rate) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~A Hz" (strategy-rate object))))
+
+
 ;;; `informer-injector' helper class
 ;;
 
