@@ -46,7 +46,7 @@ channel."))
   (:documentation
    "Instances of this class represent the connections being
 established when individual channels of bags are used as data sources
-or sinks of RSB informers."))
+or sinks of RSB participants."))
 
 (defmethod close ((connection channel-connection)
 		  &key &allow-other-keys)
