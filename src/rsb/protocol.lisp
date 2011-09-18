@@ -25,7 +25,14 @@
 
 (defgeneric events->bag (source dest
 			 &rest args
-			 &key &allow-other-keys)
+			 &key
+			 transports
+			 filters
+			 timestamp
+			 backend
+			 bag-class
+			 channel-strategy
+			 &allow-other-keys)
   (:argument-precedence-order dest source)
   (:documentation
    "Make and return a connection between the RSB participant(s) SOURCE
@@ -33,7 +40,34 @@ and the channel or bag DEST. When the connection is established,
 events received by SOURCE are stored in DEST. The keyword arguments
 ARGS are passed to the function constructing SOURCE, the function
 constructing DEST or the new connection depending on their keyword
-part."))
+part.
+
+If supplied, TRANSPORTS configures RSB transport mechanisms. See
+`rsb:make-participant' for details.
+
+FILTERS is a list of RSB filters (which can be ordinary functions)
+that are applied to discriminate events for recording. Only events
+matching all elements of FILTERS are recorded.
+
+If supplied, TIMESTAMP has to be a keyword and selects the RSB event
+timestamp that should be used for indexing the recorded
+events. Canonical RSB timestamp names are :create, :send, :receive
+and :deliver, but other user provided timestamp can be used as
+well.
+
+BACKEND can be used to explicitly select a file-format backend for
+DEST. If supplied, it has to be a keyword designating a file-format
+backend. Available backends can be inspected using
+`rsbag.backend:backend-classes'.
+
+If supplied, BAG-CLASS selects the class of the bag created for
+DEST. Note that a bag class capable of handling concurrent accesses
+has to be selected if SOURCE amounts to multiple sources.
+
+If supplied, CHANNEL-STRATEGY selects a channel allocation strategy
+which is responsible for adding channels to DEST when events cannot be
+stored in any of the existing channels. Available strategies can be
+inspected using `rsbag.rsb:channel-strategy-classes'."))
 
 (defgeneric bag->events (source dest
 			 &rest args
