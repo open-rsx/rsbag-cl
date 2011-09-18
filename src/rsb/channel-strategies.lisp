@@ -41,7 +41,7 @@ that combination is processed."))
 	(wire-schema (rsb:meta-data event :rsb.wire-schema)))
     (if wire-schema
 	(concatenate 'string scope ":" wire-schema)
-	(error "Event ~A does not have a ~A meta-data item"
+	(error "~@<Event ~A does not have a ~A meta-data item.~@:>"
 	       event :rsb.wire-schema))))
 
 (defmethod ensure-channel-for ((connection channel-connection)
