@@ -72,6 +72,7 @@
   ;; channel allocation strategy protocol
   (:export
    :channel-name-for
+   :channel-format-for
    :make-channel-for
 
    :no-such-channel-strategy-class

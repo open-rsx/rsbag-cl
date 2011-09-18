@@ -169,6 +169,12 @@ strategy designated by THING."))
    "Return a channel name string designating the channel within BAG in
 which EVENT should be stored according to STRATEGY."))
 
+(defgeneric channel-format-for (bag event strategy)
+  (:documentation
+   "Return a representation of the type of data/serialization
+mechanism according to which the data of EVENT will be stored in the
+channel within BAG allocated by STRATEGY."))
+
 (defgeneric make-channel-for (bag event strategy)
   (:documentation
    "Make and return a channel in BAG in which EVENT can be stored
