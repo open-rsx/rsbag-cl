@@ -40,10 +40,11 @@
 			(dest   bag)
 			&rest args
 			&key
-			(transports '((:spread :expose-wire-schema? t
-				               :converter           :fundamental-null))))
+			(transports '((:spread :expose-wire-schema? t))))
   (apply #'events->bag
-	 (make-listener source :transports transports)
+	 (make-listener source
+			:transports transports
+			:converters '((t . :fundamental-null)))
 	 dest
 	 (remove-from-plist args :transports)))
 
@@ -146,9 +147,7 @@
 					(second type)
 					:bytes)))
 	 (participant (make-informer
-		       uri t
-		       :transports `((:spread :converter ,converter
-					      &inherit)))))
+		       uri t :converters `((t . ,converter)))))
     (make-instance 'channel-connection
 		   :bag         (channel-bag source)
 		   :channels    (list source)
