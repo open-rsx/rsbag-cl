@@ -40,13 +40,20 @@
 			(dest   bag)
 			&rest args
 			&key
-			(transports '((:spread :expose-wire-schema? t))))
-  (apply #'events->bag
-	 (make-listener source
-			:transports transports
-			:converters '((t . :fundamental-null)))
-	 dest
-	 (remove-from-plist args :transports)))
+			(transports '((:spread :expose-wire-schema? t
+				               &inherit)
+				      (:socket :expose-wire-schema? t
+				               &inherit)))
+			(filters    nil filters-supplied?))
+  (let ((listener (make-listener source
+				 :transports transports
+				 :converters '((t . :fundamental-null)))))
+    (when filters-supplied?
+      (setf (receiver-filters listener) filters))
+    (apply #'events->bag
+	   listener
+	   dest
+	   (remove-from-plist args :transports))))
 
 (defmethod events->bag ((source string)
 			(dest   bag)
