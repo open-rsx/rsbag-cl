@@ -24,14 +24,15 @@
 ;;
 
 (defclass bag-connection ()
-  ((bag      :initarg :bag
-	     :reader  connection-bag
+  ((bag      :initarg  :bag
+	     :reader   connection-bag
 	     :documentation
 	     "Stores the bag object that is connected to RSB
 participants as a data source or sink.")
-   (channels :initarg :channels
-	     :type    list
-	     :reader  connection-channels
+   (channels :initarg  :channels
+	     :type     list
+	     :reader   connection-channels
+	     :initform nil
 	     :documentation
 	     "Stores a list of channel connections for channels of the
 bag that are connected to RSB participants as data sources or
