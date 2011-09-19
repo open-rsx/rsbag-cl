@@ -98,6 +98,19 @@ from its source to its destination."))
    "Wait until CONNECTION finishes transferring events from its source
 to its destination, then return."))
 
+(defgeneric start (connection)
+  (:documentation
+   "Start recording events received by the associated participant of
+CONNECTION into the associated bag of CONNECTION. Recording can be
+stopped temporarily using the `stop' function or permanently using
+`close'."))
+
+(defgeneric stop (connection)
+  (:documentation
+   "Stop recording events received by the associated participant of
+CONNECTION into the associated bag of CONNECTION. Recording can be
+continue using the `start' function."))
+
 ;; connections also implement a method on cl:close
 
 

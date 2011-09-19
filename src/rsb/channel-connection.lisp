@@ -78,8 +78,7 @@ recorded into bag channels."))
 
 (defmethod initialize-instance :after ((instance recording-channel-connection)
                                        &key)
-  (bind (((:accessors-r/o (participant connection-participant)) instance))
-    (push instance (rsb.ep:handlers participant))))
+  (start instance))
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
 			  (event event))
@@ -90,3 +89,11 @@ recorded into bag channels."))
     (unless found?
       (push channel (connection-channels sink)))
     (setf (entry channel (timestamp event timestamp)) event)))
+
+(defmethod start ((connection recording-channel-connection))
+  (bind (((:accessors-r/o (participant connection-participant)) connection))
+    (push connection (rsb.ep:handlers participant))))
+
+(defmethod stop ((connection recording-channel-connection))
+  (bind (((:accessors-r/o (participant connection-participant)) connection))
+    (removef (rsb.ep:handlers participant) connection)))

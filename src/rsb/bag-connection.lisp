@@ -52,6 +52,12 @@ RSB participants. "))
   "Wait for all channel connections."
   (map nil #'wait (connection-channels connection)))
 
+(defmethod start ((connection bag-connection))
+  (map nil #'start (connection-channels connection)))
+
+(defmethod stop ((connection bag-connection))
+  (map nil #'stop (connection-channels connection)))
+
 (defmethod print-object ((object bag-connection) (stream t))
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "(~D)" (length (connection-channels object)))))

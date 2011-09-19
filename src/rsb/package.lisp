@@ -48,7 +48,10 @@
   ;; connection protocol
   (:export
    :done?
-   :wait)
+   :wait
+
+   :start
+   :stop)
 
   ;; `bag-connection' class and protocol
   (:export
