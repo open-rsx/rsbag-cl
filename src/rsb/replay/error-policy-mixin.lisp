@@ -1,4 +1,4 @@
-;;; recorded-timing.lisp ---
+;;; error-policy-mixin.lisp --- error-policy-mixin mixin class.
 ;;
 ;; Copyright (C) 2011 Jan Moringen
 ;;
@@ -19,25 +19,17 @@
 
 (in-package :rsbag.rsb.replay)
 
-
-
-;;; `recorded-timing' replay strategy class
-;;
-
-(defmethod find-replay-strategy-class ((spec (eql :recorded-timing)))
-  (find-class 'recorded-timing))
-
-(defclass recorded-timing (error-policy-mixin
-			   timed-replay-mixin)
+(defclass error-policy-mixin (rsb.ep:error-policy-mixin)
   ()
+  (:default-initargs
+   :error-policy #'log-error)
   (:documentation
-   "This strategy replays events in the order they were recorded and,
-as much as possible, with identical local temporal relations. A
-faithful replay with respect to global temporal relations (e.g. time
-between first and last event) is not attempted explicitly."))
+   "This mixin class provides a method on `replay' that arranges for
+the next `replay' methods to be called with error handling based on
+the installed error policy."))
 
-(defmethod schedule-event ((strategy recorded-timing)
-			   (event    t)
-			   (previous local-time:timestamp)
-			   (next     local-time:timestamp))
-  (* 0.95 (local-time:timestamp-difference next previous)))
+(defmethod replay :around ((connection replay-bag-connection)
+			   (strategy   error-policy-mixin)
+			   &key &allow-other-keys)
+  (rsb.ep:with-error-policy (strategy)
+    (call-next-method)))

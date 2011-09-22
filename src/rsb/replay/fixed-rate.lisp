@@ -27,7 +27,8 @@
 (defmethod find-replay-strategy-class ((spec (eql :fixed-rate)))
   (find-class 'fixed-rate))
 
-(defclass fixed-rate (timed-replay-mixin)
+(defclass fixed-rate (error-policy-mixin
+		      timed-replay-mixin)
   ((delay :initarg  :delay
 	  :type     positive-real
 	  :accessor strategy-delay

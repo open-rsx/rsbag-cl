@@ -41,6 +41,10 @@
 
    :rsb)
 
+  ;; `error-policy-mixin' mixin class
+  (:export
+   :error-policy-mixin)
+
   ;; bounds protocol and mixin class
   (:export
    :strategy-start-index

@@ -192,6 +192,8 @@
 
 			      (:file       "replay-restart-mixin"
 			       :depends-on ("package"))
+			      (:file       "error-policy-mixin"
+			       :depends-on ("package"))
 			      (:file       "bounds-mixin"
 			       :depends-on ("package"))
 			      (:file       "view-creation-mixin"
@@ -205,11 +207,14 @@
 			       :depends-on ("package" "sequential-mixin"))
 
 			      (:file       "recorded-timing"
-			       :depends-on ("package" "timed-replay-mixin"))
+			       :depends-on ("package" "timed-replay-mixin"
+					    "error-policy-mixin"))
 			      (:file       "fixed-rate"
-			       :depends-on ("package" "timed-replay-mixin"))
+			       :depends-on ("package" "timed-replay-mixin"
+					    "error-policy-mixin"))
 			      (:file       "as-fast-as-possible"
-			       :depends-on ("package" "sequential-mixin")))))
+			       :depends-on ("package" "sequential-mixin"
+					    "error-policy-mixin")))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))
 

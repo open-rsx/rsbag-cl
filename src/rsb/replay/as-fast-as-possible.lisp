@@ -27,7 +27,8 @@
 (defmethod find-replay-strategy-class ((spec (eql :as-fast-as-possible)))
   (find-class 'as-fast-as-possible))
 
-(defclass as-fast-as-possible (sequential-mixin)
+(defclass as-fast-as-possible (error-policy-mixin
+			       sequential-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded, but
