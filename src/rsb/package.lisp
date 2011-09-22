@@ -40,6 +40,21 @@
 
    :rsb)
 
+  ;; Conditions
+  (:export
+   :connection-error
+   :connection-error-connection
+
+   :recording-error
+
+   :event-storage-failed
+   :connection-error-event
+
+   :replay-error
+   :connection-error-strategy
+
+   :event-retrieval-failed)
+
   ;; connection construction protocol
   (:export
    :events->bag

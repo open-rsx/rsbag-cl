@@ -163,6 +163,8 @@
 		 :depends-on ("src" "transform" "view"
 			      "rsb-serialization")
 		 :components ((:file       "package")
+			      (:file       "conditions"
+			       :depends-on ("package"))
 			      (:file       "protocol"
 			       :depends-on ("package"))
 
