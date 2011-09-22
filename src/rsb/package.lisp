@@ -96,6 +96,14 @@
 
    :make-replay-strategy)
 
+  ;; view creation protocol
+  (:export
+   :make-view)
+
+  ;; sequential processing protocol
+  (:export
+   :process-event)
+
   ;; `fixed-rate' replay strategy class
   (:export
    :fixed-rate

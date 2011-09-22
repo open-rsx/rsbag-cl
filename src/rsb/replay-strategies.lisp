@@ -50,34 +50,111 @@ recording."))
 	    (strategy-end-index   object))))
 
 
+;;; `view-creation-mixin' mixin class
+;;
+
+(defclass view-creation-mixin ()
+  ()
+  (:documentation
+   "This class is intended to be mixed into replay strategy classes
+that have to construct a view sequence for multiple channels. The
+generic function `make-view' can be used to customize this
+behavior. The method for `view-creation-mixin' creates a
+serialized view of events across channels."))
+
+(defmethod make-view ((connection replay-bag-connection)
+		      (strategy   view-creation-mixin))
+  "Default behavior is serializing events across channels."
+  (make-serialized-view
+   (mappend #'connection-channels (connection-channels connection))
+   :selector (rcurry #'inject-informer connection)))
+
+
+;;; `sequential-mixin' mixin class
+;;
+
+(defclass sequential-mixin (bounds-mixin
+			    view-creation-mixin)
+  ()
+  (:documentation
+   "This class is intended to be mixed into replay strategy classes
+that essentially process all events in a sequential manner. The method
+on `replay' for `sequential-mixin' creates a sequence via `make-view'
+and processes all elements of the sequence by sequential calls to
+`process-event'."))
+
+(defmethod replay ((connection replay-bag-connection)
+		   (strategy   sequential-mixin)
+		   &key
+		   progress)
+ (bind (((:accessors-r/o (start-index strategy-start-index)
+			 (end-index   strategy-end-index)) strategy)
+	(sequence        (make-view connection strategy))
+	(update-progress (%make-progress-reporter sequence progress)))
+   (iter (for (timestamp event informer) each     sequence
+	      :from start-index
+	      :to   end-index)
+	 (for previous-timestamp         previous timestamp)
+	 (for i :from start-index)
+	 (process-event connection strategy
+			timestamp previous-timestamp
+			event informer)
+	 (funcall update-progress i timestamp))))
+
+(defmethod process-event :around ((connection         replay-bag-connection)
+				  (strategy           sequential-mixin)
+				  (timestamp          t)
+				  (previous-timestamp t)
+				  (event              t)
+				  (informer           t))
+  "Install a continue restart around processing."
+  (restart-case
+      (call-next-method)
+    (continue ()
+      :report (lambda (stream)
+		(format stream "~@<Ignore the failed event and ~
+continue with the next event.~@:>")
+		nil)
+      (values))))
+
+(defmethod process-event ((connection         replay-bag-connection)
+			  (strategy           sequential-mixin)
+			  (timestamp          t)
+			  (previous-timestamp t)
+			  (event              (eql :skip))
+			  (informer           t))
+  "Error recovery behaviors may inject the value :skip for EVENT. The
+default behavior is just ignoring the failed event. "
+  (values))
+
+(defmethod process-event ((connection         replay-bag-connection)
+			  (strategy           sequential-mixin)
+			  (timestamp          t)
+			  (previous-timestamp t)
+			  (event              t)
+			  (informer           t))
+  "The default behavior consists in sending EVENT via INFORMER."
+  (send informer event))
+
+
 ;;; `timed-replay-mixin' mixin class
 ;;
 
-(defclass timed-replay-mixin (bounds-mixin)
+(defclass timed-replay-mixin (sequential-mixin)
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy
 classes perform time-based scheduling of replayed events."))
 
-(defmethod replay ((connection replay-bag-connection)
-		   (strategy   timed-replay-mixin)
-		   &key
-		   progress)
-  (bind (((:accessors-r/o (start-index strategy-start-index)
-			  (end-index   strategy-end-index)) strategy)
-	 (sequence (make-serialized-view
-		    (mappend #'connection-channels
-			     (connection-channels connection))
-		    :selector (rcurry #'inject-informer connection)))
-	 (update-progress (%make-progress-reporter sequence progress)))
-    (iter (for (timestamp event informer) each     sequence
-	       :from start-index
-	       :to   end-index)
-	  (for previous-timestamp         previous timestamp)
-	  (for i :from start-index)
-	  (sleep (schedule-event strategy event previous-timestamp timestamp))
-	  (rsb:send informer event)
-	  (funcall update-progress i timestamp))))
+(defmethod process-event :before ((connection         replay-bag-connection)
+				  (strategy           timed-replay-mixin)
+				  (timestamp          local-time:timestamp)
+				  (previous-timestamp local-time:timestamp)
+				  (event              t)
+				  (informer           t))
+  "Delay the publishing of EVENT for the amount of time computed by
+`schedule-event'."
+  (sleep (schedule-event strategy event previous-timestamp timestamp)))
 
 
 ;;; `recorded-timing' replay strategy class
@@ -163,32 +240,13 @@ as precisely as possible, with a specified fixed rate."))
 (defmethod find-replay-strategy-class ((spec (eql :as-fast-as-possible)))
   (find-class 'as-fast-as-possible))
 
-(defclass as-fast-as-possible (bounds-mixin)
+(defclass as-fast-as-possible (sequential-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded, but
 as fast as possible. Consequently, recorded timestamps are only used
 to establish the playback order of events, but not for any kind of
 replay timing."))
-
-;;; TODO(jmoringe): avoid duplication; see timed-replay-mixin
-(defmethod replay ((connection replay-bag-connection)
-		   (strategy   as-fast-as-possible)
-		   &key
-		   progress)
-  (bind (((:accessors-r/o (start-index strategy-start-index)
-			  (end-index   strategy-end-index)) strategy)
-	 (sequence (make-serialized-view
-		    (mappend #'connection-channels
-			     (connection-channels connection))
-		    :selector (rcurry #'inject-informer connection)))
-	 (update-progress (%make-progress-reporter sequence progress)))
-    (iter (for (timestamp event informer) each sequence
-	       :from start-index
-	       :to   end-index)
-	  (for i :from start-index)
-	  (rsb:send informer event)
-	  (funcall update-progress i timestamp))))
 
 
 ;;; `informer-injector' helper class

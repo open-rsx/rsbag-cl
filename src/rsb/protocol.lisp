@@ -130,6 +130,26 @@ arguments: progress ratio, current index, start index, end index and
 current timestamp."))
 
 
+;;; View creation protocol
+;;
+
+(defgeneric make-view (connection strategy)
+  (:documentation
+   "Make and return a sequence view of the events associated to
+CONNECTION for replay according to STRATEGY."))
+
+
+;;; Sequential processing protocol
+;;
+
+(defgeneric process-event (connection strategy
+			   timestamp previous-timestamp
+			   event informer)
+  (:documentation
+   "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT INFORMER),
+originating from CONNECTION, according to STRATEGY."))
+
+
 ;;; Timed replay protocol
 ;;
 
