@@ -45,6 +45,54 @@ domain-object."))
 TRANSFORM."
   (nth-value 0 (make-keyword (class-name (class-of transform)))))
 
+(defmethod encode :around ((transform     t)
+			   (domain-object t))
+  "Establish a use-value restart and wrap arbitrary conditions in an
+`encoding-error' instance."
+  (handler-bind
+      (((and error (not encoding-error))
+	#'(lambda (condition)
+	    (error 'encoding-error
+		   :transform     transform
+		   :domain-object domain-object
+		   :cause         condition))))
+    (restart-case
+	(call-next-method)
+      (use-value (value)
+	:report      (lambda (stream)
+		       (format stream "~@<Specify a value to use ~
+instead of the result of the failed encoding.~@:>"))
+	:interactive (lambda ()
+		       (format *query-io* "~@<Enter replacement ~
+value (unevaluated): ~@:>")
+		       (force-output *query-io*)
+		       (list (read *query-io*)))
+	value))))
+
+(defmethod decode :around ((transform t)
+			   (data      t))
+  "Establish a use-value restart and wrap arbitrary conditions in a
+`decoding-error' instance."
+  (handler-bind
+      (((and error (not decoding-error))
+	#'(lambda (condition)
+	    (error 'decoding-error
+		   :transform transform
+		   :encoded   data
+		   :cause     condition))))
+    (restart-case
+	(call-next-method)
+      (use-value (value)
+	:report      (lambda (stream)
+		       (format stream "~@<Specify a value to use ~
+instead of the result of the failed decoding.~@:>"))
+	:interactive (lambda ()
+		       (format *query-io* "~@<Enter replacement ~
+value (unevaluated): ~@:>")
+		       (force-output *query-io*)
+		       (list (read *query-io*)))
+	value))))
+
 
 ;;; Findable transform class family
 ;;

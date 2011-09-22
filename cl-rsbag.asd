@@ -89,8 +89,10 @@
 		 :pathname   "src/transform"
 		 :components ((:file       "package")
 
+			      (:file       "conditions"
+			       :depends-on ("package"))
 			      (:file       "protocol"
-			       :depends-on ("package"))))
+			       :depends-on ("package" "conditions"))))
 
 		(:module     "src"
 		 :depends-on ("backend" "transform")

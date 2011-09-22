@@ -24,6 +24,21 @@
    :bind
    :iterate)
 
+  (:import-from :rsb
+   :chainable-condition
+   :chainable-condition-cause)
+
+  ;; Conditions
+  (:export
+   :transform-error
+   :transform-error-transform
+
+   :encoding-error
+   :transform-error-domain-object
+
+   :decoding-error
+   :transform-error-encoded)
+
   ;; Transform protocol
   (:export
    :transform-name
