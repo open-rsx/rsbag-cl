@@ -41,13 +41,28 @@
 
    :rsb)
 
-  ;; view creation protocol
+  ;; bounds protocol and mixin class
   (:export
-   :make-view)
+   :strategy-start-index
+   :strategy-end-index
 
-  ;; sequential processing protocol
+   :bounds-mixin)
+
+  ;; view creation protocol and mixin class
   (:export
-   :process-event)
+   :make-view
+
+   :view-creation-mixin)
+
+  ;; sequential processing protocol and mixin class
+  (:export
+   :process-event
+
+   :sequential-mixin)
+
+  ;; `recorded-timing' replay strategy class
+  (:export
+   :recorded-timing)
 
   ;; `fixed-rate' replay strategy class
   (:export
@@ -61,4 +76,5 @@
    :as-fast-as-possible)
 
   (:documentation
-   "TODO"))
+   "This package contains supporting infrastructure and replay
+strategy classes."))
