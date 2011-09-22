@@ -190,12 +190,16 @@
 			      (:file       "util"
 			       :depends-on ("package"))
 
+			      (:file       "replay-restart-mixin"
+			       :depends-on ("package"))
 			      (:file       "bounds-mixin"
 			       :depends-on ("package"))
 			      (:file       "view-creation-mixin"
 			       :depends-on ("package" "util"))
 			      (:file       "sequential-mixin"
-			       :depends-on ("package" "util" "bounds-mixin"
+			       :depends-on ("package" "util"
+					    "replay-restart-mixin"
+					    "bounds-mixin"
 					    "view-creation-mixin"))
 			      (:file       "timed-replay-mixin"
 			       :depends-on ("package" "sequential-mixin"))

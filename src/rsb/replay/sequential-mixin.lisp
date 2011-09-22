@@ -24,7 +24,8 @@
 ;;; `sequential-mixin' mixin class
 ;;
 
-(defclass sequential-mixin (bounds-mixin
+(defclass sequential-mixin (replay-restart-mixin
+			    bounds-mixin
 			    view-creation-mixin)
   ()
   (:documentation
@@ -37,7 +38,7 @@ and processes all elements of the sequence by sequential calls to
 (defmethod replay ((connection replay-bag-connection)
 		   (strategy   sequential-mixin)
 		   &key
-		     progress)
+		   progress)
   (bind (((:accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence        (make-view connection strategy))
