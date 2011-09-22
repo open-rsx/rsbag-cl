@@ -96,25 +96,6 @@
 
    :make-replay-strategy)
 
-  ;; view creation protocol
-  (:export
-   :make-view)
-
-  ;; sequential processing protocol
-  (:export
-   :process-event)
-
-  ;; `fixed-rate' replay strategy class
-  (:export
-   :fixed-rate
-
-   :strategy-rate
-   :strategy-delay)
-
-  ;; `as-fast-as-possible' replay strategy class
-  (:export
-   :as-fast-as-possible)
-
   (:documentation
    "This package contains functions and classes that enable the
 recording and playback of RSB events into/from rsbag log files."))

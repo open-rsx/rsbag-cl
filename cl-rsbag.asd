@@ -168,8 +168,6 @@
 
 			      (:file       "channel-strategies"
 			       :depends-on ("package" "protocol"))
-			      (:file       "replay-strategies"
-			       :depends-on ("package" "protocol"))
 
 			      (:file       "channel-connection"
 			       :depends-on ("package" "protocol"))
@@ -179,7 +177,33 @@
 			      (:file       "construction"
 			       :depends-on ("package" "protocol"
 					    "bag-connection"
-					    "channel-connection")))))
+					    "channel-connection"))))
+
+		#+sbcl
+		(:module     "rsb/replay"
+		 :pathname   "src/rsb/replay"
+		 :depends-on ("rsb")
+		 :components ((:file       "package")
+
+			      (:file       "util"
+			       :depends-on ("package"))
+
+			      (:file       "bounds-mixin"
+			       :depends-on ("package"))
+			      (:file       "view-creation-mixin"
+			       :depends-on ("package" "util"))
+			      (:file       "sequential-mixin"
+			       :depends-on ("package" "util" "bounds-mixin"
+					    "view-creation-mixin"))
+			      (:file       "timed-replay-mixin"
+			       :depends-on ("package" "sequential-mixin"))
+
+			      (:file       "recorded-timing"
+			       :depends-on ("package" "timed-replay-mixin"))
+			      (:file       "fixed-rate"
+			       :depends-on ("package" "timed-replay-mixin"))
+			      (:file       "as-fast-as-possible"
+			       :depends-on ("package" "sequential-mixin")))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))
 
