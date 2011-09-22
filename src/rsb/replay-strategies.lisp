@@ -128,7 +128,7 @@ as precisely as possible, with a specified fixed rate."))
     ((and (null delay) (null rate))
      (required-argument :delay-or-rate))
     ((and delay rate)
-     (error "The initargs ~S and ~S are mutually exclusive"
+     (error "~@<The initargs ~S and ~S are mutually exclusive.~@:>"
 	    :delay :rate))))
 
 (defmethod shared-initialize :after ((instance   fixed-rate)
