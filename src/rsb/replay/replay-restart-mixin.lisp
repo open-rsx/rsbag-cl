@@ -39,12 +39,12 @@ around the actual work of the `replay' method."))
 		      :report (lambda (stream)
 				(format stream "~@<Ignore the ~
 failed event and continue with the next event.~@:>"))
-		      (use-value nil))
-		    (log ()
+		      (use-value :skip))
+		    (log (&optional condition)
 		      :report (lambda (stream)
 				(format stream "~@<Log an error ~
 message and continue with the next event.~@:>"))
 		      (log1 :error "Failed to retrieve an event for replay: ~A"
 			    condition)
-		      (use-value nil))))))
+		      (use-value :skip))))))
     (call-next-method)))
