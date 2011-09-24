@@ -61,10 +61,13 @@ that combination is processed."))
 			  (participant connection-participant)) connection)
 	 ((:accessors-r/o (id participant-id)) participant)
 	 (name        (channel-name-for connection event strategy))
+	 (format      (channel-format-for connection event strategy))
 	 (wire-schema (make-keyword (rsb:meta-data event :rsb.wire-schema)))
 	 (transform   (make-transform :rsb-event wire-schema)))
     (setf (bag-channel bag name :transform transform)
-	  (list :source-name   (princ-to-string id)
-		:source-config (princ-to-string
-				(abstract-uri participant))
-		:format        "TODO"))))
+	  (append
+	   (list :source-name   (princ-to-string id)
+		 :source-config (princ-to-string
+				 (abstract-uri participant)))
+	   (when format
+	     (list :format format))))))

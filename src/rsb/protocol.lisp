@@ -214,6 +214,16 @@ channel within BAG allocated by STRATEGY."))
 according to STRATEGY."))
 
 
+;;; Default behavior
+;;
+
+(defmethod channel-format-for ((bag      t)
+			       (event    t)
+			       (strategy t))
+  "Default behavior is to not associate a channel format."
+  nil)
+
+
 ;;; Channel allocation strategy class family
 ;;
 
