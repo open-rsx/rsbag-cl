@@ -85,7 +85,8 @@
 					(list :backend backend))))
 		       (remove-from-plist args :backend :bag-class)))))
   (define-open-bag-method string)
-  (define-open-bag-method pathname))
+  (define-open-bag-method pathname)
+  (define-open-bag-method stream))
 
 
 ;;; bag -> RSB events
@@ -107,7 +108,8 @@
 		       dest
 		       (remove-from-plist args :backend :bag-class)))))
   (define-open-bag-method string)
-  (define-open-bag-method pathname))
+  (define-open-bag-method pathname)
+  (define-open-bag-method stream))
 
 (defmethod bag->events ((source bag)
 			(dest   puri:uri)
