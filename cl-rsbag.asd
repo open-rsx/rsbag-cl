@@ -203,8 +203,11 @@
 					    "replay-restart-mixin"
 					    "bounds-mixin"
 					    "view-creation-mixin"))
+			      (:file       "speed-adjustment-mixin"
+			       :depends-on ("package"))
 			      (:file       "timed-replay-mixin"
-			       :depends-on ("package" "sequential-mixin"))
+			       :depends-on ("package" "sequential-mixin"
+					    "speed-adjustment-mixin"))
 
 			      (:file       "recorded-timing"
 			       :depends-on ("package" "timed-replay-mixin"

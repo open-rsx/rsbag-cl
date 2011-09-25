@@ -1,4 +1,4 @@
-;;; timed-replay-mixin.lisp ---
+;;; speed-adjustment-mixin.lisp --- Mixin that scales scheduled playback times.
 ;;
 ;; Copyright (C) 2011 Jan Moringen
 ;;
@@ -19,21 +19,20 @@
 
 (in-package :rsbag.rsb.replay)
 
-(defclass timed-replay-mixin (sequential-mixin
-			      speed-adjustment-mixin)
-  ()
+(defclass speed-adjustment-mixin ()
+  ((speed :initarg  :speed
+	  :type     positive-real
+	  :accessor strategy-speed
+	  :initform 1.0d0
+	  :documentation
+	  "Stores the speed factor that should be applied to the
+results of scheduling events."))
   (:documentation
-   "This class is intended to be mixed into replay strategy
-classes perform time-based scheduling of replayed events."))
+   "This mixin class adds to timed replay strategy classes the ability
+to speed up or slow down replay speed by a constant factor."))
 
-(defmethod process-event :before ((connection         replay-bag-connection)
-				  (strategy           timed-replay-mixin)
-				  (timestamp          local-time:timestamp)
-				  (previous-timestamp local-time:timestamp)
-				  (event              t)
-				  (informer           t))
-  "Delay the publishing of EVENT for the amount of time computed by
-`schedule-event'."
-  (let ((amount (schedule-event strategy event previous-timestamp timestamp)))
-    (when (plusp amount)
-      (sleep amount))))
+(defmethod schedule-event :around ((strategy speed-adjustment-mixin)
+				   (event    t)
+				   (previous local-time:timestamp)
+				   (next     local-time:timestamp))
+  (/ (call-next-method) (strategy-speed strategy)))

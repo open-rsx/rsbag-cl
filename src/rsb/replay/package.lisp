@@ -64,6 +64,12 @@
 
    :sequential-mixin)
 
+  ;; speed adjustment protocol and mixin class
+  (:export
+   :strategy-speed
+
+   :speed-adjustment-mixin)
+
   ;; `recorded-timing' replay strategy class
   (:export
    :recorded-timing)
