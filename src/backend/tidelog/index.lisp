@@ -85,7 +85,8 @@ instances that produced lazily."))
 entries are sorted. The value nil indicates that entries are not
 sorted."))
   (:documentation
-   "TODO(jmoringe): document"))
+   "Instances of this class store mappings of indices and timestamps
+of entries to corresponding file offsets for one channel."))
 
 (defmethod initialize-instance :after ((instance index)
                                        &key
