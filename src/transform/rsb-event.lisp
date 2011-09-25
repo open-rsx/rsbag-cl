@@ -71,19 +71,19 @@ octet vectors."))
     ;; Add user meta-data.
     (iter (for (key value) on (rsb:event-meta-data domain-object) :by #'cddr)
 	  (vector-push-extend
-	   (make-instance 'rsb.protocol::user-info
+	   (make-instance 'rsb.protocol:user-info
 			  :key   (keyword->bytes key)
 			  :value (string->bytes value))
-	   (rsb.protocol::meta-data-user-infos meta-data)))
+	   (rsb.protocol:meta-data-user-infos meta-data)))
 
     ;; Add user timestamps.
     (iter (for (key value) on (rsb:event-timestamps domain-object) :by #'cddr)
 	  (unless (member key '(:create :send :receive :deliver))
 	    (vector-push-extend
-	     (make-instance 'rsb.protocol::user-time
+	     (make-instance 'rsb.protocol:user-time
 			    :key       (keyword->bytes key)
 			    :timestamp (timestamp->unix-microseconds value))
-	     (rsb.protocol::meta-data-user-times meta-data))))
+	     (rsb.protocol:meta-data-user-times meta-data))))
 
     (reinitialize-instance
      holder
@@ -93,7 +93,7 @@ octet vectors."))
      :scope           (string->bytes
 		       (rsb:scope-string (rsb:event-scope domain-object)))
      :method          (if (rsb:event-method domain-object)
-			  (string->bytes
+			  (keyword->bytes
 			   (rsb:event-method domain-object))
 			  (load-time-value
 			   (binio:make-octet-vector 0)))
@@ -103,18 +103,20 @@ octet vectors."))
 (defmethod decode ((transform rsb-event) (data simple-array))
   (pb:unpack data (%transform-holder transform))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 (meta-data (rsb.serialization::event-meta-data holder))
+	 (meta-data (rsb.serialization:event-meta-data holder))
 	 ;; Create output event.
 	 (event
 	  (make-instance
 	   'rsb:event
-	   :sequence-number   (rsb.serialization::event-sequence-number holder)
+	   :sequence-number   (rsb.serialization:event-sequence-number holder)
 	   :origin            (uuid:byte-array-to-uuid
-			       (rsb.serialization::event-sender-id holder))
+			       (rsb.serialization:event-sender-id holder))
 	   :scope             (bytes->string
-			       (rsb.serialization::event-scope holder))
-	   :method            nil
-	   :data              (rsb.serialization::event-data holder)
+			       (rsb.serialization:event-scope holder))
+	   :method            (unless (emptyp (rsb.serialization:event-method holder))
+				(bytes->keyword
+				 (rsb.serialization:event-method holder)))
+	   :data              (rsb.serialization:event-data holder)
 	   :create-timestamp? nil))
 	 ((:flet process-timestamp (name value))
 	  (unless (zerop value)
@@ -122,23 +124,23 @@ octet vectors."))
 		  (unix-microseconds->timestamp value)))))
 
     ;; Fill fixed timestamps.
-    (process-timestamp :create  (rsb.protocol::meta-data-create-time  meta-data))
-    (process-timestamp :send    (rsb.protocol::meta-data-send-time    meta-data))
-    (process-timestamp :receive (rsb.protocol::meta-data-receive-time meta-data))
-    (process-timestamp :deliver (rsb.protocol::meta-data-deliver-time meta-data))
+    (process-timestamp :create  (rsb.protocol:meta-data-create-time  meta-data))
+    (process-timestamp :send    (rsb.protocol:meta-data-send-time    meta-data))
+    (process-timestamp :receive (rsb.protocol:meta-data-receive-time meta-data))
+    (process-timestamp :deliver (rsb.protocol:meta-data-deliver-time meta-data))
 
     ;; Add user meta-data.
-    (iter (for item each (rsb.protocol::meta-data-user-infos meta-data))
+    (iter (for item each (rsb.protocol:meta-data-user-infos meta-data))
 	  (setf (rsb:meta-data
-		 event (bytes->keyword (rsb.protocol::user-info-key item)))
-		(bytes->string (rsb.protocol::user-info-value item))))
+		 event (bytes->keyword (rsb.protocol:user-info-key item)))
+		(bytes->string (rsb.protocol:user-info-value item))))
 
     ;; Add user timestamps.
-    (iter (for time each (rsb.protocol::meta-data-user-times meta-data))
+    (iter (for time each (rsb.protocol:meta-data-user-times meta-data))
 	  (setf (rsb:timestamp
-		 event (bytes->keyword (rsb.protocol::user-time-key time)))
+		 event (bytes->keyword (rsb.protocol:user-time-key time)))
 		(unix-microseconds->timestamp
-		 (rsb.protocol::user-time-timestamp time))))
+		 (rsb.protocol:user-time-timestamp time))))
 
     event))
 
