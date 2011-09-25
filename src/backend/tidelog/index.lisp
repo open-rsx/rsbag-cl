@@ -52,30 +52,38 @@ instances that produced lazily."))
 ;;
 
 (defclass index ()
-  ((channel :initarg  :channel
-	    :type     non-negative-integer
-	    :reader   index-channel
-	    :documentation
-	    "")
-   (entries :type     vector
-	    :accessor index-entries
-	    :documentation
-	    "")
-   (stream  :initarg  :stream
-	    :type     stream
-	    :reader   index-stream
-	    :documentation
-	    "")
-   (buffer  :type     indx
-	    :reader   index-buffer
-	    :initform (make-instance
-		       'indx
-		       :count   0
-		       :entries (make-array 1024
-					    :adjustable   t
-					    :fill-pointer 0))
-	    :documentation
-	    ""))
+  ((channel   :initarg  :channel
+	      :type     non-negative-integer
+	      :reader   index-channel
+	      :documentation
+	      "")
+   (entries   :type     vector
+	      :accessor index-entries
+	      :documentation
+	      "")
+   (stream    :initarg  :stream
+	      :type     stream
+	      :reader   index-stream
+	      :documentation
+	      "")
+   (buffer    :type     indx
+	      :reader   index-buffer
+	      :initform (make-instance
+			 'indx
+			 :count   0
+			 :entries (make-array 1024
+					      :adjustable   t
+					      :fill-pointer 0))
+	      :documentation
+	      "")
+   (sorted-to :initarg  :sorted-to
+	      :type     (or integer null)
+	      :accessor %index-sorted-to
+	      :initform 0
+	      :documentation
+	      "Stores the index into the entries vector up to which
+entries are sorted. The value nil indicates that entries are not
+sorted."))
   (:documentation
    "TODO(jmoringe): document"))
 
@@ -107,8 +115,9 @@ instances that produced lazily."))
 		      (timestamp integer)
 		      (offset    integer)
 		      (chunk-id  integer))
-  (bind (((:accessors-r/o (buffer  index-buffer)
-			  (entries index-entries)) index))
+  (bind (((:accessors-r/o (buffer    index-buffer)
+			  (entries   index-entries)
+			  (sorted-to %index-sorted-to)) index))
     ;; Add to entries.
     (vector-push-extend timestamp entries)
     (vector-push-extend offset    entries)
@@ -120,7 +129,13 @@ instances that produced lazily."))
 		    :chunk-id  chunk-id
 		    :timestamp timestamp
 		    :offset    offset)
-     (indx-entries buffer))))
+     (indx-entries buffer))
+
+    ;; Update sorted state.
+    (when sorted-to
+      (setf (%index-sorted-to index)
+	    (when (> timestamp sorted-to)
+	      timestamp)))))
 
 
 ;;; Buffereing
@@ -128,6 +143,15 @@ instances that produced lazily."))
 
 (defmethod write-buffer ((index  index)
 			 (buffer indx))
+  ;; If some timestamps have been inserted out of order, sort the
+  ;; entire index block now.
+  (unless (%index-sorted-to index)
+    (warn "~@<Sorting index block due to out-of-order ~
+insertions.~@:>")
+    (let ((entries (indx-entries buffer)))
+      (sort entries #'< :key #'index-entry-timestamp)
+      (setf (indx-entries buffer) entries)))
+
   (unless (zerop (indx-count buffer))
     (pack buffer (index-stream index)))
   (setf (indx-count buffer)                  0
