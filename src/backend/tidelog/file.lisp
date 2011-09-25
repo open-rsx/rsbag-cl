@@ -249,8 +249,11 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   "Encode the keyword or list TYPE as a channel type string."
   (etypecase type
     (null    "")
-    (keyword (string type))
-    (list    (format nil "~{~A~^:~}" type))))
+    (list    (let ((*package*   (find-package :keyword))
+		   (*readtable* (copy-readtable)))
+	       (setf (readtable-case *readtable*) :invert)
+	       (format nil "~{~A~^:~}" type)))
+    (keyword (string type))))
 
 (defun decode-type (type)
   "Decode the channel type string TYPE as nil, a keyword of a list of
@@ -260,13 +263,13 @@ type information."
      nil)
     ((find #\: type)
      (bind (((class-name &rest arg-strings) (split-sequence #\: type))
-	    (class (make-keyword class-name))
 	    (*package*   (find-package :keyword))
 	    (*readtable* (copy-readtable))
-	    (args (progn
-		    (setf (readtable-case *readtable*) :invert)
-		    (map 'list #'read-from-string arg-strings))))
-       (cons class args )))
+	    (class       (progn
+			   (setf (readtable-case *readtable*) :invert)
+			   (read-from-string class-name)))
+	    (args        (map 'list #'read-from-string arg-strings)))
+       (cons class args)))
     (t
      (make-keyword type))))
 
