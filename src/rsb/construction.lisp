@@ -148,7 +148,7 @@
 		 (if colon-index
 		     (subseq name 0 colon-index)
 		     name)))
-	 (uri  (puri:merge-uris name dest))
+	 (uri  (%make-playback-uri name dest))
 	 ((:plist type) (channel-meta-data source))
 	 (converter   (make-instance
 		       'rsb.converter:force-wire-schema
@@ -161,3 +161,25 @@
 		   :bag         (channel-bag source)
 		   :channels    (list source)
 		   :participant participant)))
+
+
+;;; Utility functions
+;;
+
+(defun %make-playback-uri (channel-name base-uri)
+  "Return a URI that is the result of merging CHANNEL-NAME and
+BASE-URI. Normalize the path component of BASE-URI and preserve query
+component of BASE-URI, if present."
+  (let ((base-uri (puri:copy-uri base-uri)))
+    ;; If BASE-URI has a path, ensure it ends with "/" to prevent
+    ;; `puri:merge-uri' from acting differently depending on whether
+    ;; there is a "/" or not.
+    (unless (ends-with #\/ (puri:uri-path base-uri))
+      (setf (puri:uri-path base-uri)
+	    (concatenate 'string (puri:uri-path base-uri) "/")))
+    (let ((result (puri:merge-uris channel-name base-uri)))
+      ;; Merging stomps on the query part, if any, of
+      ;; BASE-URI. Restore it afterward.
+      (when (puri:uri-query base-uri)
+	(setf (puri:uri-query result) (puri:uri-query base-uri)))
+      result)))
