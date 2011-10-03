@@ -71,3 +71,7 @@ represent the state of iterations which span multiple sequences."))
 (defmethod sequence:iterator-index ((sequence sequence)
 				    (iterator multi-sequence-iterator-mixin))
   (%iterator-index iterator))
+
+(defmethod print-object ((object multi-sequence-iterator-mixin) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~D" (%iterator-index object))))
