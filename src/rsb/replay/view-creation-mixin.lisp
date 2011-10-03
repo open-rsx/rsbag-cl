@@ -1,4 +1,4 @@
-;;; view-creation-mixin.lisp ---
+;;; view-creation-mixin.lisp --- Mixin class for creating multi-channel views.
 ;;
 ;; Copyright (C) 2011 Jan Moringen
 ;;
