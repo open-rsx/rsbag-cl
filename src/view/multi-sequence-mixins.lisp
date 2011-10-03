@@ -68,6 +68,6 @@ represent the state of iterations which span multiple sequences."))
 					  (from-end t))
   (incf (%iterator-index iterator) (if from-end -1 1)))
 
-(defmethod sequence:iterator-index ((sequence t)
+(defmethod sequence:iterator-index ((sequence sequence)
 				    (iterator multi-sequence-iterator-mixin))
   (%iterator-index iterator))
