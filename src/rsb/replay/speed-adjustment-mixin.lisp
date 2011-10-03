@@ -23,7 +23,7 @@
   ((speed :initarg  :speed
 	  :type     positive-real
 	  :accessor strategy-speed
-	  :initform 1.0d0
+	  :initform 1
 	  :documentation
 	  "Stores the speed factor that should be applied to the
 results of scheduling events."))
