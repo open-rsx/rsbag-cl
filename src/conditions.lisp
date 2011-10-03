@@ -25,6 +25,25 @@
    "This calls is intended to be mixed into all rsbag-related error
 condition classes."))
 
+(define-condition open-error (rsbag-error
+			      rsb:chainable-condition)
+  ((source :initarg  :source
+	   :reader   open-error-source
+	   :documentation
+	   "Stores the source from which the bag could not be
+opened."))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Failed to open bag in source ~
+~A.~/rsb::maybe-print-cause/~@:>" ;;; TODO(jmoringe): do not depend on cl-rsb for conditions
+	     (open-error-source             condition)
+	     (rsb:chainable-condition-cause condition))))
+  (:default-initargs
+   :source (required-argument :source))
+  (:documentation
+   "This error is signaled if a bag, stored in a specific source,
+cannot be opened."))
+
 (define-condition bag-error (rsbag-error)
   ((bag :initarg  :bag
 	:reader   bag-error-bag

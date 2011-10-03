@@ -31,6 +31,9 @@
   (:export
    :rsbag-error
 
+   :open-error
+   :open-error-source
+
    :bag-error
    :bag-error-bag
 

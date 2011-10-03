@@ -44,6 +44,15 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 ;;; Default behavior
 ;;
 
+(defmethod open-bag :around ((source t)
+			     &key &allow-other-keys)
+  (handler-bind
+      (((and error (not open-error)) #'(lambda (condition)
+					 (error 'open-error
+						:source source
+						:cause  condition))))
+    (call-next-method)))
+
 (defmethod open-bag ((source stream)
 		     &rest args
 		     &key
