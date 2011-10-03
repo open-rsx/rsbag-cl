@@ -45,13 +45,29 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 ;;
 
 (defmethod open-bag :around ((source t)
-			     &key &allow-other-keys)
+			     &rest args &key)
   (handler-bind
       (((and error (not open-error)) #'(lambda (condition)
 					 (error 'open-error
 						:source source
 						:cause  condition))))
-    (call-next-method)))
+    (iter (restart-case
+	      (return (apply #'call-next-method source args))
+	    (retry ()
+	      :report (lambda (stream)
+			(format stream "~@<Retry opening the bag ~
+stored in ~S.~@:>"
+				source)))
+	    (use-source (new-value)
+	      :report      (lambda (stream)
+			     (format stream "~@<Use a different source ~
+instead of ~S.~@:>"
+				     source))
+	      :interactive (lambda ()
+			     (format *query-io* "~@<Specify source (not evaluated): ~@:>")
+			     (force-output *query-io*)
+			     (list (read *query-io*)))
+	      (setf source new-value))))))
 
 (defmethod open-bag ((source stream)
 		     &rest args
