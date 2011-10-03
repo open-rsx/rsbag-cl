@@ -117,7 +117,8 @@ octet vectors."))
 				(bytes->keyword
 				 (rsb.serialization:event-method holder)))
 	   :data              (rsb.serialization:event-data holder)
-	   :create-timestamp? nil))
+	   :create-timestamp? nil
+	   :intern-scope?     t))
 	 ((:flet process-timestamp (name value))
 	  (unless (zerop value)
 	    (setf (rsb:timestamp event name)
