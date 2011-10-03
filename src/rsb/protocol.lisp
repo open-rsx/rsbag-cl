@@ -71,14 +71,40 @@ inspected using `rsbag.rsb:channel-strategy-classes'."))
 
 (defgeneric bag->events (source dest
 			 &rest args
-		         &key &allow-other-keys)
+		         &key
+			 backend
+			 bag-class
+			 replay-strategy
+			 start-index
+			 end-index
+			 channels
+			 &allow-other-keys)
   (:documentation
    "Make and return a connection between the channel or bag SOURCE and
 the RSB participant(s) DEST. When the connection is established,
 events are read from SOURCE and published via DEST. The keyword
 arguments ARGS are passed to the function constructing DEST, the
 function constructing SOURCE or the new connection depending on their
-keyword part."))
+keyword part.
+
+BACKEND can be used to explicitly select a file-format backend for
+SOURCE. If supplied, it has to be a keyword designating a file-format
+backend. Available backends can be inspected using
+`rsbag.backend:backend-classes'.
+
+If supplied, BAG-CLASS selects the class of the bag created for
+SOURCE.
+
+If supplied, REPLAY-STRATEGY selects a replay strategy that controls
+the replay timing and coordinates the publishing of events via
+informers.
+
+START-INDEX and END-INDEX can be used to select a range of stored
+events for replay. The default behavior consists in replaying all
+stored events.
+
+If supplied, CHANNELS selects a subset of channels from which events
+should be replayed."))
 
 
 ;;; Connection protocol
