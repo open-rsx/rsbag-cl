@@ -78,7 +78,7 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
     (apply #'open-bag stream
 	   :direction direction
 	   :backend   backend
-	   args)))
+	   (remove-from-plist args :direction :backend))))
 
 (defmethod open-bag ((source string)
 		     &rest args
