@@ -23,6 +23,18 @@
 ;;; Scan
 ;;
 
+(defmethod scan :around ((source t) (object t)
+			 &optional start)
+  (declare (ignore start))
+  (handler-bind
+      (((and error (not tidelog-condition))
+	#'(lambda (condition)
+	    (error 'invalid-file-structure
+		   :source           source
+		   :format-control   "~@<Failed to scan for block ~A: ~A~@:>"
+		   :format-arguments (list object (format nil "~A" condition))))))
+    (call-next-method)))
+
 (defmethod scan ((source stream) (object (eql :tide))
 		 &optional
 		 start)
@@ -63,6 +75,18 @@
 
 ;;;
 ;;
+
+(defmethod unpack :around ((source t) (object t)
+			   &optional start)
+  (declare (ignore start))
+  (handler-bind
+      (((and error (not tidelog-condition))
+	#'(lambda (condition)
+	    (error 'invalid-file-structure
+		   :source           source
+		   :format-control   "~@<Failed to unpack block ~A: ~A~@:>"
+		   :format-arguments (list object (format nil "~A" condition))))))
+    (call-next-method)))
 
 (defmethod unpack ((source stream) (object (eql :block-header))
 		   &optional

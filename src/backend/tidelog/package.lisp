@@ -28,6 +28,15 @@
    :rsbag
    :rsbag.backend)
 
+  ;; Conditions
+  (:export
+   :tidelog-condition
+
+   :log-file-error
+   :log-file-error-source
+
+   :invalid-file-structure)
+
   (:documentation
    "This package contains a cl-rsbag backend for the TIDE log file
 format as specified at https://retf.info/svn/drafts/rd-0001.txt."))

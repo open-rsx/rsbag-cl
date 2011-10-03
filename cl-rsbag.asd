@@ -272,6 +272,8 @@
   :components  ((:module     "tidelog"
 		 :pathname   "src/backend/tidelog"
 		 :components ((:file       "package")
+			      (:file       "conditions"
+			       :depends-on ("package"))
 			      (:file       "variables"
 			       :depends-on ("package"))
 
@@ -283,7 +285,8 @@
 			      (:file       "spec"
 			       :depends-on ("package" "macros"))
 			      (:file       "io"
-			       :depends-on ("package" "spec"))
+			       :depends-on ("package" "conditions"
+					    "spec"))
 
 			      (:file       "index"
 			       :depends-on ("package" "spec" "io"))
