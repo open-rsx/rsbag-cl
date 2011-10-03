@@ -86,4 +86,4 @@ default behavior is just ignoring the failed event. "
 			  (event              t)
 			  (informer           t))
   "The default behavior consists in sending EVENT via INFORMER."
-  (send informer event))
+  (send informer event :unchecked? t))
