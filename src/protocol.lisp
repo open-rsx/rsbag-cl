@@ -160,6 +160,11 @@ described by NAME META-DATA and ID."))
   (:documentation
    "Return the name of CHANNEL."))
 
+(defgeneric channel-transform (channel)
+  (:documentation
+   "Return the transformation applied to each datum retrieved from
+CHANNEL."))
+
 (defgeneric channel-timestamps (channel)
   (:documentation
    "Return a sequence of `local-time:timestamp' objects representing

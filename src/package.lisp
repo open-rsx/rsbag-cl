@@ -86,6 +86,7 @@
    :channel-id
    :channel-name
    :channel-meta-data
+   :channel-transform
 
    :channel-timestamps
    :channel-entries
