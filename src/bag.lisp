@@ -87,24 +87,28 @@ the `(setf bag-channel)' method. "))
 			       (name      string)
 			       &key
 			       (if-exists :error)
-			       transform)
-  (let ((channel (gethash name (%bag-channels bag))))
-    (when channel
-      (case if-exists
-	(:error     (error 'channel-exists
-			   :bag     bag
-			   :channel channel))
-	(:supersede (error "Superseding not implemented"))))) ;;; TODO(jmoringe): implement
+			       (transform (%make-channel-transform
+					   bag name new-value)))
+  ;; If a channel named NAME already exists, apply IF-EXISTS policy.
+  (when-let ((channel (gethash name (%bag-channels bag))))
+    (ecase if-exists
+      (:error     (error 'channel-exists
+			 :bag     bag
+			 :channel channel))
+      (:supersede (error "Superseding not implemented")))) ;;; TODO(jmoringe): implement
 
+  ;; If NEW-VALUE does not have a type, but TRANSFORM is non-nil,
+  ;; augment the meta-data with TRANSFORM's type. Make a channel
+  ;; instance and store it.
   (bind (((:accessors-r/o (channels %bag-channels)
 			  (backend  %bag-backend)) bag)
-	 (meta-data (append (when transform
-			      (list :type (transform-name transform)))
-			    new-value))
+	 (meta-data (if (and transform (not (getf new-value :type)))
+			(append (list :type (transform-name transform))
+				new-value)
+			new-value))
 	 (channel   (%make-channel bag name meta-data transform)))
     (put-channel backend (%channel-id channel) name meta-data)
-    (setf (gethash name channels) channel)
-    channel))
+    (setf (gethash name channels) channel)))
 
 (defmethod print-object ((object bag) stream)
   (bind (((:accessors-r/o (direction bag-direction)
