@@ -190,6 +190,10 @@ described by NAME META-DATA and ID."))
    "Return the transformation applied to each datum retrieved from
 CHANNEL."))
 
+(defgeneric channel-meta-data (channel)
+  (:documentation
+   "Return the meta-data associated to CHANNEL as plist."))
+
 (defgeneric channel-timestamps (channel)
   (:documentation
    "Return a sequence of `local-time:timestamp' objects representing
