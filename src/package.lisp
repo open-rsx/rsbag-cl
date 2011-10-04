@@ -86,10 +86,12 @@
    :channel
 
    :channel-bag
-   :channel-id
    :channel-name
    :channel-meta-data
    :channel-transform
+
+   :%channel-id
+   :%channel-backend
 
    :channel-timestamps
    :channel-entries
