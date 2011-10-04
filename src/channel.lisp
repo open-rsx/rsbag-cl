@@ -130,9 +130,11 @@ timestamps and entries."
 
 (defmethod print-object ((object channel) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~S (~D)"
-	    (channel-name object)
-	    (length       object))))
+    (format stream "~S (~D)~@[ ~A~]"
+	    (channel-name      object)
+	    (length            object)
+	    (when-let ((transform (channel-transform object)))
+	      (rsbag.transform:transform-name transform)))))
 
 
 ;;; Time range protocol
