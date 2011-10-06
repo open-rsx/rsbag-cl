@@ -125,9 +125,11 @@
 	  (apply #'bag->events channel dest
 		 (remove-from-plist args :replay-strategy)))
 	 (connections (map 'list #'do-channel channels))
-	 (strategy    (make-replay-strategy replay-strategy
-					    :start-index start-index
-					    :end-index   end-index)))
+	 ((class &rest args) (ensure-list replay-strategy))
+	 (strategy (apply #'make-replay-strategy class
+			  :start-index start-index
+			  :end-index   end-index
+			  args)))
     (make-instance 'replay-bag-connection
 		   :bag      source
 		   :channels connections
