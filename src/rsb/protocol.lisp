@@ -207,10 +207,11 @@ timing.")
 strategy designated by THING."))
 
 (defmethod make-replay-strategy ((thing symbol) &rest args)
-  (if (keywordp thing)
-      (apply #'make-replay-strategy
-	     (find-replay-strategy-class thing) args)
-      (apply #'make-replay-strategy (find-class thing) args)))
+  (apply #'make-replay-strategy
+	 (if (keywordp thing)
+	     (find-replay-strategy-class thing)
+	     (find-class thing))
+	  args))
 
 (defmethod make-replay-strategy ((thing class) &rest args)
   (apply #'make-instance thing args))
@@ -263,10 +264,11 @@ and allocation strategies.")
 strategy designated by THING."))
 
 (defmethod make-channel-strategy ((thing symbol) &rest args)
-  (if (keywordp thing)
-      (apply #'make-channel-strategy
-	     (find-channel-strategy-class thing) args)
-      (apply #'make-channel-strategy (find-class thing) args)))
+  (apply #'make-channel-strategy
+	 (if (keywordp thing)
+	     (find-channel-strategy-class thing)
+	     (find-class thing))
+	 args))
 
 (defmethod make-channel-strategy ((thing class) &rest args)
   (apply #'make-instance thing args))
