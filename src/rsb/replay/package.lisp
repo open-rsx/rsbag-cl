@@ -31,6 +31,7 @@
   (:use
    :cl
    :alexandria
+   :split-sequence
    :bind
    :iterate
 
@@ -99,6 +100,13 @@
   ;; `remote-controlled' replay strategy class
   (:export
    :remote-controlled)
+
+  ;; `interactive' replay strategy class
+  (:export
+   :interactive
+
+   :strategy-stream
+   :strategy-previous-command)
 
   (:documentation
    "This package contains supporting infrastructure and replay

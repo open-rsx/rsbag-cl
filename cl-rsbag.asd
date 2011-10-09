@@ -220,6 +220,9 @@
 			      (:file       "as-fast-as-possible"
 			       :depends-on ("package" "sequential-mixin"
 					    "error-policy-mixin"))
+			      (:file       "interactive"
+			       :depends-on ("package" "external-driver-mixin"
+					    "error-policy-mixin"))
 			      (:file       "remote-controlled"
 			       :depends-on ("package" "external-driver-mixin"
 					    "error-policy-mixin")))))
