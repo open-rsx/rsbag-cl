@@ -29,10 +29,14 @@
 (defclass scope-and-type ()
   ()
   (:documentation
-   "Instances of this strategy class allocate a separate channel for
-each combination of RSB scope and wire-schema. The channel allocation
-for a given combination is performed when the first event exhibiting
-that combination is processed."))
+   "This strategy allocates a separate channel for each combination of
+RSB scope and wire-schema. The channel allocation for a given
+combination is performed when the first event exhibiting that
+combination is processed.
+
+As an example, an event on scope /foo/bar/ with wire-schema
+\".rst.Image\" would be stored in a channel called
+\"/foo/bar/:.rst.Image\"."))
 
 (defmethod channel-name-for ((connection channel-connection)
 			     (event      event)
