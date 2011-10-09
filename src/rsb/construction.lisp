@@ -34,7 +34,8 @@
    :bag         dest
    :channels    nil
    :participant source
-   :strategy    (make-channel-strategy channel-strategy)))
+   :strategy    (apply #'make-channel-strategy
+		       (ensure-list channel-strategy))))
 
 (defmethod events->bag ((source puri:uri)
 			(dest   bag)
