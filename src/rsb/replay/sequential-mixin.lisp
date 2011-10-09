@@ -51,7 +51,8 @@ and processes all elements of the sequence by sequential calls to
 	  (process-event connection strategy
 			 timestamp previous-timestamp
 			 event informer)
-	  (funcall update-progress i timestamp))))
+	  (when update-progress
+	    (funcall update-progress i timestamp)))))
 
 (defmethod process-event :around ((connection         replay-bag-connection)
 				  (strategy           sequential-mixin)

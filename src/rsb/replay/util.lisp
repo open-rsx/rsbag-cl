@@ -56,12 +56,10 @@ sequence."))
 (defun %make-progress-reporter (sequence callback)
   "Return a function with two parameters that calls CALLBACK in the
 appropriate way if CALLBACK is non-nil"
-  (if callback
-      (bind (((start end) (list 0 (1- (length sequence)))))
-	#'(lambda (index timestamp)
-	    (funcall callback
-		     (/ (1+ (- index start)) (- (1+ end) start))
-		     index start end
-		     timestamp)))
+  (when callback
+    (bind (((start end) (list 0 (1- (length sequence)))))
       #'(lambda (index timestamp)
-	  (declare (ignore index timestamp)))))
+	  (funcall callback
+		   (/ (1+ (- index start)) (- (1+ end) start))
+		   index start end
+		   timestamp)))))

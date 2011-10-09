@@ -159,8 +159,7 @@ and executes them until termination is requested."))
 	    (process-event connection strategy
 			   timestamp previous-timestamp
 			   event informer)
-	    (setf previous-timestamp timestamp)
-	    (funcall update-progress (index) timestamp)))
+	    (setf previous-timestamp timestamp)))
 	 ((:flet terminate ())
 	  (setf terminate? t)))
 
@@ -174,4 +173,6 @@ and executes them until termination is requested."))
 
     (iter (until terminate?)
 	  (for command next (next-command strategy))
-	  (execute-command strategy command))))
+	  (execute-command strategy command)
+	  (when update-progress
+	    (funcall update-progress (index) (first (element)))))))
