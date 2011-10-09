@@ -208,6 +208,8 @@
 			      (:file       "timed-replay-mixin"
 			       :depends-on ("package" "sequential-mixin"
 					    "speed-adjustment-mixin"))
+			      (:file       "external-driver-mixin"
+			       :depends-on ("package" "sequential-mixin"))
 
 			      (:file       "recorded-timing"
 			       :depends-on ("package" "timed-replay-mixin"

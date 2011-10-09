@@ -70,6 +70,16 @@
 
    :speed-adjustment-mixin)
 
+  ;; external driver protocol and mixin class
+  (:export
+   :make-commands
+   :strategy-commands
+   :find-command
+   :next-command
+   :execute-command
+
+   :external-driver-mixin)
+
   ;; `recorded-timing' replay strategy class
   (:export
    :recorded-timing)
