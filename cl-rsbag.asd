@@ -219,6 +219,9 @@
 					    "error-policy-mixin"))
 			      (:file       "as-fast-as-possible"
 			       :depends-on ("package" "sequential-mixin"
+					    "error-policy-mixin"))
+			      (:file       "remote-controlled"
+			       :depends-on ("package" "external-driver-mixin"
 					    "error-policy-mixin")))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))

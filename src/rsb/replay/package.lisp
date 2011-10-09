@@ -39,7 +39,8 @@
    :rsbag.view
    :rsbag.rsb
 
-   :rsb)
+   :rsb
+   :rsb.patterns)
 
   ;; `error-policy-mixin' mixin class
   (:export
@@ -94,6 +95,10 @@
   ;; `as-fast-as-possible' replay strategy class
   (:export
    :as-fast-as-possible)
+
+  ;; `remote-controlled' replay strategy class
+  (:export
+   :remote-controlled)
 
   (:documentation
    "This package contains supporting infrastructure and replay
