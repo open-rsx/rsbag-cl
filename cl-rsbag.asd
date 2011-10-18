@@ -210,13 +210,17 @@
 					    "speed-adjustment-mixin"))
 			      (:file       "external-driver-mixin"
 			       :depends-on ("package" "sequential-mixin"))
+			      (:file       "delay-correcting-mixin"
+			       :depends-on ("package"))
 
 			      (:file       "recorded-timing"
 			       :depends-on ("package" "timed-replay-mixin"
-					    "error-policy-mixin"))
+					    "error-policy-mixin"
+					    "delay-correcting-mixin"))
 			      (:file       "fixed-rate"
 			       :depends-on ("package" "timed-replay-mixin"
-					    "error-policy-mixin"))
+					    "error-policy-mixin"
+					    "delay-correcting-mixin"))
 			      (:file       "as-fast-as-possible"
 			       :depends-on ("package" "sequential-mixin"
 					    "error-policy-mixin"))

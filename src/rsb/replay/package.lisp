@@ -82,6 +82,13 @@
 
    :external-driver-mixin)
 
+  ;; `delay-correcting-mixin' mixin class
+  (:export
+   :delay-correcting-mixin
+
+   :strategy-previous-delay
+   :strategy-previous-call)
+
   ;; `recorded-timing' replay strategy class
   (:export
    :recorded-timing)

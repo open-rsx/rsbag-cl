@@ -19,7 +19,6 @@
 
 (in-package :rsbag.rsb.replay)
 
-
 
 ;;; `recorded-timing' replay strategy class
 ;;
@@ -28,7 +27,8 @@
   (find-class 'recorded-timing))
 
 (defclass recorded-timing (error-policy-mixin
-			   timed-replay-mixin)
+			   timed-replay-mixin
+			   delay-correcting-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded and,

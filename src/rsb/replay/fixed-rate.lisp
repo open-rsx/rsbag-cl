@@ -19,7 +19,6 @@
 
 (in-package :rsbag.rsb.replay)
 
-
 
 ;;; `fixed-rate' replay strategy class
 ;;
@@ -28,7 +27,8 @@
   (find-class 'fixed-rate))
 
 (defclass fixed-rate (error-policy-mixin
-		      timed-replay-mixin)
+		      timed-replay-mixin
+		      delay-correcting-mixin)
   ((delay :initarg  :delay
 	  :type     positive-real
 	  :accessor strategy-delay
