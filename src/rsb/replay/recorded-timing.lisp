@@ -28,7 +28,8 @@
 
 (defclass recorded-timing (error-policy-mixin
 			   timed-replay-mixin
-			   delay-correcting-mixin)
+			   delay-correcting-mixin
+			   speed-adjustment-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded and,

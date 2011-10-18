@@ -19,8 +19,7 @@
 
 (in-package :rsbag.rsb.replay)
 
-(defclass timed-replay-mixin (sequential-mixin
-			      speed-adjustment-mixin)
+(defclass timed-replay-mixin (sequential-mixin)
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy
