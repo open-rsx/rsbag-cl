@@ -101,24 +101,28 @@ octet vectors."))
     (pb:pack* holder)))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
-  (pb:unpack data (%transform-holder transform))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
 	 (meta-data (rsb.serialization:event-meta-data holder))
 	 ;; Create output event.
 	 (event
-	  (make-instance
-	   'rsb:event
-	   :sequence-number   (rsb.serialization:event-sequence-number holder)
-	   :origin            (uuid:byte-array-to-uuid
-			       (rsb.serialization:event-sender-id holder))
-	   :scope             (bytes->string
-			       (rsb.serialization:event-scope holder))
-	   :method            (unless (emptyp (rsb.serialization:event-method holder))
-				(bytes->keyword
-				 (rsb.serialization:event-method holder)))
-	   :data              (rsb.serialization:event-data holder)
-	   :create-timestamp? nil
-	   :intern-scope?     t))
+	  (progn
+	    (setf (fill-pointer (rsb.protocol:meta-data-user-infos meta-data)) 0
+		  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0)
+	    (pb:unpack data holder)
+
+	    (make-instance
+	     'rsb:event
+	     :sequence-number   (rsb.serialization:event-sequence-number holder)
+	     :origin            (uuid:byte-array-to-uuid
+				 (rsb.serialization:event-sender-id holder))
+	     :scope             (bytes->string
+				 (rsb.serialization:event-scope holder))
+	     :method            (unless (emptyp (rsb.serialization:event-method holder))
+				  (bytes->keyword
+				   (rsb.serialization:event-method holder)))
+	     :data              (rsb.serialization:event-data holder)
+	     :create-timestamp? nil
+	     :intern-scope?     t)))
 	 ((:flet process-timestamp (name value))
 	  (unless (zerop value)
 	    (setf (rsb:timestamp event name)
