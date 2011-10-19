@@ -147,10 +147,9 @@
   (bind ((name (if (starts-with #\/ (channel-name source))
 		   (subseq (channel-name source) 1)
 		   (channel-name source)))
-	 (name (let ((colon-index (position #\: name)))
-		 (if colon-index
-		     (subseq name 0 colon-index)
-		     name)))
+	 (name (if-let ((colon-index (position #\: name)))
+		 (subseq name 0 colon-index)
+		 name))
 	 (uri  (%make-playback-uri name dest))
 	 ((:plist type) (channel-meta-data source))
 	 (converter   (make-instance
