@@ -53,7 +53,8 @@ octet vectors."))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 (meta-data (rsb.serialization:event-meta-data holder))
+	 ((:accessors-r/o (causes    rsb.serialization:event-causes)
+			  (meta-data rsb.serialization:event-meta-data)) holder)
 	 ((:flet process-timestamp (name))
 	  (let ((value (rsb:timestamp domain-object name)))
 	    (if value
@@ -85,6 +86,15 @@ octet vectors."))
 			    :timestamp (timestamp->unix-microseconds value))
 	     (rsb.protocol:meta-data-user-times meta-data))))
 
+    ;; Encode causes
+    (setf (fill-pointer causes) 0)
+    (iter (for (origin . sequence-number) in (rsb:event-causes domain-object))
+	  (vector-push-extend
+	   (make-instance 'rsb.serialization:event-id
+			  :sender-id       (uuid:uuid-to-byte-array origin)
+			  :sequence-number sequence-number)
+	   causes))
+
     (reinitialize-instance
      holder
      :sequence-number (rsb:event-sequence-number domain-object)
@@ -101,13 +111,19 @@ octet vectors."))
     (pb:pack* holder)))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
-  (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 (meta-data (rsb.serialization:event-meta-data holder))
+  (bind (((:flet decode-event-id (id))
+	  (cons (uuid:byte-array-to-uuid
+		 (rsb.serialization:event-id-sender-id id))
+		(rsb.serialization:event-id-sequence-number id)))
+	 ((:accessors-r/o (holder %transform-holder)) transform)
+	 ((:accessors-r/o (meta-data rsb.serialization:event-meta-data)
+			  (causes    rsb.serialization:event-causes)) holder)
 	 ;; Create output event.
 	 (event
 	  (progn
 	    (setf (fill-pointer (rsb.protocol:meta-data-user-infos meta-data)) 0
-		  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0)
+		  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0
+		  (fill-pointer causes)                                        0)
 	    (pb:unpack data holder)
 
 	    (make-instance
@@ -121,6 +137,8 @@ octet vectors."))
 				  (bytes->keyword
 				   (rsb.serialization:event-method holder)))
 	     :data              (rsb.serialization:event-data holder)
+	     :causes            (map 'list #'decode-event-id
+				     (rsb.serialization:event-causes holder))
 	     :create-timestamp? nil
 	     :intern-scope?     t)))
 	 ((:flet process-timestamp (name value))
