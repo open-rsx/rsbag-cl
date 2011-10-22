@@ -35,7 +35,7 @@
 (defconstant +version-major+ 0
   "Major component of version number.")
 
-(defconstant +version-minor+ 1
+(defconstant +version-minor+ 6
   "Minor component of version number.")
 
 (defconstant +version-revision+ 0
@@ -71,7 +71,7 @@
 
 		:cl-protobuf
 
-		(:version :cl-rsb "0.5.0"))
+		(:version :cl-rsb #.(version/string)))
   :components  ((:module     "backend"
 		 :pathname   "src/backend"
 		 :components ((:file       "package")
@@ -239,7 +239,7 @@
   :version     #.(version/string)
   :license     "GPL3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
-  :depends-on  (:cl-rsbag
+  :depends-on  ((:version :cl-rsbag #.(version/string))
 		:lift)
   :components  ((:module     "test"
 		 :components ((:file       "package")
@@ -277,10 +277,10 @@
 (defsystem :cl-rsbag-tidelog
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
-  :version     "0.1.0"
+  :version     #.(version/string)
   :license     "GPL3; see COPYING file for details."
   :description "TIDE log file format backend for cl-rsbag."
-  :depends-on  (:cl-rsbag)
+  :depends-on  ((:version :cl-rsbag #.(version/string)))
   :components  ((:module     "tidelog"
 		 :pathname   "src/backend/tidelog"
 		 :components ((:file       "package")
