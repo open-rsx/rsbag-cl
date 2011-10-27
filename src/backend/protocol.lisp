@@ -23,6 +23,10 @@
 ;;; Backend protocol
 ;;
 
+(defgeneric source-name (backend)
+  (:documentation
+   "TODO(jmoringe): document"))
+
 (defgeneric get-channels (backend)
   (:documentation
    "Return the list of channels that are stored in the data source
