@@ -147,11 +147,14 @@
 		 :depends-on ("transform")
 		 :components ((:protocol-buffer-descriptor-directory "protocol"
 			       :pathname   "data"
-			       :components ((:file       "MetaData"
-					     :pathname   "rsb/protocol/MetaData")
-					    (:file       "Event"
-					     :pathname   "rsb/serialization/Event"
-					     :depends-on ("MetaData"))))
+			       :components ((:file       "EventId"
+					     :pathname   "rsb/protocol/EventId")
+					    (:file       "EventMetaData"
+					     :pathname   "rsb/protocol/EventMetaData"
+					     :depends-on ("EventId"))
+					    (:file       "Notification"
+					     :pathname   "rsb/protocol/Notification"
+					     :depends-on ("EventId" "EventMetaData"))))
 
 			      (:file       "transform"
 			       :pathname   "src/transform/rsb-event"

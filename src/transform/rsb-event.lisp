@@ -38,7 +38,7 @@
 		"Stores the associated wire-schema of (de)serialized
 events.")
    (holder      :reader   %transform-holder
-		:initform (make-instance 'rsb.serialization:event)
+		:initform (make-instance 'rsb.protocol:notification)
 		:documentation
 		"Stores a data-holder instance that is reused
 during (de)serialization for efficiency reasons."))
@@ -53,8 +53,8 @@ octet vectors."))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (causes    rsb.serialization:event-causes)
-			  (meta-data rsb.serialization:event-meta-data)) holder)
+	 ((:accessors-r/o (causes    rsb.protocol:notification-causes)
+			  (meta-data rsb.protocol:notification-meta-data)) holder)
 	 ((:flet process-timestamp (name))
 	  (let ((value (rsb:timestamp domain-object name)))
 	    (if value
@@ -66,8 +66,8 @@ octet vectors."))
 			   :send-time    (process-timestamp :send)
 			   :receive-time (process-timestamp :receive)
 			   :deliver-time (process-timestamp :deliver))
-    (setf (fill-pointer (rsb.protocol:meta-data-user-infos meta-data)) 0
-	  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0)
+    (setf (fill-pointer (rsb.protocol:event-meta-data-user-infos meta-data)) 0
+	  (fill-pointer (rsb.protocol:event-meta-data-user-times meta-data)) 0)
 
     ;; Add user meta-data.
     (iter (for (key value) on (rsb:event-meta-data domain-object) :by #'cddr)
@@ -75,7 +75,7 @@ octet vectors."))
 	   (make-instance 'rsb.protocol:user-info
 			  :key   (keyword->bytes key)
 			  :value (string->bytes value))
-	   (rsb.protocol:meta-data-user-infos meta-data)))
+	   (rsb.protocol:event-meta-data-user-infos meta-data)))
 
     ;; Add user timestamps.
     (iter (for (key value) on (rsb:event-timestamps domain-object) :by #'cddr)
@@ -84,13 +84,13 @@ octet vectors."))
 	     (make-instance 'rsb.protocol:user-time
 			    :key       (keyword->bytes key)
 			    :timestamp (timestamp->unix-microseconds value))
-	     (rsb.protocol:meta-data-user-times meta-data))))
+	     (rsb.protocol:event-meta-data-user-times meta-data))))
 
     ;; Encode causes
     (setf (fill-pointer causes) 0)
     (iter (for (origin . sequence-number) in (rsb:event-causes domain-object))
 	  (vector-push-extend
-	   (make-instance 'rsb.serialization:event-id
+	   (make-instance 'rsb.protocol:event-id
 			  :sender-id       (uuid:uuid-to-byte-array origin)
 			  :sequence-number sequence-number)
 	   causes))
@@ -113,32 +113,33 @@ octet vectors."))
 (defmethod decode ((transform rsb-event) (data simple-array))
   (bind (((:flet decode-event-id (id))
 	  (cons (uuid:byte-array-to-uuid
-		 (rsb.serialization:event-id-sender-id id))
-		(rsb.serialization:event-id-sequence-number id)))
+		 (rsb.protocol:event-id-sender-id id))
+		(rsb.protocol:event-id-sequence-number id)))
 	 ((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (meta-data rsb.serialization:event-meta-data)
-			  (causes    rsb.serialization:event-causes)) holder)
+	 ((:accessors-r/o (id        rsb.protocol:notification-event-id)
+			  (meta-data rsb.protocol:notification-meta-data)
+			  (causes    rsb.protocol:notification-causes)) holder)
 	 ;; Create output event.
 	 (event
 	  (progn
-	    (setf (fill-pointer (rsb.protocol:meta-data-user-infos meta-data)) 0
-		  (fill-pointer (rsb.protocol:meta-data-user-times meta-data)) 0
-		  (fill-pointer causes)                                        0)
+	    (setf (fill-pointer (rsb.protocol:event-meta-data-user-infos meta-data)) 0
+		  (fill-pointer (rsb.protocol:event-meta-data-user-times meta-data)) 0
+		  (fill-pointer causes)                                              0)
 	    (pb:unpack data holder)
 
 	    (make-instance
 	     'rsb:event
-	     :sequence-number   (rsb.serialization:event-sequence-number holder)
+	     :sequence-number   (rsb.protocol:event-id-sequence-number id)
 	     :origin            (uuid:byte-array-to-uuid
-				 (rsb.serialization:event-sender-id holder))
+				 (rsb.protocol:event-id-sender-id id))
 	     :scope             (bytes->string
-				 (rsb.serialization:event-scope holder))
-	     :method            (unless (emptyp (rsb.serialization:event-method holder))
+				 (rsb.protocol:notification-scope holder))
+	     :method            (unless (emptyp (rsb.protocol:notification-method holder))
 				  (bytes->keyword
-				   (rsb.serialization:event-method holder)))
-	     :data              (rsb.serialization:event-data holder)
+				   (rsb.protocol:notification-method holder)))
+	     :data              (rsb.protocol:notification-data holder)
 	     :causes            (map 'list #'decode-event-id
-				     (rsb.serialization:event-causes holder))
+				     (rsb.protocol:notification-causes holder))
 	     :create-timestamp? nil
 	     :intern-scope?     t)))
 	 ((:flet process-timestamp (name value))
@@ -147,19 +148,19 @@ octet vectors."))
 		  (unix-microseconds->timestamp value)))))
 
     ;; Fill fixed timestamps.
-    (process-timestamp :create  (rsb.protocol:meta-data-create-time  meta-data))
-    (process-timestamp :send    (rsb.protocol:meta-data-send-time    meta-data))
-    (process-timestamp :receive (rsb.protocol:meta-data-receive-time meta-data))
-    (process-timestamp :deliver (rsb.protocol:meta-data-deliver-time meta-data))
+    (process-timestamp :create  (rsb.protocol:event-meta-data-create-time  meta-data))
+    (process-timestamp :send    (rsb.protocol:event-meta-data-send-time    meta-data))
+    (process-timestamp :receive (rsb.protocol:event-meta-data-receive-time meta-data))
+    (process-timestamp :deliver (rsb.protocol:event-meta-data-deliver-time meta-data))
 
     ;; Add user meta-data.
-    (iter (for item each (rsb.protocol:meta-data-user-infos meta-data))
+    (iter (for item each (rsb.protocol:event-meta-data-user-infos meta-data))
 	  (setf (rsb:meta-data
 		 event (bytes->keyword (rsb.protocol:user-info-key item)))
 		(bytes->string (rsb.protocol:user-info-value item))))
 
     ;; Add user timestamps.
-    (iter (for time each (rsb.protocol:meta-data-user-times meta-data))
+    (iter (for time each (rsb.protocol:event-meta-data-user-times meta-data))
 	  (setf (rsb:timestamp
 		 event (bytes->keyword (rsb.protocol:user-time-key time)))
 		(unix-microseconds->timestamp
