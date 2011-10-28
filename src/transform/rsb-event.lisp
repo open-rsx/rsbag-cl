@@ -53,13 +53,21 @@ octet vectors."))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (causes    rsb.protocol:notification-causes)
-			  (meta-data rsb.protocol:notification-meta-data)) holder)
+	 ((:accessors-r/o (id        rsb.protocol:notification-event-id)
+			  (meta-data rsb.protocol:notification-meta-data)
+			  (causes    rsb.protocol:notification-causes)) holder)
 	 ((:flet process-timestamp (name))
 	  (let ((value (rsb:timestamp domain-object name)))
 	    (if value
 		(timestamp->unix-microseconds value)
 		0))))
+    ;; Prepare event id
+    (reinitialize-instance
+     id
+     :sender-id       (uuid:uuid-to-byte-array
+		       (rsb:event-origin domain-object))
+     :sequence-number (rsb:event-sequence-number domain-object))
+
     ;; Prepare meta-data container.
     (reinitialize-instance meta-data
 			   :create-time  (process-timestamp :create)
@@ -97,9 +105,6 @@ octet vectors."))
 
     (reinitialize-instance
      holder
-     :sequence-number (rsb:event-sequence-number domain-object)
-     :sender-id       (uuid:uuid-to-byte-array
-		       (rsb:event-origin domain-object))
      :scope           (string->bytes
 		       (rsb:scope-string (rsb:event-scope domain-object)))
      :method          (if (rsb:event-method domain-object)
