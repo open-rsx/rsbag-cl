@@ -107,9 +107,9 @@ according to their timestamps."))
 
 (defmethod sequence:make-simple-sequence-iterator ((view serialized)
 						   &key
+						   from-end
 						   (start   0)
-						   end
-						   from-end)
+						   end)
   (bind (((:accessors-r/o (sequences view-sequences)
 			  (compare   view-compare)
 			  (key       view-key)) view)
@@ -125,7 +125,7 @@ according to their timestamps."))
 		    :compare   compare)))
     (iter (repeat start)
 	  (setf iterator (sequence:iterator-step view iterator from-end)))
-    (values iterator end from-end)))
+    (values iterator (or end (length view)) from-end)))
 
 
 ;;; `serialized-iterator' class
