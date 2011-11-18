@@ -63,10 +63,16 @@ iteration states.")
    "This class is intended to be mixed into iterator classes that
 represent the state of iterations which span multiple sequences."))
 
-(defmethod sequence:iterator-step :after ((sequence t)
+(defmethod sequence:iterator-step :after ((sequence sequence)
 					  (iterator multi-sequence-iterator-mixin)
 					  (from-end t))
   (incf (%iterator-index iterator) (if from-end -1 1)))
+
+(defmethod sequence:iterator-endp ((sequence sequence)
+				   (iterator multi-sequence-iterator-mixin)
+				   (limit    t)
+				   (from-end t))
+  (= (%iterator-index iterator) limit))
 
 (defmethod sequence:iterator-index ((sequence sequence)
 				    (iterator multi-sequence-iterator-mixin))

@@ -125,7 +125,7 @@ according to their timestamps."))
 		    :compare   compare)))
     (iter (repeat start)
 	  (setf iterator (sequence:iterator-step view iterator from-end)))
-    iterator))
+    (values iterator end from-end)))
 
 
 ;;; `serialized-iterator' class
@@ -152,7 +152,8 @@ are serialized views on multiple sequences."))
 				   (iterator serialized-iterator)
 				   (limit    t)
 				   (from-end t))
-  (null (first (%iterator-current iterator))))
+  (or (null (first (%iterator-current iterator)))
+      (call-next-method)))
 
 (defmethod sequence:iterator-step ((sequence serialized)
 				   (iterator serialized-iterator)
