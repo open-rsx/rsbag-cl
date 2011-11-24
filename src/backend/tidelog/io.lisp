@@ -26,6 +26,7 @@
 (defmethod scan :around ((source t) (object t)
 			 &optional start)
   (declare (ignore start))
+
   (handler-bind
       (((and error (not tidelog-condition))
 	#'(lambda (condition)
@@ -35,9 +36,16 @@
 		   :format-arguments (list object (format nil "~A" condition))))))
     (call-next-method)))
 
+(defmethod scan :before ((source stream) (object t)
+			 &optional start)
+  "Seek to position START before starting to scan."
+  (when start
+    (file-position source start)))
+
 (defmethod scan ((source stream) (object (eql :tide))
-		 &optional
-		 start)
+		 &optional start)
+  (declare (ignore start))
+
   ;; Consume the TIDE block.
   (unpack source :block)
   ;; Scan through remaining blocks.
@@ -50,8 +58,9 @@
 	(finally (return (values channels indices chunks)))))
 
 (defmethod scan ((source stream) (object (eql :block))
-		 &optional
-		   start)
+		 &optional start)
+  (declare (ignore start))
+
   (bind ((offset (file-position source))
 	 ((:values name length) (unpack source :block-header))
 	 (name (intern name #.*package*)))
@@ -79,6 +88,7 @@
 (defmethod unpack :around ((source t) (object t)
 			   &optional start)
   (declare (ignore start))
+
   (handler-bind
       (((and error (not tidelog-condition))
 	#'(lambda (condition)
@@ -88,18 +98,27 @@
 		   :format-arguments (list object (format nil "~A" condition))))))
     (call-next-method)))
 
+(defmethod unpack :before ((source stream) (object t)
+			   &optional start)
+  "Seek to position START before unpacking into OBJECT."
+  (when start
+    (file-position source start)))
+
 (defmethod unpack ((source stream) (object (eql :block-header))
-		   &optional
-		   start)
+		   &optional start)
+  (declare (ignore start))
+
   (let ((header (binio:make-octet-vector 12)))
     (unless (= (read-sequence header source) 12)
-      (error "Could not read block header"))
+      (error "~@<Could not read complete block header at position ~D.~@>"
+	     (file-position source)))
     (values (binio:decode-utf8 header 0 4) ;;; TODO(jmoringe): bottleneck
 	    (binio:decode-uint64-le header 4))))
 
 (defmethod unpack ((source stream) (object (eql :block))
-		   &optional
-		   start)
+		   &optional start)
+  (declare (ignore start))
+
   (bind (((:values name length) (unpack source :block-header))
 	 (object (make-instance (intern name #.*package*))) ;;; TODO(jmoringe): bottleneck
 	 (buffer (binio:make-octet-vector
@@ -112,8 +131,9 @@
 ;;
 
 (defmethod pack ((object standard-object) (source stream)
-		 &optional
-		 start)
+		 &optional start)
+  (declare (ignore start))
+
   (bind ((name   (string (class-name (class-of object))))
 	 (length (size object))
 	 (buffer (binio:make-octet-vector length))) ;;; TODO(jmoringe): hack
@@ -122,8 +142,9 @@
     (write-sequence buffer source)))
 
 (defmethod pack ((object cons) (source stream)
-		 &optional
-		 start)
+		 &optional start)
+  (declare (ignore start))
+
   (bind (((kind . length) object)
 	 (header (binio:make-octet-vector 12)))
     (binio:encode-utf8 kind header 0)
