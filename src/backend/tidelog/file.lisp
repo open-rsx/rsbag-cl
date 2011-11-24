@@ -208,7 +208,10 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod write-buffer ((file   file)
 			 (buffer chnk))
+  ;; We abused chnk-count to store the size of the chunk instead of
+  ;; the number of entries. Correct this before writing the chunk.
   (unless (zerop (chnk-count buffer))
+    (setf (chnk-count buffer) (length (chnk-entries buffer)))
     (pack buffer (backend-stream file))))
 
 
@@ -227,13 +230,13 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defun make-channel (chan)
   (let ((type (decode-type (chan-type chan))))
-   (list (chan-id chan)
-	 (chan-name chan)
-	 (append (when type
-		   (list :type type))
-		 (list :source-name   (chan-source-name   chan)
-		       :source-config (chan-source-config chan)
-		       :format        (chan-format        chan))))))
+    (list (chan-id chan)
+	  (chan-name chan)
+	  (append (when type
+		    (list :type type))
+		  (list :source-name   (chan-source-name   chan)
+			:source-config (chan-source-config chan)
+			:format        (chan-format        chan))))))
 
 (defun make-index (channel-id indices chunks stream)
   (bind ((relevant (remove channel-id indices
