@@ -24,7 +24,8 @@
 	      :type     direction
 	      :reader   backend-direction
 	      :documentation
-	      ""))
+	      "Stores the direction with which the backend has been
+opened."))
   (:default-initargs
    :direction (required-argument :direction))
   (:documentation
