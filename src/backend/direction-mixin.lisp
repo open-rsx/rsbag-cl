@@ -21,7 +21,7 @@
 
 (defclass direction-mixin ()
   ((direction :initarg  :direction
-	      :type     (member :input :output :io)
+	      :type     direction
 	      :reader   backend-direction
 	      :documentation
 	      ""))

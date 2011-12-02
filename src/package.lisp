@@ -27,6 +27,10 @@
    :rsbag.backend
    :rsbag.transform)
 
+  ;; Types
+  (:export
+   :direction)
+
   ;; Conditions
   (:export
    :rsbag-error
