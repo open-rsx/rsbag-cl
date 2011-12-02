@@ -78,7 +78,7 @@ instead of ~S.~@:>"
   (check-type direction direction "either :input, :output or :it")
 
   (let ((backend (apply #'make-instance
-			(find-backend-class backend)
+			(rsbag.backend:find-backend-class backend)
 			:stream    source
 			:direction direction
 			(remove-from-plist
