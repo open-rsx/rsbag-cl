@@ -21,7 +21,7 @@
 
 (defclass direction-mixin ()
   ((direction :initarg  :direction
-	      :type     direction
+	      :type     rsbag:direction
 	      :reader   backend-direction
 	      :documentation
 	      "Stores the direction with which the backend has been

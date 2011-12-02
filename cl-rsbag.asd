@@ -72,8 +72,18 @@
 		:cl-protobuf
 
 		(:version :cl-rsb #.(version/string)))
-  :components  ((:module     "backend"
+  :components  ((:module     "src/early"
+		 :pathname   "src"
+		 :components ((:file "package")
+
+			      (:file       "types"
+			       :depends-on ("package"))
+			      (:file       "conditions"
+			       :depends-on ("package"))))
+
+		(:module     "backend"
 		 :pathname   "src/backend"
+		 :depends-on ("src/early")
 		 :components ((:file       "package")
 			      (:file       "protocol"
 			       :depends-on ("package"))
@@ -87,6 +97,7 @@
 
 		(:module     "transform"
 		 :pathname   "src/transform"
+		 :depends-on ("src/early")
 		 :components ((:file       "package")
 
 			      (:file       "conditions"
@@ -95,34 +106,23 @@
 			       :depends-on ("package" "conditions"))))
 
 		(:module     "src"
-		 :depends-on ("backend" "transform")
-		 :components ((:file "package")
+		 :depends-on ("src/early" "backend" "transform")
+		 :components ((:file       "protocol")
 
-			      (:file       "types"
-			       :depends-on ("package"))
-			      (:file       "conditions"
-			       :depends-on ("package"))
-			      (:file       "protocol"
-			       :depends-on ("package" "types"))
-
-			      (:file       "util"
-			       :depends-on ("package"))
+			      (:file       "util")
 
 			      (:file       "channel"
-			       :depends-on ("package" "protocol"
-					    "util"))
+			       :depends-on ("protocol" "util"))
 			      (:file       "bag"
-			       :depends-on ("package" "types"
-					    "protocol" "channel"))
+			       :depends-on ("protocol" "channel"))
 
 			      (:file       "synchronized-channel"
-			       :depends-on ("package" "channel"))
+			       :depends-on ("channel"))
 			      (:file       "synchronized-bag"
-			       :depends-on ("package" "bag"
-					    "synchronized-channel"))
+			       :depends-on ("bag" "synchronized-channel"))
 
 			      (:file       "macros"
-			       :depends-on ("package" "protocol"))))
+			       :depends-on ("protocol"))))
 
 		#+sbcl
 		(:module     "view"

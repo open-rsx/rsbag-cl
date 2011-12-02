@@ -50,7 +50,7 @@ the `(setf bag-channel)' method. "))
                                      &key)
   (bind (((:accessors-r/o (channels %bag-channels)
 			  (backend  %bag-backend)) instance))
-    (iter (for (id name meta-data) in (get-channels backend))
+    (iter (for (id name meta-data) in (rsbag.backend:get-channels backend))
 	  (setf (gethash name channels)
 		(%make-channel instance name
 			       meta-data
@@ -107,7 +107,8 @@ the `(setf bag-channel)' method. "))
 				new-value)
 			new-value))
 	 (channel   (%make-channel bag name meta-data transform)))
-    (put-channel backend (%channel-id channel) name meta-data)
+    (rsbag.backend:put-channel
+     backend (%channel-id channel) name meta-data)
     (setf (gethash name channels) channel)))
 
 (defmethod print-object ((object bag) stream)
@@ -156,7 +157,8 @@ the `(setf bag-channel)' method. "))
 		   :bag       bag
 		   :name      name
 		   :transform transform
-		   :id        (or id (make-channel-id backend name))
+		   :id        (or id (rsbag.backend:make-channel-id
+				      backend name))
 		   :meta-data meta-data
 		   :backend   backend)))
 

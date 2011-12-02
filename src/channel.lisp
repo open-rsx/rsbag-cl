@@ -57,7 +57,7 @@ data items."))
 (defmethod channel-timestamps ((channel channel))
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
-    (get-timestamps backend id)))
+    (rsbag.backend:get-timestamps backend id)))
 
 #+sbcl
 (defmethod channel-entries ((channel channel))
@@ -71,6 +71,7 @@ timestamps and entries."
   (make-instance 'channel-items
 		 :channel channel))
 
+;;; TODO(jmoringe, 2011-12-02): entry methods are almost identical
 (defmethod entry ((channel channel)
 		  (index   integer)
 		  &key
@@ -78,7 +79,7 @@ timestamps and entries."
 		  (transform        (channel-transform channel)))
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel)
-	 (raw (or (get-entry backend id index)
+	 (raw (or (rsbag.backend:get-entry backend id index)
 		  (ecase if-does-not-exist
 		    (:error (error 'no-such-entry
 				   :bag     (channel-bag channel)
@@ -86,7 +87,7 @@ timestamps and entries."
 				   :key     index))
 		    ((nil)  nil)))))
     (if transform
-	(decode transform raw)
+	(rsbag.transform:decode transform raw)
 	raw)))
 
 (defmethod entry ((channel   channel)
@@ -95,7 +96,7 @@ timestamps and entries."
 		  if-does-not-exist)
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
-    (or (get-entry backend id timestamp)
+    (or (rsbag.backend:get-entry backend id timestamp)
 	(case if-does-not-exist
 	  (:error (error 'no-such-entry
 			 :bag     (channel-bag channel)
@@ -125,7 +126,7 @@ timestamps and entries."
 	 (raw (if transform
 		  (rsbag.transform:encode transform new-value)
 		  new-value)))
-    (put-entry backend id index raw)
+    (rsbag.backend:put-entry backend id index raw)
     new-value))
 
 (defmethod print-object ((object channel) stream)
@@ -156,7 +157,7 @@ timestamps and entries."
 (defmethod sequence:length ((channel channel))
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
-    (get-num-entries backend id)))
+    (rsbag.backend:get-num-entries backend id)))
 
 #+sbcl
 (defmethod sequence:elt ((channel channel)

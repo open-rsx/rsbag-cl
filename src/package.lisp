@@ -22,10 +22,7 @@
    :cl
    :alexandria
    :iterate
-   :bind
-
-   :rsbag.backend
-   :rsbag.transform)
+   :bind)
 
   ;; Types
   (:export
@@ -53,10 +50,6 @@
 
    :no-such-entry
    :no-such-entry-key)
-
-  ;; Types
-  (:export
-   :direction)
 
   ;; meta-data protocol
   (:export
