@@ -30,7 +30,7 @@
   (handler-bind
       (((and error (not tidelog-condition))
 	#'(lambda (condition)
-	    (error 'invalid-file-structure
+	    (error 'invalid-tidelog-structure
 		   :source           source
 		   :format-control   "~@<Failed to scan for block ~A: ~A~@:>"
 		   :format-arguments (list object (format nil "~A" condition))))))
@@ -92,7 +92,7 @@
   (handler-bind
       (((and error (not tidelog-condition))
 	#'(lambda (condition)
-	    (error 'invalid-file-structure
+	    (error 'invalid-tidelog-structure
 		   :source           source
 		   :format-control   "~@<Failed to unpack block ~A: ~A~@:>"
 		   :format-arguments (list object (format nil "~A" condition))))))

@@ -32,10 +32,9 @@
   (:export
    :tidelog-condition
 
-   :log-file-error
-   :log-file-error-source
+   :tidelog-file-error
 
-   :invalid-file-structure)
+   :invalid-tidelog-structure)
 
   (:documentation
    "This package contains a cl-rsbag backend for the TIDE log file

@@ -74,7 +74,7 @@
 		(:version :cl-rsb #.(version/string)))
   :components  ((:module     "src/early"
 		 :pathname   "src"
-		 :components ((:file "package")
+		 :components ((:file       "package")
 
 			      (:file       "types"
 			       :depends-on ("package"))
@@ -85,6 +85,8 @@
 		 :pathname   "src/backend"
 		 :depends-on ("src/early")
 		 :components ((:file       "package")
+			      (:file       "conditions"
+			       :depends-on ("package"))
 			      (:file       "protocol"
 			       :depends-on ("package"))
 

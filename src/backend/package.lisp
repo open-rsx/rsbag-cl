@@ -21,7 +21,16 @@
   (:use
    :cl
    :alexandria
-   :bind)
+   :bind
+
+   :rsbag)
+
+  ;; Conditions
+  (:export
+   :log-file-error
+   :log-file-error-source
+
+   :invalid-file-structure)
 
   ;; backend protocol
   (:export
