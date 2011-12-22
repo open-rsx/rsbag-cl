@@ -276,7 +276,7 @@
   (funcall (find-symbol "RUN-TESTS" :lift) :config :generic))
 
 
-;;; TIDE log backend
+;;; TIDE log file format backend
 ;;
 
 (defsystem :cl-rsbag-tidelog
@@ -310,3 +310,26 @@
 			      (:file       "file"
 			       :depends-on ("package" "variables"
 					    "spec" "io"))))))
+
+
+;;; Elan file format backend
+;;
+
+(defsystem :cl-rsbag-elan
+  :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :version     #.(version/string)
+  :license     "GPL3; see COPYING file for details."
+  :description "Elan file format backend for cl-rsbag."
+  :depends-on  (:cxml-location
+
+		(:version :cl-rsbag #.(version/string)))
+  :components  ((:module     "elan"
+		 :pathname   "src/backend/elan"
+		 :components ((:file       "package")
+			      (:file       "types"
+			       :depends-on ("package"))
+			      (:file       "xml"
+			       :depends-on ("package" "types"))
+			      (:file       "file"
+			       :depends-on ("package" "types" "xml"))))))
