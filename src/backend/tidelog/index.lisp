@@ -1,6 +1,6 @@
 ;;; index.lisp ---
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -56,16 +56,23 @@ instances that produced lazily."))
 	      :type     non-negative-integer
 	      :reader   index-channel
 	      :documentation
-	      "")
+	      "Stores the id of the channel to which this index
+belongs.")
    (entries   :type     vector
 	      :accessor index-entries
 	      :documentation
-	      "")
+	      "Stores the actual timestamp -> offset mapping. The
+storage is sorted and interleaved of the form
+
+  TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
+
+.")
    (stream    :initarg  :stream
 	      :type     stream
 	      :reader   index-stream
 	      :documentation
-	      "")
+	      "Stores the stream to which the data of this index
+should be written when flushing.")
    (buffer    :type     indx
 	      :reader   index-buffer
 	      :initform (make-instance
@@ -75,7 +82,8 @@ instances that produced lazily."))
 					      :adjustable   t
 					      :fill-pointer 0))
 	      :documentation
-	      "")
+	      "Stores the index object which in turn contains the
+index entry objects.")
    (sorted-to :initarg  :sorted-to
 	      :type     (or integer null)
 	      :accessor %index-sorted-to
@@ -84,6 +92,10 @@ instances that produced lazily."))
 	      "Stores the index into the entries vector up to which
 entries are sorted. The value nil indicates that entries are not
 sorted."))
+  (:default-initargs
+   :channel (required-argument :channel)
+   :indices (required-argument :indices)
+   :chunks  (required-argument :chunks))
   (:documentation
    "Instances of this class store mappings of indices and timestamps
 of entries to corresponding file offsets for one channel."))
@@ -139,7 +151,7 @@ of entries to corresponding file offsets for one channel."))
 	      timestamp)))))
 
 
-;;; Buffereing
+;;; Buffering
 ;;
 
 (defmethod write-buffer ((index  index)
