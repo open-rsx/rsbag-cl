@@ -102,6 +102,8 @@ and executes them until termination is requested."))
 			 (length sequence)))
     (:index       . ,#'(lambda ()
 			 (funcall index)))
+    (:time        . ,#'(lambda ()
+			 (princ-to-string (first (funcall element)))))
     ;; Position
     (:next        . ,#'(lambda ()
 			 (funcall step nil)
