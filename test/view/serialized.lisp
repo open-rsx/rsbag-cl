@@ -1,6 +1,6 @@
 ;;; serialized.lisp --- Unit tests for the serialized view class.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(in-package :rsbag.view.test)
+(cl:in-package :rsbag.view.test)
 
 (deftestsuite serialized-root (view-root)
   ((one-sequence  '(((0 :a) (1 :b) (2 :c))))

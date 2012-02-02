@@ -1,6 +1,6 @@
 ;;; conditions.lisp --- Conditions used in the rsb module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(in-package :rsbag.rsb)
+(cl:in-package :rsbag.rsb)
 
 (define-condition connection-error (error)
   ((connection :initarg  :connection

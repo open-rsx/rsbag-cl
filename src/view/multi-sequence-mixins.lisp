@@ -1,6 +1,6 @@
 ;;; multi-sequence-mixins.lisp --- Mixin classes for multi-sequence views.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(in-package :rsbag.view)
+(cl:in-package :rsbag.view)
 
 
 ;;; `multi-sequence-view-mixin' class

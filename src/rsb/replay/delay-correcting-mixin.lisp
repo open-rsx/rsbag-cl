@@ -1,6 +1,6 @@
 ;;; delay-correcting-mixin.lisp --- A mixin class for correcting delays.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(in-package :rsbag.rsb.replay)
+(cl:in-package :rsbag.rsb.replay)
 
 (defclass delay-correcting-mixin ()
   ((previous-delay :type     (or null non-negative-real)

@@ -1,6 +1,6 @@
 ;;; synchronized-bag.lisp --- A bag that synchronizes accesses.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -17,7 +17,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <http://www.gnu.org/licenses>.
 
-(in-package :rsbag)
+(cl:in-package :rsbag)
 
 (defclass synchronized-bag (bag)
   ((lock :reader   %bag-lock
@@ -46,9 +46,9 @@ in comparison to the single-threaded case."))
 		    &key &allow-other-keys))
   (define-synchronized-method
       (setf bag-channel) ((new-value t)
-			   (bag      synchronized-bag)
-			   (name      t)
-			   &key &allow-other-keys)))
+			  (bag      synchronized-bag)
+			  (name      t)
+			  &key &allow-other-keys)))
 
 (defmethod %channel-class ((bag synchronized-bag))
   (find-class 'synchronized-channel))
