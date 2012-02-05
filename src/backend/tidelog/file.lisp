@@ -229,19 +229,18 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
     (file-position stream 0)))
 
 (defun make-channel (chan)
-  (let ((type (decode-type (chan-type chan))))
-    (list (chan-id chan)
-	  (chan-name chan)
-	  (append (when type
-		    (list :type type))
-		  (list :source-name   (chan-source-name   chan)
-			:source-config (chan-source-config chan)
-			:format        (chan-format        chan))))))
+  (list (chan-id chan)
+	(chan-name chan)
+	(append (when-let ((type (decode-type (chan-type chan))))
+		  (list :type type))
+		(list :source-name   (chan-source-name   chan)
+		      :source-config (chan-source-config chan)
+		      :format        (chan-format        chan)))))
 
 (defun make-index (channel-id indices chunks stream)
-  (bind ((relevant (remove channel-id indices
-			   :test-not #'=
-			   :key      #'indx-channel-id)))
+  (let ((relevant (remove channel-id indices
+			  :test-not #'=
+			  :key      #'indx-channel-id)))
     (make-instance 'index
 		   :stream  stream
 		   :channel channel-id
