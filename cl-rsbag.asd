@@ -1,6 +1,6 @@
 ;;; cl-rsbag.asd ---
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -158,9 +158,12 @@
 					     :pathname   "rsb/protocol/Notification"
 					     :depends-on ("EventId" "EventMetaData"))))
 
-			      (:file       "transform"
+			      (:file       "rsb-event"
 			       :pathname   "src/transform/rsb-event"
-			       :depends-on ("protocol"))))
+			       :depends-on ("protocol"))
+			      (:file       "rsb-event-payload-conversion"
+			       :pathname   "src/transform/rsb-event-payload-conversion"
+			       :depends-on ("protocol" "rsb-event"))))
 
 		#+sbcl
 		(:module     "rsb"
