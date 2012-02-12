@@ -32,9 +32,9 @@
 		      &allow-other-keys)
   (:documentation
    "Open the data source SOURCE and return a bag object using the
-backend designated by BACKEND and passing ARGS (expect the keyword
-argument :backend) to the backend. DIRECTION can be any
-of :input, :output and :io.
+backend designated by BACKEND and passing ARGS (except the keyword
+arguments :backend and :bag-class) to the backend. DIRECTION can be
+any of :input, :output and :io.
 
 Example:
 RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
