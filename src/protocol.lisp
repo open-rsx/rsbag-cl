@@ -33,8 +33,16 @@
   (:documentation
    "Open the data source SOURCE and return a bag object using the
 backend designated by BACKEND and passing ARGS (except the keyword
-arguments :backend and :bag-class) to the backend. DIRECTION can be
-any of :input, :output and :io.
+arguments :backend and :bag-class) to the backend.
+
+DIRECTION can be any of :input, :output and :io.
+
+BACKEND has to be a keyword naming a backend class. A list of backend
+classes can be obtained via the `rsbag.backend:backend-classes'
+function.
+
+When supplied, BAG-CLASS specifies the class of which the returned bag
+object should be an instance.
 
 Example:
 RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
@@ -127,6 +135,7 @@ instead of ~S.~@:>"
 			 if-does-not-exist)
   (:documentation
    "Return the `channel' named NAME in BAG.
+
 The value of IF-DOES-NOT-EXIST controls the behavior in case the
 requested channel does not exist. Valid values are :error, which
 causes an error to be signaled and nil, which causes nil to be
@@ -140,10 +149,12 @@ returned."))
    "Add or update and return the channel named NAME in BAG. SPEC is a
 plist which specifies properties of the created or updated
 channel.
+
 IF-EXISTS controls the behavior in case a channel named NAME already
 exists in BAG. Valid values are :error, which causes an error to be
 signaled, and :supersede, which causes the existing channel to be
 updated.
+
 TRANSFORM can be used to specify a transformation that should be
 applied to all value read from/written to the channel. Valid values
 are nil or an object implementing the transform protocol specified in
@@ -162,9 +173,12 @@ rsbag.transform."))
 			   id)
   (:documentation
    "Create and return a new channel named NAME with id ID and
-associated meta-data META-DATA and TRANSFORM for BAG. TRANSFORM can be
-nil in which case raw data from the underlying source is used. The
-returned object has to implement the channel protocol."))
+associated meta-data META-DATA and TRANSFORM for BAG.
+
+TRANSFORM can be nil in which case raw data from the underlying source
+is used.
+
+The returned object implements the channel protocol."))
 
 (defgeneric %make-channel-transform (bag name meta-data
 				     &optional
@@ -215,10 +229,11 @@ the timestamps and associated entries of CHANNEL."))
    "Return the entry at position or time INDEX in CHANNEL. If INDEX is
 an integer, the INDEX-th entry is returned. If INDEX is a
 `local-time:timestamp' instances, the entry stored for the point in
-time represented by INDEX is returned. IF-DOES-NOT-EXIST controls the
-behavior in case there is no entry for INDEX. Valid values are nil,
-which causes nil to be returned and :error, which causes an error to
-be signaled."))
+time represented by INDEX is returned.
+
+IF-DOES-NOT-EXIST controls the behavior in case there is no entry for
+INDEX. Valid values are nil, which causes nil to be returned
+and :error, which causes an error to be signaled."))
 
 (defgeneric (setf entry) (new-value channel index
 			  &key
@@ -228,10 +243,11 @@ be signaled."))
 INDEX in CHANNEL. If INDEX is an integer, the INDEX-th entry is
 returned. If INDEX is a `local-time:timestamp' instances, the entry
 stored for the point in time represented by INDEX is
-returned. IF-EXISTS controls the behavior in case an entry is already
-stored at INDEX. Valid values are :error, which causes an error to be
-signaled, and :supersede, which causes the stored value to be
-replaced."))
+returned.
+
+IF-EXISTS controls the behavior in case an entry is already stored at
+INDEX. Valid values are :error, which causes an error to be signaled,
+and :supersede, which causes the stored value to be replaced."))
 
 ;; When available, channels additionally implement the sequence
 ;; protocol such that the channel appears as a sequence of its
