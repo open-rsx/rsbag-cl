@@ -20,13 +20,7 @@
 (cl:in-package :rsbag)
 
 (defclass bag ()
-  ((channels  :type     hash-table
-	      :reader   %bag-channels
-	      :initform (make-hash-table :test #'equal)
-	      :documentation
-	      "Stores a mapping of channel names to `channel'
-instances.")
-   (direction :initarg  :direction
+  ((direction :initarg  :direction
 	      :type     direction
 	      :reader   bag-direction
 	      :documentation
@@ -35,15 +29,21 @@ instances.")
 	      :reader   %bag-backend
 	      :documentation
 	      "Stores an object which is responsible for accessing the
-stream associated to this bag."))
+stream associated to this bag.")
+   (channels  :type     hash-table
+	      :reader   %bag-channels
+	      :initform (make-hash-table :test #'equal)
+	      :documentation
+	      "Stores a mapping of channel names to `channel'
+instances."))
   (:default-initargs
    :direction (required-argument :direction)
    :backend   (required-argument :backend))
   (:documentation
-   "Instances of this class represent a TIDE file. A TIDE file
-consists of named channels which can be retrieved using the
-`bag-channels' and `bag-channel' methods and modified using
-the `(setf bag-channel)' method. "))
+   "Instances of this class represent a log file. A log file consists
+of named channels which can be retrieved using the `bag-channels' and
+`bag-channel' methods and modified using the `(setf bag-channel)'
+method. "))
 
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
