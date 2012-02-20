@@ -57,7 +57,7 @@ in comparison to the single-threaded case."))
 			  (name      string)
 			  (meta-data list)
 			  (transform t)
-			  &optional
+			  &key
 			  id)
   (declare (ignore id))
   (let ((channel (call-next-method)))

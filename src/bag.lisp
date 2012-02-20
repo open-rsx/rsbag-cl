@@ -30,6 +30,13 @@
 	      :documentation
 	      "Stores an object which is responsible for accessing the
 stream associated to this bag.")
+   (transform :initarg  :transform
+	      :type     transform-spec
+	      :reader   bag-transform
+	      :initform :from-source
+	      :documentation
+	      "Stores a specification for transformations that should
+be associated with channels of the bag. See type `transform-spec'.")
    (channels  :type     hash-table
 	      :reader   %bag-channels
 	      :initform (make-hash-table :test #'equal)
@@ -48,14 +55,18 @@ method. "))
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
                                      &key)
-  (bind (((:accessors-r/o (channels %bag-channels)
-			  (backend  %bag-backend)) instance))
+  (bind (((:accessors-r/o (backend   %bag-backend)
+			  (transform bag-transform)
+			  (channels  %bag-channels)) instance)
+	 ((:flet make-transform (name meta-data id))
+	  (%make-channel-transform instance name meta-data
+				   :id   id
+				   :spec transform)))
     (iter (for (id name meta-data) in (rsbag.backend:get-channels backend))
 	  (setf (gethash name channels)
-		(%make-channel instance name
-			       meta-data
-			       (%make-channel-transform
-				instance name meta-data id) id)))))
+		(%make-channel instance name meta-data
+			       (make-transform name meta-data id)
+			       :id id)))))
 
 (defmethod close ((bag bag)
 		  &key &allow-other-keys)
@@ -88,7 +99,8 @@ method. "))
 			       &key
 			       (if-exists :error)
 			       (transform (%make-channel-transform
-					   bag name new-value)))
+					   bag name new-value
+					   :spec (bag-transform bag))))
   ;; If a channel named NAME already exists, apply IF-EXISTS policy.
   (when-let ((channel (gethash name (%bag-channels bag))))
     (ecase if-exists
@@ -149,8 +161,8 @@ method. "))
 			  (name      string)
 			  (meta-data list)
 			  (transform t)
-			  &optional
-			    id)
+			  &key
+			  id)
   (bind (((:accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
     (make-instance channel-class
@@ -165,13 +177,32 @@ method. "))
 (defmethod %make-channel-transform ((bag       bag)
 				    (name      string)
 				    (meta-data list)
-				    &optional
-				    id)
+				    &key
+				    id
+				    spec)
+  (declare (ignore id))
+
   (bind (((:plist type) meta-data)
-	 ((class-name &rest args) (typecase type
-				    (null (list nil))
-				    (list type)
-				    (t    (ensure-list type)))))
+	 ((:flet parse-type ())
+	  (typecase type
+	    (null (list nil))
+	    (list type)
+	    (t    (ensure-list type))))
+	 ((class-name &rest args)
+	  (etypecase spec
+	    ;; No spec - derive everything from TYPE.
+	    (transform-spec/default
+	     (parse-type))
+
+	    ;; Spec with :FROM-SOURCE - append spec to information
+	    ;; derived from TYPE.
+	    (transform-spec/augment
+	     (append (parse-type) (rest spec)))
+
+	    ;; Spec without :FROM-SOURCE - ignore TYPE and use
+	    ;; supplied spec unmodified.
+	    (transform-spec/full
+	     spec))))
     (when class-name
       (handler-case ;;; TODO(jmoringe): add :error? nil in find-transform-class
 	  (apply #'rsbag.transform:make-transform class-name args)

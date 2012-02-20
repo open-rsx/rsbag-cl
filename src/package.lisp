@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the cl-rsbag system.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -26,7 +26,12 @@
 
   ;; Types
   (:export
-   :direction)
+   :direction
+
+   :transform-spec/default
+   :transform-spec/augment
+   :transform-spec/full
+   :transform-spec)
 
   ;; Conditions
   (:export
@@ -65,6 +70,7 @@
    :bag
 
    :bag-direction
+   :bag-transform
    :bag-channels
    :bag-channel
 

@@ -23,3 +23,28 @@
   "Values of this type are used to indicate whether a bag should be
 opened for reading, writing or both."
   '(member :input :output :io))
+
+
+;;; Transformation specifications
+;;
+
+(deftype transform-spec/default ()
+  "This transform specification causes the default transformation to
+be applied."
+  'null)
+
+(deftype transform-spec/augment ()
+  "This transform specification causes supplied arguments to be
+appended when the default transformation is constructed."
+  '(cons (eql :from-source) list))
+
+(deftype transform-spec/full ()
+  "This transform specification cases the a specific transform to be
+constructed with supplied arguments without automatic derivation."
+  '(cons symbol list))
+
+(deftype transform-spec ()
+  "All forms of transform specifications."
+  '(or transform-spec/default
+       transform-spec/augment
+       transform-spec/full))

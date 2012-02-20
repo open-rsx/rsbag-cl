@@ -29,11 +29,13 @@
 		      direction
 		      backend
 		      bag-class
+		      transform
 		      &allow-other-keys)
   (:documentation
    "Open the data source SOURCE and return a bag object using the
 backend designated by BACKEND and passing ARGS (except the keyword
-arguments :backend and :bag-class) to the backend.
+arguments :backend, :bag-class and :transform) to the
+backend.
 
 DIRECTION can be any of :input, :output and :io.
 
@@ -43,6 +45,10 @@ function.
 
 When supplied, BAG-CLASS specifies the class of which the returned bag
 object should be an instance.
+
+When supplied, TRANSFORM specifies a transformation that should be
+applied to all entries read from or written to the returned bag
+object. See type `transform-spec'.
 
 Example:
 RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
@@ -82,18 +88,21 @@ instead of ~S.~@:>"
 		     &key
 		     (direction (required-argument :direction))
 		     (backend   (required-argument :backend))
-		     (bag-class 'bag))
-  (check-type direction direction "either :input, :output or :it")
+		     (bag-class 'bag)
+		     transform)
+  (check-type direction direction      "either :input, :output or :io")
+  (check-type transform transform-spec "a transformation specification")
 
   (let ((backend (apply #'make-instance
 			(rsbag.backend:find-backend-class backend)
 			:stream    source
 			:direction direction
 			(remove-from-plist
-			 args :direction :backend :bag-class))))
+			 args :direction :backend :bag-class :transform))))
     (make-instance bag-class
 		   :backend   backend
-		   :direction direction)))
+		   :direction direction
+		   :transform transform)))
 
 (defmethod open-bag ((source pathname)
 		     &rest args
@@ -125,6 +134,12 @@ instead of ~S.~@:>"
 (defgeneric bag-direction (bag)
   (:documentation
    "Return the direction of BAG. One of :input, :output, :io."))
+
+(defgeneric bag-transform (bag)
+  (:documentation
+   "Return the transform specification associated to BAG. The
+specification is used to make concrete transformations for all
+channels of the bag."))
 
 (defgeneric bag-channels (bag)
   (:documentation
@@ -169,7 +184,7 @@ rsbag.transform."))
    "Return the channel class used by bag."))
 
 (defgeneric %make-channel (bag name meta-data transform
-			   &optional
+			   &key
 			   id)
   (:documentation
    "Create and return a new channel named NAME with id ID and
@@ -181,11 +196,16 @@ is used.
 The returned object implements the channel protocol."))
 
 (defgeneric %make-channel-transform (bag name meta-data
-				     &optional
-				     id)
+				     &key
+				     id
+				     spec)
   (:documentation
    "Make and return a suitable transformation for the channel in BAG
-described by NAME META-DATA and ID."))
+described by NAME, META-DATA, ID and SPEC
+
+SPEC can be used to specify additional parameters for the constructed
+transformation or to specify an entirely different transformation. See
+the type `transform-spec'."))
 
 
 ;;; Channel protocol
