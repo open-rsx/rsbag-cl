@@ -46,7 +46,7 @@ during (de)serialization for efficiency reasons."))
    :wire-schema (required-argument :wire-schema))
   (:documentation
    "Instances of this transform class (de)serialize RSB events from/to
-octet vectors."))
+octet vectors without (de)serializing payloads."))
 
 (defmethod transform-name ((transform rsb-event))
   (list (call-next-method) (transform-wire-schema transform)))
@@ -57,10 +57,9 @@ octet vectors."))
 			  (meta-data rsb.protocol:notification-meta-data)
 			  (causes    rsb.protocol:notification-causes)) holder)
 	 ((:flet process-timestamp (name))
-	  (let ((value (rsb:timestamp domain-object name)))
-	    (if value
-		(timestamp->unix-microseconds value)
-		0))))
+	  (if-let ((value (rsb:timestamp domain-object name)))
+	    (timestamp->unix-microseconds value)
+	    0)))
     ;; Prepare event id
     (reinitialize-instance
      id
@@ -87,7 +86,7 @@ octet vectors."))
 
     ;; Add user timestamps.
     (iter (for (key value) on (rsb:event-timestamps domain-object) :by #'cddr)
-	  (unless (member key '(:create :send :receive :deliver))
+	  (unless (member key rsb:*framework-timestamps*)
 	    (vector-push-extend
 	     (make-instance 'rsb.protocol:user-time
 			    :key       (keyword->bytes key)
@@ -105,14 +104,14 @@ octet vectors."))
 
     (reinitialize-instance
      holder
-     :scope           (string->bytes
-		       (rsb:scope-string (rsb:event-scope domain-object)))
-     :method          (if (rsb:event-method domain-object)
-			  (keyword->bytes
-			   (rsb:event-method domain-object))
-			  (load-time-value
-			   (binio:make-octet-vector 0)))
-     :data            (rsb:event-data domain-object))
+     :scope  (string->bytes
+	      (rsb:scope-string (rsb:event-scope domain-object)))
+     :method (if (rsb:event-method domain-object)
+		 (keyword->bytes
+		  (rsb:event-method domain-object))
+		 (load-time-value
+		  (binio:make-octet-vector 0)))
+     :data   (rsb:event-data domain-object))
     (pb:pack* holder)))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
@@ -172,6 +171,10 @@ octet vectors."))
 		 (rsb.protocol:user-time-timestamp time))))
 
     event))
+
+(defmethod print-object ((object rsb-event) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~A" (transform-wire-schema object))))
 
 
 ;;; Utility functions
