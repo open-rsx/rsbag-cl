@@ -162,6 +162,16 @@ timestamps and entries."
     (rsbag.backend:get-num-entries backend id)))
 
 #+sbcl
+(defmethod sequence:make-sequence-like ((sequence channel)
+					(length   integer)
+					&rest args
+					&key
+					initial-element
+					initial-contents)
+  (declare (ignore initial-element initial-contents))
+  (apply #'make-array length args))
+
+#+sbcl
 (defmethod sequence:elt ((channel channel)
 			 (index   integer))
   (entry channel index))
