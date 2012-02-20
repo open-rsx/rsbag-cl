@@ -30,21 +30,23 @@ contained.")
 	      :type     string
 	      :reader   channel-name
 	      :documentation
-	      "")
+	      "Stores the name of the channel.")
    (meta-data :reader   channel-meta-data)
    (transform :initarg  :transform
 	      :reader   channel-transform
 	      :initform nil
 	      :documentation
-	      "")
+	      "Stores a transformation that should be applied to
+entries when they are retrieved or stored.")
    (id        :initarg  :id
 	      :reader   %channel-id
 	      :documentation
-	      "")
+	      "Stores the id of the channel.")
    (backend   :initarg  :backend
 	      :reader   %channel-backend
 	      :documentation
-	      ""))
+	      "Stores a reference to the backend object which
+implements access to the bag to which this channel belongs."))
   (:default-initargs
    :bag     (required-argument :bag)
    :name    (required-argument :name)
