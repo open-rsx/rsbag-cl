@@ -41,10 +41,7 @@
 			(dest   bag)
 			&rest args
 			&key
-			(transports '((:spread :expose-wire-schema t
-				               &inherit)
-				      (:socket :expose-wire-schema t
-				               &inherit)))
+			(transports '((t :expose (:rsb.transport.wire-schema))))
 			(filters    nil filters-supplied?))
   (let ((listener (make-listener source
 				 :transports transports

@@ -42,11 +42,11 @@ As an example, an event on scope /foo/bar/ with wire-schema
 			     (event      event)
 			     (strategy   scope-and-type))
   (let ((scope       (scope-string (event-scope event)))
-	(wire-schema (rsb:meta-data event :rsb.wire-schema)))
+	(wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
     (if wire-schema
 	(concatenate 'string scope ":" wire-schema)
 	(error "~@<Event ~A does not have a ~A meta-data item.~@:>"
-	       event :rsb.wire-schema))))
+	       event :rsb.transport.wire-schema))))
 
 (defmethod ensure-channel-for ((connection channel-connection)
 			       (event      event)
@@ -66,7 +66,7 @@ As an example, an event on scope /foo/bar/ with wire-schema
 	 ((:accessors-r/o (id participant-id)) participant)
 	 (name        (channel-name-for connection event strategy))
 	 (format      (channel-format-for connection event strategy))
-	 (wire-schema (make-keyword (rsb:meta-data event :rsb.wire-schema)))
+	 (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
 	 (transform   (make-transform :rsb-event wire-schema)))
     (setf (bag-channel bag name :transform transform)
 	  (append
