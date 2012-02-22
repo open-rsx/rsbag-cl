@@ -39,7 +39,7 @@ contained payloads using a specified converter."))
     (setf (rsb:event-data domain-object)
 	  (rsb.converter:domain->wire converter domain-object)))
   ;; Forward the modified event to the next method.
-  (call-next-method event))
+  (call-next-method transform domain-object))
 
 (defmethod decode ((transform rsb-event/payload-conversion)
 		   (data      simple-array))
