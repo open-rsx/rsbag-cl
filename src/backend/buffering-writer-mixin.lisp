@@ -28,7 +28,8 @@
 		:type     function
 		:accessor backend-flush?-func
 		:documentation
-		""))
+		"Stores a function that is called to determine whether
+the current buffer should be flushed."))
   (:default-initargs
    :flush?-func (required-argument :flush?-func))
   (:documentation
