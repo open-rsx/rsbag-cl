@@ -25,7 +25,7 @@
 
 (defclass channel-connection ()
   ((bag         :initarg  :bag
-		:reader connection-bag
+		:reader   connection-bag
 		:documentation
 		"Stores the bag object that is connected to RSB
 participants as a data source or sink.")
