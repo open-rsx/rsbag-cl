@@ -24,6 +24,10 @@
    :iterate
    :bind)
 
+  ;; Symbols
+  (:export
+   :&from-source)
+
   ;; Types
   (:export
    :direction
