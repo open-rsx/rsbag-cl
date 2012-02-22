@@ -23,16 +23,22 @@
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
 		 (subseq (cl-rsbag-system:version/list) 0 2)))
 
-(defmethod find-transform-class ((spec (eql +rsb-schema-name+)))
-  (find-class 'rsb-event))
-
 (defmethod make-transform ((spec (eql +rsb-schema-name+))
 			   &rest args)
   "Handle ARGS appropriately."
-  (check-type args (cons keyword null) "a single wire-schema keyword")
+  (check-type args (cons keyword list)
+	      "a wire-schema keyword, optionally followed by keyword arguments")
 
-  (make-instance (find-transform-class spec)
-		 :wire-schema (first args)))
+  (bind (((wire-schema &rest rest) args)
+	 ((:plist converter) rest))
+    (apply #'make-instance
+	   (if converter 'rsb-event/payload-conversion 'rsb-event)
+	   :wire-schema wire-schema
+	   (when converter
+	     `(:converter ,converter)))))
+
+(defmethod find-transform-class ((spec (eql +rsb-schema-name+)))
+  (find-class 'rsb-event))
 
 (defclass rsb-event ()
   ((wire-schema :initarg  :wire-schema
