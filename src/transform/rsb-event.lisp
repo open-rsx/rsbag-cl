@@ -19,10 +19,14 @@
 
 (cl:in-package :rsbag.transform)
 
-(defmethod find-transform-class ((spec (eql :rsb-event)))
+(defconstant +rsb-schema-name+
+  (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
+		 (subseq (cl-rsbag-system:version/list) 0 2)))
+
+(defmethod find-transform-class ((spec (eql +rsb-schema-name+)))
   (find-class 'rsb-event))
 
-(defmethod make-transform ((spec (eql :rsb-event))
+(defmethod make-transform ((spec (eql +rsb-schema-name+))
 			   &rest args)
   "Handle ARGS appropriately."
   (check-type args (cons keyword null) "a single wire-schema keyword")
@@ -49,7 +53,7 @@ during (de)serialization for efficiency reasons."))
 octet vectors without (de)serializing payloads."))
 
 (defmethod transform-name ((transform rsb-event))
-  (list (call-next-method) (transform-wire-schema transform)))
+  (list +rsb-schema-name+ (transform-wire-schema transform)))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)

@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the transform module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -27,6 +27,10 @@
   (:import-from :rsb
    :chainable-condition
    :chainable-condition-cause)
+
+  ;; Variables
+  (:export
+   :+rsb-schema-name+)
 
   ;; Conditions
   (:export

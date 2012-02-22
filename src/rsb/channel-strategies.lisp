@@ -66,7 +66,7 @@ As an example, an event on scope /foo/bar/ with wire-schema
 	 (name        (channel-name-for connection event strategy))
 	 (format      (channel-format-for connection event strategy))
 	 (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
-	 (transform   (make-transform :rsb-event wire-schema)))
+	 (transform   (make-transform +rsb-schema-name+ wire-schema)))
     (setf (bag-channel bag name :transform transform)
 	  (append
 	   (list :source-name   (princ-to-string id)
