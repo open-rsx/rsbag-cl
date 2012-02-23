@@ -51,7 +51,7 @@
     (apply #'events->bag
 	   listener
 	   dest
-	   (remove-from-plist args :transports))))
+	   (remove-from-plist args :transports :filters))))
 
 (defmethod events->bag ((source string)
 			(dest   bag)
