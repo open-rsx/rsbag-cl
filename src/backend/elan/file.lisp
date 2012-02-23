@@ -203,7 +203,3 @@ written or read respectively."))
 			  (nsecs local-time:nsec-of)) value)
 	 (msecs (truncate nsecs 1000000)))
     (+ (* 1000 secs) msecs)))
-
-#+example
-(with-input-from-file (stream "/homes/jmoringe/code/asya/SSL_JI_int.eaf")
-  (make-instance 'file :stream stream))
