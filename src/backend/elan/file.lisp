@@ -73,14 +73,21 @@ written or read respectively."))
 		      (next-channel-id %file-next-channel-id)) instance)
 	 ((date urls time-slots tiers)
 	  (cond
+	    ;; Data is available - parse as XML document.
 	    ((listen stream)
 	     (setf document (cxml:parse stream (stp:make-builder)))
 	     (xloc:xml-> document 'file/list))
+
+	    ;; No data is available, but direction implies output -
+	    ;; create an empty XML document and write it back later.
 	    ((member direction '(:output :io))
 	     (setf document (stp:make-document (stp:make-element "ANNOTATION_DOCUMENT")))
 	     (list (local-time:now) nil nil nil))
+
+	    ;; No data is available and direction does not imply
+	    ;; output - signal an error.
 	    (t
-	     (error 'in"~@<EAF file is empty: ~S~@:>"
+	     (error "~@<Trying to read an empty EAF file from: ~S~@:>"
 		    stream))))
 	 (base (timestamp->millisecs date))
 	 ((:flet resolve (id))
@@ -184,7 +191,7 @@ written or read respectively."))
   (third (nth index (gethash channel (%file-data file)))))
 
 
-;;;
+;;; Utility functions
 ;;
 
 (defun millisecs->timestamp (value)
