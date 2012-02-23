@@ -44,7 +44,13 @@ channel.")
 		    :reader   %file-data
 		    :initform (make-hash-table :test #'eq)
 		    :documentation
-		    "Maps channel ids to index objects.")
+		    "Maps channel ids to channel data. Each entry of a
+channel is of the form
+
+  (START END DATUM)
+
+where START and END are the start and end timestamps respectively and
+DATUM is the (string) datum of the entry.")
    (document        :type     stp:document
 		    :accessor %file-document
 		    :documentation
