@@ -33,7 +33,7 @@ stream associated to this bag.")
    (transform :initarg  :transform
 	      :type     transform-spec
 	      :reader   bag-transform
-	      :initform &from-source
+	      :initform '&from-source
 	      :documentation
 	      "Stores a specification for transformations that should
 be associated with channels of the bag. See type `transform-spec'.")
