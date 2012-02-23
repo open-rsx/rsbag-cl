@@ -28,6 +28,15 @@
 opened for reading, writing or both."
   '(member :input :output :io))
 
+(deftype if-does-not-exist-policy ()
+  "Possible actions to execute if a requested object does not exist."
+  '(member nil :error))
+
+(deftype if-exists-policy ()
+  "Possible actions to execute if an object should be stored in
+location that is already occupied."
+  '(member :error :supersede))
+
 
 ;;; Transformation specifications
 ;;

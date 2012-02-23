@@ -32,6 +32,9 @@
   (:export
    :direction
 
+   :if-does-not-exist-policy
+   :if-exists-policy
+
    :transform-spec/default
    :transform-spec/augment
    :transform-spec/full

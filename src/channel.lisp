@@ -79,6 +79,8 @@ timestamps and entries."
 		  &key
 		  if-does-not-exist
 		  (transform        (channel-transform channel)))
+  (check-type if-does-not-exist if-does-not-exist-policy)
+
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel)
 	 (raw (or (rsbag.backend:get-entry backend id index)
@@ -96,10 +98,12 @@ timestamps and entries."
 		  (timestamp local-time:timestamp)
 		  &key
 		  if-does-not-exist)
+  (check-type if-does-not-exist if-does-not-exist-policy)
+
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
     (or (rsbag.backend:get-entry backend id timestamp)
-	(case if-does-not-exist
+	(ecase if-does-not-exist
 	  (:error (error 'no-such-entry
 			 :bag     (channel-bag channel)
 			 :channel channel
@@ -120,6 +124,8 @@ timestamps and entries."
 			 &key
 			 if-exists
 			 (transform (channel-transform channel)))
+  (check-type if-exists if-exists-policy)
+
   (when (eq if-exists :supersede)
     (error "Supersede entries is not supported yes"))
 
