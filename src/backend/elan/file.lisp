@@ -180,7 +180,7 @@ written or read respectively."))
 (defmethod get-entry ((file    file)
 		      (channel integer)
 		      (index   integer))
-  (cdr (nth index (gethash channel (%file-data file)))))
+  (third (nth index (gethash channel (%file-data file)))))
 
 
 ;;;
