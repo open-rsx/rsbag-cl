@@ -96,11 +96,11 @@ written or read respectively."))
     (setf (%file-document instance) document) ;;; TODO(jmoringe):
 
     ;; Add video channels.
-    (iter (for url in urls)
-	  (for i :from 0)
+    (iter (for url each urls :with-index i)
 	  (let* ((name (format nil "video~D" i))
 		 (id   (make-channel-id instance name)))
-	    (push (list id name '(:type (:rsb-event :|.rst.vision.Image|)))
+	    (push (list id name `(:type (,rsbag.transform:+rsb-schema-name+
+					 :|.rst.vision.Image|)))
 		  channels)))
 
     ;; Add annotation channels.
