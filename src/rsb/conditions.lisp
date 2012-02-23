@@ -43,7 +43,8 @@ errors involving bag-connections occur."))
    "Errors of this condition class and subclasses are signaled when
 errors occur during event recording into a bag."))
 
-(define-condition event-storage-failed (recording-error)
+(define-condition event-storage-failed (recording-error
+					chainable-condition)
   ((event :initarg  :event
 	  :reader   connection-error-event
 	  :documentation
