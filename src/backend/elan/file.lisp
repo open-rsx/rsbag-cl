@@ -82,7 +82,7 @@ written or read respectively."))
 	    ;; Data is available - parse as XML document.
 	    ((listen stream)
 	     (setf document (cxml:parse stream (stp:make-builder)))
-	     (xloc:xml-> document 'file/list))
+	     (xloc:xml-> (stp:document-element document) 'file/list))
 
 	    ;; No data is available, but direction implies output -
 	    ;; create an empty XML document and write it back later.
@@ -145,7 +145,7 @@ written or read respectively."))
 	   (time-slots (iter (for (timestamp id) in-hashtable time-slots)
 			     (collect (cons id timestamp))))
 	   (foo (list (local-time:now) nil time-slots tiers))) ;;; TODO(jmoringe, 2011-12-01): media stuff
-      (xloc:->xml foo document 'file/list)
+      (xloc:->xml foo (stp:document-element document) 'file/list)
       (file-position stream 0)
       (stp:serialize document (cxml:make-octet-stream-sink
 			       (make-broadcast-stream stream)
