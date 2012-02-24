@@ -79,6 +79,8 @@
 			      (:file       "types"
 			       :depends-on ("package"))
 			      (:file       "conditions"
+			       :depends-on ("package"))
+			      (:file       "versioned-packages"
 			       :depends-on ("package"))))
 
 		(:module     "backend"
@@ -163,7 +165,13 @@
 			       :depends-on ("protocol"))
 			      (:file       "rsb-event-payload-conversion"
 			       :pathname   "src/transform/rsb-event-payload-conversion"
-			       :depends-on ("protocol" "rsb-event"))))
+			       :depends-on ("protocol" "rsb-event"))
+			      (:file       "rsb-event-version-detection"
+			       :pathname   "src/transform/rsb-event-version-detection"
+			       :depends-on ("rsb-event"))
+			      (:file       "rsb-event-multi-version"
+			       :pathname   "src/transform/rsb-event-multi-version"
+			       :depends-on ("rsb-event-version-detection"))))
 
 		#+sbcl
 		(:module     "rsb"

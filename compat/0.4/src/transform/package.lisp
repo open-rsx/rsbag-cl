@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the transform module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -23,29 +23,6 @@
    :alexandria
    :bind
    :iterate)
-
-  (:import-from :rsb
-   :chainable-condition
-   :chainable-condition-cause)
-
-  (:import-from :rsbag
-   :make-versioned-name
-   :with-versioned-packages)
-
-  ;; Variables
-  (:export
-   :+rsb-schema-name+)
-
-  ;; Conditions
-  (:export
-   :transform-error
-   :transform-error-transform
-
-   :encoding-error
-   :transform-error-domain-object
-
-   :decoding-error
-   :transform-error-encoded)
 
   ;; Transform protocol
   (:export

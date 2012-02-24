@@ -118,6 +118,13 @@
   (:export
    :with-bag)
 
+  ;; Package management macros
+  (:export
+   :make-versioned-name
+   :with-renamed-package
+   :with-renamed-packages
+   :with-versioned-packages)
+
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.
 
