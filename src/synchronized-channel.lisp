@@ -25,6 +25,8 @@
 	 :documentation
 	 "The lock that is used to synchronize accesses to the
 channel. Usually points to a lock owned by the containing bag."))
+  (:default-initargs
+   :lock (required-argument :lock))
   (:documentation
    "Instances of this channel class can be safely used from multiple
 threads. Callers have to be prepared to encounter increased latencies
@@ -36,7 +38,7 @@ in comparison to the single-threaded case."))
 		   (bt:with-lock-held ((%channel-lock channel))
 		     (call-next-method)))))
   (define-synchronized-method
-      channel-timestamp ((channel synchronized-channel)))
+      channel-timestamps ((channel synchronized-channel)))
   (define-synchronized-method
       entry ((channel synchronized-channel)
 	     (index   t)
