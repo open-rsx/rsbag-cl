@@ -184,16 +184,19 @@ rsbag.transform."))
    "Return the channel class used by bag."))
 
 (defgeneric %make-channel (bag name meta-data transform
+			   &rest args
 			   &key
-			   id)
+			   id
+			   &allow-other-keys)
   (:documentation
    "Create and return a new channel named NAME with id ID and
-associated meta-data META-DATA and TRANSFORM for BAG.
+associated meta-data META-DATA and TRANSFORM for BAG. The returned
+object implements the channel protocol.
 
 TRANSFORM can be nil in which case raw data from the underlying source
 is used.
 
-The returned object implements the channel protocol."))
+ARGS are passed to the constructed channel."))
 
 (defgeneric %make-channel-transform (bag name meta-data
 				     &key

@@ -57,9 +57,7 @@ in comparison to the single-threaded case."))
 			  (name      string)
 			  (meta-data list)
 			  (transform t)
-			  &key
-			  id)
-  (declare (ignore id))
-  (let ((channel (call-next-method)))
-    (setf (%channel-lock channel) (%bag-lock bag))
-    channel))
+			  &rest args &key)
+  (apply #'call-next-method
+	 bag name meta-data transform
+	 (append (list :lock (%bag-lock bag)) args)))

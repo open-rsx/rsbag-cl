@@ -161,18 +161,20 @@ method. "))
 			  (name      string)
 			  (meta-data list)
 			  (transform t)
+			  &rest args
 			  &key
 			  id)
   (bind (((:accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
-    (make-instance channel-class
-		   :bag       bag
-		   :name      name
-		   :transform transform
-		   :id        (or id (rsbag.backend:make-channel-id
-				      backend name))
-		   :meta-data meta-data
-		   :backend   backend)))
+    (apply #'make-instance channel-class
+	   :bag       bag
+	   :name      name
+	   :transform transform
+	   :id        (or id (rsbag.backend:make-channel-id
+			      backend name))
+	   :meta-data meta-data
+	   :backend   backend
+	   (remove-from-plist args :id))))
 
 (defmethod %make-channel-transform ((bag       bag)
 				    (name      string)
