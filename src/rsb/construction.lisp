@@ -144,9 +144,7 @@
   (bind ((name (if (starts-with #\/ (channel-name source))
 		   (subseq (channel-name source) 1)
 		   (channel-name source)))
-	 (name (if-let ((colon-index (position #\: name)))
-		 (subseq name 0 colon-index)
-		 name))
+	 (name (%legalize-name name))
 	 (uri  (%make-playback-uri name dest))
 	 ((:plist type) (channel-meta-data source))
 	 (converter   (make-instance
@@ -164,6 +162,12 @@
 
 ;;; Utility functions
 ;;
+
+(defun %legalize-name (name)
+  "Remove characters from NAME which would be illegal in scope names."
+  (if-let ((colon-index (position #\: name)))
+    (%legalize-name (subseq name 0 colon-index))
+    (remove-if (complement #'alphanumericp) name)))
 
 (defun %make-playback-uri (channel-name base-uri)
   "Return a URI that is the result of merging CHANNEL-NAME and
