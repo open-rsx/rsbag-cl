@@ -90,10 +90,10 @@ keyword part.
 BACKEND can be used to explicitly select a file-format backend for
 SOURCE. If supplied, it has to be a keyword designating a file-format
 backend. Available backends can be inspected using
-`rsbag.backend:backend-classes'.
+`rsbag.backend:backend-classes'. See `rsbag:open-bag'.
 
 If supplied, BAG-CLASS selects the class of the bag created for
-SOURCE.
+SOURCE. See `rsbag:open-bag'.
 
 If supplied, REPLAY-STRATEGY selects a replay strategy that controls
 the replay timing and coordinates the publishing of events via
@@ -151,6 +151,7 @@ continue using the `start' function."))
 according to STRATEGY. Usually, STRATEGY will mostly influence the
 timing of the replay. However, things like simulated loss of events or
 transformations are also possible.
+
 If PROGRESS is non-nil it has to be a function accepting five
 arguments: progress ratio, current index, start index, end index and
 current timestamp."))
