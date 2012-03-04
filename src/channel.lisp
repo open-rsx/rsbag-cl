@@ -122,12 +122,12 @@ timestamps and entries."
 			 (channel   channel)
 			 (index     local-time:timestamp)
 			 &key
-			 if-exists
+			 (if-exists :error)
 			 (transform (channel-transform channel)))
   (check-type if-exists if-exists-policy)
 
   (when (eq if-exists :supersede)
-    (error "Supersede entries is not supported yes"))
+    (error "Superseding entries is not supported yet"))
 
   (bind (((:accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel)
