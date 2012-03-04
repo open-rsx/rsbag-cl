@@ -25,7 +25,12 @@
 
 (defgeneric transform-name (transform)
   (:documentation
-   "Return a keyword identifying TRANSFORM."))
+   "Return an object identifying TRANSFORM."))
+
+(defgeneric transform-format (transform)
+  (:documentation
+   "Return an object describing the encoding performed by
+TRANSFORM."))
 
 (defgeneric encode (transform domain-object)
   (:documentation

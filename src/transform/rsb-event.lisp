@@ -61,6 +61,29 @@ octet vectors without (de)serializing payloads."))
 (defmethod transform-name ((transform rsb-event))
   (list +rsb-schema-name+ (transform-wire-schema transform)))
 
+;;; TODO(jmoringe, 2012-03-04): this is a horrible hack
+;; maybe the converter should supply the schema information?
+(defmethod transform-format ((transform rsb-event))
+  (bind (((:accessors-r/o (wire-schema transform-wire-schema)) transform))
+    (with-output-to-string (stream)
+      ;; Outer serialization: RSB event serialization.
+      (pbb:emit
+       (load-time-value
+	(pb:dependency-closure
+	 (pb:find-descriptor ".rsb.protocol.Notification")))
+       `(:proto :stream ,stream))
+      ;; Inner serialization: payload serialization (if available).
+      (when (starts-with #\. (string wire-schema))
+	(if-let ((descriptor (pb:find-descriptor wire-schema :error? nil)))
+	  (progn
+	    (princ #\: stream)
+	    (pbb:emit (pb:dependency-closure descriptor)
+		      `(:proto :stream ,stream)))
+	  (warn "~@<Payload serialization format for wire-schema ~S is ~
+not known. Channel format will only describe outer event ~
+serialization; not inner payload serialization.~@:>"
+		wire-schema))))))
+
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
   (bind (((:accessors-r/o (holder %transform-holder)) transform)
 	 ((:accessors-r/o (id        rsb.protocol:notification-event-id)

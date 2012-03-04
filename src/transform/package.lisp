@@ -50,6 +50,7 @@
   ;; Transform protocol
   (:export
    :transform-name
+   :transform-format
 
    :decode
    :encode)
