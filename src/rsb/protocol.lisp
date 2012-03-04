@@ -230,11 +230,12 @@ strategy designated by THING."))
    "Return a channel name string designating the channel within BAG in
 which EVENT should be stored according to STRATEGY."))
 
-(defgeneric channel-format-for (bag event strategy)
+(defgeneric channel-format-for (bag transform event strategy)
   (:documentation
    "Return a representation of the type of data/serialization
-mechanism according to which the data of EVENT will be stored in the
-channel within BAG allocated by STRATEGY."))
+mechanism according to which the data of EVENT, after being encoded by
+TRANSFORM, will be stored in the channel within BAG allocated by
+STRATEGY."))
 
 (defgeneric make-channel-for (bag event strategy)
   (:documentation
@@ -245,11 +246,20 @@ according to STRATEGY."))
 ;;; Default behavior
 ;;
 
-(defmethod channel-format-for ((bag      t)
-			       (event    t)
-			       (strategy t))
+(defmethod channel-format-for ((bag       t)
+			       (transform (eql nil))
+			       (event     t)
+			       (strategy  t))
   "Default behavior is to not associate a channel format."
   nil)
+
+(defmethod channel-format-for ((bag       t)
+			       (transform t)
+			       (event     t)
+			       (strategy  t))
+  "Default behavior for non-nil TRANSFORM is to retrieve the channel
+format from TRANSFORM."
+  (transform-format transform))
 
 
 ;;; Channel allocation strategy class family
