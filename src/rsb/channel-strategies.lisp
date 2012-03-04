@@ -35,8 +35,8 @@ combination is performed when the first event exhibiting that
 combination is processed.
 
 As an example, an event on scope /foo/bar/ with wire-schema
-\".rst.Image\" would be stored in a channel called
-\"/foo/bar/:.rst.Image\"."))
+\".rst.vision.Image\" would be stored in a channel called
+\"/foo/bar/:.rst.vision.Image\"."))
 
 (defmethod channel-name-for ((connection channel-connection)
 			     (event      event)
@@ -47,6 +47,7 @@ As an example, an event on scope /foo/bar/ with wire-schema
     (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
 	   event :rsb.transport.wire-schema)))
 
+;;; TODO(jmoringe, 2012-02-17): move to protocol or mixin
 (defmethod ensure-channel-for ((connection channel-connection)
 			       (event      event)
 			       (strategy   scope-and-type))
