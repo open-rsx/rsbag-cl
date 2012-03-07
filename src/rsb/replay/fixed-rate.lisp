@@ -29,7 +29,8 @@
 (defclass fixed-rate (error-policy-mixin
 		      timed-replay-mixin
 		      delay-correcting-mixin
-		      speed-adjustment-mixin)
+		      speed-adjustment-mixin
+		      timestamp-adjustment-mixin)
   ((delay :initarg  :delay
 	  :type     positive-real
 	  :accessor strategy-delay
