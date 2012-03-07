@@ -27,7 +27,8 @@
   (find-class 'as-fast-as-possible))
 
 (defclass as-fast-as-possible (error-policy-mixin
-			       sequential-mixin)
+			       sequential-mixin
+			       timestamp-adjustment-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded, but

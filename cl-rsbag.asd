@@ -228,18 +228,23 @@
 			       :depends-on ("package" "sequential-mixin"))
 			      (:file       "delay-correcting-mixin"
 			       :depends-on ("package"))
+			      (:file       "timestamp-adjustment-mixin"
+			       :depends-on ("package"))
 
 			      (:file       "recorded-timing"
 			       :depends-on ("package" "timed-replay-mixin"
 					    "error-policy-mixin"
-					    "delay-correcting-mixin"))
+					    "delay-correcting-mixin"
+					    "timestamp-adjustment-mixin"))
 			      (:file       "fixed-rate"
 			       :depends-on ("package" "timed-replay-mixin"
 					    "error-policy-mixin"
-					    "delay-correcting-mixin"))
+					    "delay-correcting-mixin"
+					    "timestamp-adjustment-mixin"))
 			      (:file       "as-fast-as-possible"
 			       :depends-on ("package" "sequential-mixin"
-					    "error-policy-mixin"))
+					    "error-policy-mixin"
+					    "timestamp-adjustment-mixin"))
 			      (:file       "interactive"
 			       :depends-on ("package" "external-driver-mixin"
 					    "error-policy-mixin"))
