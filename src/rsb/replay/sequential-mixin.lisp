@@ -20,7 +20,7 @@
 (cl:in-package :rsbag.rsb.replay)
 
 (defclass sequential-mixin (replay-restart-mixin
-			    bounds-mixin
+			    time-bounds-mixin
 			    view-creation-mixin)
   ()
   (:documentation

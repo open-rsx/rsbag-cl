@@ -47,12 +47,19 @@
   (:export
    :error-policy-mixin)
 
-  ;; bounds protocol and mixin class
+  ;; index bounds protocol and mixin class
   (:export
    :strategy-start-index
    :strategy-end-index
 
    :bounds-mixin)
+
+  ;; time bounds protocol and mixin class
+  (:export
+   :strategy-start-time
+   :strategy-end-time
+
+   :time-bounds-mixin)
 
   ;; view creation protocol and mixin class
   (:export

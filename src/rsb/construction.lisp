@@ -114,7 +114,9 @@
 			&rest args
 			&key
 			(replay-strategy :recorded-timing)
-			(start-index     0)
+			start-time
+			start-index
+			end-time
 			end-index
 			(channels    t))
   (bind ((predicate (if (eq channels t) (constantly t) channels))
@@ -125,9 +127,16 @@
 	 (connections (map 'list #'do-channel channels))
 	 ((class &rest args) (ensure-list replay-strategy))
 	 (strategy (apply #'make-replay-strategy class
-			  :start-index start-index
-			  :end-index   end-index
-			  args)))
+			  (append
+			   (when start-time
+			     (list :start-time start-time))
+			   (when start-index
+			     (list :start-index start-index))
+			   (when end-time
+			     (list :end-time end-time))
+			   (when end-index
+			     (list :end-index end-index))
+			   args))))
     (make-instance 'replay-bag-connection
 		   :bag      source
 		   :channels connections
