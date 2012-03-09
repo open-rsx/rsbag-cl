@@ -73,7 +73,7 @@ on there values and a method on `print-object'."))
 ;;
 
 (defclass time-bounds-mixin (bounds-mixin)
-  ((start-time :initarg  start-time
+  ((start-time :initarg  :start-time
 	       :type     (or null local-time:timestamp)
 	       :accessor strategy-start-time
 	       :initform nil
@@ -81,7 +81,7 @@ on there values and a method on `print-object'."))
 	       "Stores the timestamp at which the replay should start
 or nil if the replay should not start at a specific time but at an
 specific index or just at the first event.")
-   (end-time   :initarg  end-time
+   (end-time   :initarg  :end-time
 	       :type     (or null local-time:timestamp)
 	       :accessor strategy-end-time
 	       :initform nil
