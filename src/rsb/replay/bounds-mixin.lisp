@@ -156,12 +156,11 @@ requested ~A ~A~@:>"
 (defun check-ordered-indices (earlier later)
   "Signal an error unless EARLIER is smaller than LATER."
   (unless (< earlier later)
-    (error "~@<Invalid relation of indices: index ~:D is smaller than ~
-index ~:D.~@:>" later earlier)))
+    (error "~@<Invalid relation of indices: index ~:D is not greater ~
+than index ~:D.~@:>" later earlier)))
 
 (defun check-ordered-timestamps (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
   (unless (local-time:timestamp< earlier later)
-   (error "~@<Invalid relation of timestamps: timestamp ~A is earlier ~
-than timestamp~A.~@:>"
-	  later earlier)))
+    (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
+later than than timestamp ~A.~@:>" later earlier)))
