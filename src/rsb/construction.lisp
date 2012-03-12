@@ -118,25 +118,16 @@
 			start-index
 			end-time
 			end-index
-			(channels    t))
-  (bind ((predicate (if (eq channels t) (constantly t) channels))
-	 (channels  (remove-if-not predicate (bag-channels source)))
+			(channels        t))
+  (bind ((predicate  (if (eq channels t) (constantly t) channels))
+	 (channels   (remove-if-not predicate (bag-channels source)))
+	 (other-args (remove-from-plist args :replay-strategy :channels))
 	 ((:flet do-channel (channel))
-	  (apply #'bag->events channel dest
-		 (remove-from-plist args :replay-strategy)))
+	  (apply #'bag->events channel dest other-args))
 	 (connections (map 'list #'do-channel channels))
 	 ((class &rest args) (ensure-list replay-strategy))
 	 (strategy (apply #'make-replay-strategy class
-			  (append
-			   (when start-time
-			     (list :start-time start-time))
-			   (when start-index
-			     (list :start-index start-index))
-			   (when end-time
-			     (list :end-time end-time))
-			   (when end-index
-			     (list :end-index end-index))
-			   args))))
+			  (append other-args args))))
     (make-instance 'replay-bag-connection
 		   :bag      source
 		   :channels connections
@@ -150,10 +141,10 @@
 (defmethod bag->events ((source channel)
 			(dest   puri:uri)
 			&key)
-  (bind ((name (if (starts-with #\/ (channel-name source))
-		   (subseq (channel-name source) 1)
-		   (channel-name source)))
-	 (name (%legalize-name name))
+  (bind ((name (%legalize-name
+		(if (starts-with #\/ (channel-name source))
+		    (subseq (channel-name source) 1)
+		    (channel-name source))))
 	 (uri  (%make-playback-uri name dest))
 	 ((:plist type) (channel-meta-data source))
 	 (converter   (make-instance
