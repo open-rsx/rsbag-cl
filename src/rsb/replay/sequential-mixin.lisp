@@ -20,7 +20,7 @@
 (cl:in-package :rsbag.rsb.replay)
 
 (defclass sequential-mixin (replay-restart-mixin
-			    bounds-mixin
+			    time-bounds-mixin
 			    view-creation-mixin)
   ()
   (:documentation
@@ -83,3 +83,13 @@ default behavior is just ignoring the failed event. "
 			  (informer           t))
   "The default behavior consists in sending EVENT via INFORMER."
   (send informer event :unchecked? t))
+
+(defmethod process-event ((connection         replay-bag-connection)
+			  (strategy           sequential-mixin)
+			  (timestamp          t)
+			  (previous-timestamp t)
+			  (event              t)
+			  (sink               function))
+  "The default behavior for a function SINK consists in calling SINK
+with EVENT."
+  (funcall sink event))

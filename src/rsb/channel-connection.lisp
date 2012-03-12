@@ -49,14 +49,29 @@ established when individual channels of bags are used as data sources
 or sinks of RSB participants."))
 
 (defmethod close ((connection channel-connection)
-		  &key &allow-other-keys)
+		  &key abort)
+  (declare (ignore abort))) ;; nothing to do
+
+
+;;; `participant-channel-connection' class
+;;
+
+(defclass participant-channel-connection (channel-connection)
+  ()
+  (:documentation
+   "A `channel-connection' subclass in which the sink is a RSB
+participant."))
+
+(defmethod close ((connection participant-channel-connection)
+		  &key abort)
+  (declare (ignore abort))
   (detach/ignore-errors (connection-participant connection)))
 
 
 ;;; `recording-channel-connection' class
 ;;
 
-(defclass recording-channel-connection (channel-connection)
+(defclass recording-channel-connection (participant-channel-connection)
   ((timestamp :initarg  :timestamp
 	      :type     keyword
 	      :reader   connection-timestamp

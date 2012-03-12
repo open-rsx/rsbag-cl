@@ -75,7 +75,9 @@ inspected using `rsbag.rsb:channel-strategy-classes'."))
 			 backend
 			 bag-class
 			 replay-strategy
+			 start-time
 			 start-index
+			 end-time
 			 end-index
 			 channels
 			 &allow-other-keys)
@@ -102,6 +104,11 @@ informers.
 START-INDEX and END-INDEX can be used to select a range of stored
 events for replay. The default behavior consists in replaying all
 stored events.
+
+Similarly, START-TIME and END-TIME can be used to select a range of
+stored events for replay based on temporal bounds. Note that the
+actual start and end of the replay correspond to the events in SOURCE
+which are closest to START-TIME and END-TIME respectively.
 
 If supplied, CHANNELS selects a subset of channels from which events
 should be replayed."))

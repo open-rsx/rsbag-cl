@@ -96,27 +96,29 @@
 				      &rest args
 				      &key
 				      backend
+				      transform
 				      (bag-class 'synchronized-bag))
 		(apply #'bag->events
 		       (apply #'open-bag source
 			      :bag-class bag-class
 			      :direction :input
 			      (append (when backend
-					(list :backend backend))))
+					(list :backend backend))
+				      (when transform
+					(list :transform transform))))
 		       dest
-		       (remove-from-plist args :backend :bag-class)))))
+		       (remove-from-plist
+			args :backend :transform :bag-class)))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
 
 (defmethod bag->events ((source bag)
-			(dest   puri:uri)
+			(dest   t)
 			&rest args
 			&key
 			(replay-strategy :recorded-timing)
-			(start-index     0)
-			end-index
-			(channels    t))
+			(channels        t))
   (bind ((predicate (if (eq channels t) (constantly t) channels))
 	 (channels  (remove-if-not predicate (bag-channels source)))
 	 ((:flet do-channel (channel))
@@ -125,15 +127,22 @@
 	 (connections (map 'list #'do-channel channels))
 	 ((class &rest args) (ensure-list replay-strategy))
 	 (strategy (apply #'make-replay-strategy class
-			  :start-index start-index
-			  :end-index   end-index
-			  args)))
+			  (append
+			   (when start-time
+			     (list :start-time start-time))
+			   (when start-index
+			     (list :start-index start-index))
+			   (when end-time
+			     (list :end-time end-time))
+			   (when end-index
+			     (list :end-index end-index))
+			   args))))
     (make-instance 'replay-bag-connection
 		   :bag      source
 		   :channels connections
 		   :strategy strategy)))
 
-(defmethod bag->events ((source bag)
+(defmethod bag->events ((source t)
 			(dest   string)
 			&rest args &key)
   (apply #'bag->events source (puri:parse-uri dest) args))
@@ -154,10 +163,18 @@
 					:bytes)))
 	 (participant (make-informer
 		       uri t :converters `((t . ,converter)))))
-    (make-instance 'channel-connection
+    (make-instance 'participant-channel-connection
 		   :bag         (channel-bag source)
 		   :channels    (list source)
 		   :participant participant)))
+
+(defmethod bag->events ((source channel)
+			(dest   function)
+			&key)
+  (make-instance 'channel-connection
+		 :bag         (channel-bag source)
+		 :channels    (list source)
+		 :participant dest))
 
 
 ;;; Utility functions

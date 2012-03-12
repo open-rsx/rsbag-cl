@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for rsb module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -86,6 +86,10 @@
    :channel-connection
 
    :connection-participant)
+
+  ;; `participant-channel-connection' subclass
+  (:export
+   :participant-channel-connection)
 
   ;; channel allocation strategy protocol
   (:export

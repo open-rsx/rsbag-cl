@@ -29,8 +29,10 @@ behavior. The method for `view-creation-mixin' creates a
 serialized view of events across channels."))
 
 (defmethod make-view ((connection replay-bag-connection)
-		      (strategy   view-creation-mixin))
+		      (strategy   view-creation-mixin)
+		      &key
+		      (selector (rcurry #'inject-informer connection)))
   "Default behavior is serializing events across channels."
   (make-serialized-view
    (mappend #'connection-channels (connection-channels connection))
-   :selector (rcurry #'inject-informer connection)))
+   :selector selector))
