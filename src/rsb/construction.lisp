@@ -167,7 +167,9 @@
   "Remove characters from NAME which would be illegal in scope names."
   (if-let ((colon-index (position #\: name)))
     (%legalize-name (subseq name 0 colon-index))
-    (remove-if (complement #'alphanumericp) name)))
+    (remove-if (complement (disjoin #'alphanumericp
+				    (curry #'char-equal #\/)))
+	       name)))
 
 (defun %make-playback-uri (channel-name base-uri)
   "Return a URI that is the result of merging CHANNEL-NAME and
