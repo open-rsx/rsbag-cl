@@ -117,6 +117,10 @@
 			(dest   t)
 			&rest args
 			&key
+                        start-time
+                        start-index
+                        end-time
+                        end-index
 			(replay-strategy :recorded-timing)
 			(channels        t))
   (bind ((predicate (if (eq channels t) (constantly t) channels))
