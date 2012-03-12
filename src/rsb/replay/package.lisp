@@ -43,6 +43,10 @@
    :rsb
    :rsb.patterns)
 
+  ;; Types
+  (:export
+   :range-boundary/timestamp)
+
   ;; `error-policy-mixin' mixin class
   (:export
    :error-policy-mixin)

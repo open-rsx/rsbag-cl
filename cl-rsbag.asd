@@ -202,7 +202,8 @@
 		 :pathname   "src/rsb/replay"
 		 :depends-on ("rsb")
 		 :components ((:file       "package")
-
+			      (:file       "types"
+			       :depends-on ("package"))
 			      (:file       "util"
 			       :depends-on ("package"))
 

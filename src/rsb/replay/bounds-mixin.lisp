@@ -74,7 +74,7 @@ on there values and a method on `print-object'."))
 
 (defclass time-bounds-mixin (bounds-mixin)
   ((start-time :initarg  :start-time
-	       :type     (or null local-time:timestamp)
+	       :type     range-boundary/timestamp
 	       :accessor strategy-start-time
 	       :initform nil
 	       :documentation
@@ -82,7 +82,7 @@ on there values and a method on `print-object'."))
 or nil if the replay should not start at a specific time but at an
 specific index or just at the first event.")
    (end-time   :initarg  :end-time
-	       :type     (or null local-time:timestamp)
+	       :type     range-boundary/timestamp
 	       :accessor strategy-end-time
 	       :initform nil
 	       :documentation
@@ -121,15 +121,30 @@ translation of their values into indices before replay."))
 		      (end-index   strategy-end-index)) strategy)
 	 (sequence    (make-view connection strategy
 				 :selector #'channel-timestamps))
-	 ((:flet timestamp->index (timestamp))
-	  (or (position timestamp sequence
-			:test #'local-time:timestamp<=)
-	      (error "~@<Could not find requested timestamp ~A in bag ~
+	 ((:labels timestamp->index (timestamp))
+	  (etypecase timestamp
+	    (non-negative-real
+	     (timestamp->index
+	      (local-time:adjust-timestamp (rsbag:start bag)
+		(:offset :sec timestamp))))
+	    (negative-real
+	     (timestamp->index
+	      (local-time:adjust-timestamp (end bag)
+		(:offset :sec timestamp))))
+	    (local-time:timestamp
+	     (values
+	      (or (position timestamp sequence
+			    :test #'local-time:timestamp<=)
+		  (error "~@<Could not find requested timestamp ~A in bag ~
 ~A (with temporal range [~A, ~A]).~@:>"
-		     timestamp (connection-bag connection)
-		     (rsbag:start bag) (end bag))))
+			 timestamp (connection-bag connection)
+			 (rsbag:start bag) (end bag)))
+	      timestamp))))
 	 ((:flet set-index (timestamp setter name))
-	  (let* ((index      (timestamp->index timestamp))
+	  (log1 :info "Mapping requested ~A ~A to index (this can take a moment)"
+		name timestamp)
+	  (bind (((:values index timestamp)
+		  (timestamp->index timestamp))
 		 (effective  (elt sequence index))
 		 (difference (abs (local-time:timestamp-difference
 				   timestamp effective))))
