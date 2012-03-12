@@ -96,21 +96,25 @@
 				      &rest args
 				      &key
 				      backend
+				      transform
 				      (bag-class 'synchronized-bag))
 		(apply #'bag->events
 		       (apply #'open-bag source
 			      :bag-class bag-class
 			      :direction :input
 			      (append (when backend
-					(list :backend backend))))
+					(list :backend backend))
+				      (when transform
+					(list :transform transform))))
 		       dest
-		       (remove-from-plist args :backend :bag-class)))))
+		       (remove-from-plist
+			args :backend :transform :bag-class)))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
 
 (defmethod bag->events ((source bag)
-			(dest   puri:uri)
+			(dest   t)
 			&rest args
 			&key
 			(replay-strategy :recorded-timing)
@@ -129,7 +133,7 @@
 		   :channels connections
 		   :strategy strategy)))
 
-(defmethod bag->events ((source bag)
+(defmethod bag->events ((source t)
 			(dest   string)
 			&rest args &key)
   (apply #'bag->events source (puri:parse-uri dest) args))
@@ -150,10 +154,18 @@
 					:bytes)))
 	 (participant (make-informer
 		       uri t :converters `((t . ,converter)))))
-    (make-instance 'channel-connection
+    (make-instance 'participant-channel-connection
 		   :bag         (channel-bag source)
 		   :channels    (list source)
 		   :participant participant)))
+
+(defmethod bag->events ((source channel)
+			(dest   function)
+			&key)
+  (make-instance 'channel-connection
+		 :bag         (channel-bag source)
+		 :channels    (list source)
+		 :participant dest))
 
 
 ;;; Utility functions
