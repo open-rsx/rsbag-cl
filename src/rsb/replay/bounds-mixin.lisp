@@ -155,14 +155,22 @@ translation of their values into indices before replay."))
 	      (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
 requested ~A ~A~@:>"
 		    name effective difference name timestamp)))))
-	(when start-time
+    (when start-time
+      (if (and (rsbag:start bag) (end bag))
 	  (set-index start-time
 		     #'(lambda (value) (setf start-index value))
-		     "start time"))
-	(when end-time
+		     "start time")
+	  (warn "~@<Bag ~A does not have start and end times; ignoring ~
+requested start time ~A~@:>"
+		bag start-time)))
+    (when end-time
+      (if (and (rsbag:start bag) (end bag))
 	  (set-index end-time
 		     #'(lambda (value) (setf end-index value))
-		     "end time"))))
+		     "end time")
+	  (warn "~@<Bag ~A does not have start and end times; ignoring ~
+requested end time ~A~@:>"
+		bag end-time)))))
 
 
 ;;; Utility functions
