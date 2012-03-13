@@ -108,7 +108,10 @@ stored events.
 Similarly, START-TIME and END-TIME can be used to select a range of
 stored events for replay based on temporal bounds. Note that the
 actual start and end of the replay correspond to the events in SOURCE
-which are closest to START-TIME and END-TIME respectively.
+which are closest to START-TIME and END-TIME respectively. Times can
+be specified as `local-time:timestamp' instances and real numbers. The
+latter are treated as offsets from the start of the recorded date when
+non-negative and from the end of the recorded data when negative.
 
 If supplied, CHANNELS selects a subset of channels from which events
 should be replayed."))
