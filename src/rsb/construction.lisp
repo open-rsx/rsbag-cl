@@ -69,19 +69,26 @@
 				source)))
 
 (macrolet ((define-open-bag-method (type)
-	     `(defmethod events->bag ((source t)
-				      (dest   ,type)
-				      &rest args
-				      &key
-				      backend
-				      (bag-class 'synchronized-bag))
-		(apply #'events->bag source
-		       (apply #'open-bag dest
-			      :bag-class bag-class
-			      :direction :io
-			      (append (when backend
-					(list :backend backend))))
-		       (remove-from-plist args :backend :bag-class)))))
+	     `(progn
+		(defmethod events->bag ((source string)
+					(dest   ,type)
+					&rest args &key)
+		  (format t "string -> list~%")
+		  (apply #'events->bag (list source) dest args))
+
+		(defmethod events->bag ((source t)
+					(dest   ,type)
+					&rest args
+					&key
+					backend
+					(bag-class 'synchronized-bag))
+		  (apply #'events->bag source
+			 (apply #'open-bag dest
+				:bag-class bag-class
+				:direction :io
+				(append (when backend
+					  (list :backend backend))))
+			 (remove-from-plist args :backend :bag-class))))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
