@@ -37,6 +37,8 @@ participants as a data source or sink.")
 	     "Stores a list of channel connections for channels of the
 bag that are connected to RSB participants as data sources or
 sinks."))
+  (:default-initargs
+   :bag (missing-required-initarg 'bag-connection :bag))
   (:documentation
    "Instances of this class represent the connections being
 established when channels of bags are used as data sources or sinks of
