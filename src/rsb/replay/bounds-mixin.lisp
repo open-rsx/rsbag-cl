@@ -130,7 +130,9 @@ translation of their values into indices before replay."))
 	    (negative-real
 	     (timestamp->index
 	      (local-time:adjust-timestamp (end bag)
-		(:offset :sec timestamp))))
+		(:offset :sec  (floor timestamp))
+		(:offset :nsec (mod (floor timestamp 1/1000000000)
+				    1000000000)))))
 	    (local-time:timestamp
 	     (values
 	      (or (position timestamp sequence
