@@ -183,6 +183,8 @@
 			       :depends-on ("package"))
 			      (:file       "protocol"
 			       :depends-on ("package"))
+			      (:file       "macros"
+			       :depends-on ("package" "protocol"))
 
 			      (:file       "channel-strategies"
 			       :depends-on ("package" "protocol"))

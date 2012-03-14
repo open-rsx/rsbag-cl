@@ -68,6 +68,12 @@
    :start
    :stop)
 
+  ;; Convenience macros
+  (:export
+   :with-open-connection
+   :with-events->bag
+   :with-bag->events)
+
   ;; `bag-connection' class and protocol
   (:export
    :bag-connection
