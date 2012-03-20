@@ -52,6 +52,12 @@ INSTALL(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/data"
         FILES_MATCHING
         PATTERN        "*.proto"
         PATTERN        ".svn" EXCLUDE)
+INSTALL(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/compat"
+        DESTINATION    "share/common-lisp/source/${SYSTEM_NAME}"
+        FILES_MATCHING
+        PATTERN        "*.proto"
+        PATTERN        "*.lisp"
+        PATTERN        ".svn" EXCLUDE)
 INSTALL(DIRECTORY
         DESTINATION "share/common-lisp/source/${SYSTEM_NAME}")
 INSTALL(FILES       ${ASD_FILES}
