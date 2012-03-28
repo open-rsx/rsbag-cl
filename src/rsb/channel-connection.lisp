@@ -92,8 +92,10 @@ established between RSB listeners and bag channels when RSB events are
 recorded into bag channels."))
 
 (defmethod initialize-instance :after ((instance recording-channel-connection)
-                                       &key)
-  (start instance))
+                                       &key
+				       (start? t))
+  (when start?
+    (start instance)))
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
 			  (event event))

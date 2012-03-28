@@ -32,6 +32,7 @@
 			 backend
 			 bag-class
 			 channel-strategy
+			 start?
 			 &allow-other-keys)
   (:argument-precedence-order dest source)
   (:documentation
@@ -67,7 +68,10 @@ has to be selected if SOURCE amounts to multiple sources.
 If supplied, CHANNEL-STRATEGY selects a channel allocation strategy
 which is responsible for adding channels to DEST when events cannot be
 stored in any of the existing channels. Available strategies can be
-inspected using `rsbag.rsb:channel-strategy-classes'."))
+inspected using `rsbag.rsb:channel-strategy-classes'.
+
+If supplied, START? controls whether the recording should start
+immediately. The default behavior is to start immediately."))
 
 (defgeneric bag->events (source dest
 			 &rest args

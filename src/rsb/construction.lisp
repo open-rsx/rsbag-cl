@@ -28,6 +28,7 @@
 			&key
 			(timestamp        :create)
 			(channel-strategy :scope-and-type)
+			(start?           t)
 			&allow-other-keys)
   (make-instance
    'recording-channel-connection
@@ -35,7 +36,8 @@
    :channels    nil
    :participant source
    :strategy    (apply #'make-channel-strategy
-		       (ensure-list channel-strategy))))
+		       (ensure-list channel-strategy))
+   :start?      start?))
 
 (defmethod events->bag ((source puri:uri)
 			(dest   bag)
