@@ -43,16 +43,21 @@ and processes all elements of the sequence by sequential calls to
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence        (make-view connection strategy))
 	 (update-progress (%make-progress-reporter sequence progress)))
-    (iter (for (timestamp event informer) each     sequence
-	       :from start-index
-	       :to   end-index)
-	  (for previous-timestamp         previous timestamp)
-	  (for i :from start-index)
-	  (process-event connection strategy
-			 timestamp previous-timestamp
-			 event informer)
-	  (when update-progress
-	    (funcall update-progress i timestamp)))))
+    (macrolet
+	((do-it (&optional end-index)
+	   `(iter (for (timestamp event informer) each     sequence
+		       :from start-index
+		       ,@(when end-index '(:to end-index)))
+		  (for previous-timestamp         previous timestamp)
+		  (for i :from start-index)
+		  (process-event connection strategy
+				 timestamp previous-timestamp
+				 event informer)
+		  (when update-progress
+		    (funcall update-progress i timestamp)))))
+      (if end-index
+	  (do-it end-index)
+	  (do-it)))))
 
 (defmethod process-event :around ((connection         replay-bag-connection)
 				  (strategy           sequential-mixin)
