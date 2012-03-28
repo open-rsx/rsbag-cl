@@ -29,6 +29,15 @@ succeeds.")
    "Instantiate and install the next candidate serialization
 implementation (if any) in TRANSFORM."))
 
+(defmethod make-transform ((spec (eql :|rsb-event|))
+			   &rest args)
+  "Return event serialization version 0.4."
+  (when args
+    (warn "~@<Serialization version ~A does not take arguments (but
+arguments ~A have been supplied).~:@>"
+	  :rsb-event-0.4 args))
+  (make-transform :rsb-event-0.4 :utf-8-string))
+
 (defmethod make-transform ((spec (eql :rsb-event))
 			   &rest args)
   "Return an instance of `rsb-event/version-detection' which passes
