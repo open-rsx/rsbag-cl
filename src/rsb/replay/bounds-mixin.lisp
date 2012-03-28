@@ -1,4 +1,4 @@
-;;; bounds-mixin.lisp ---
+;;; bounds-mixin.lisp --- Add index/temporal bounds to a strategy class.
 ;;
 ;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
