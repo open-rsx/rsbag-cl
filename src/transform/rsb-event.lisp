@@ -111,11 +111,12 @@ serialization; not inner payload serialization.~@:>"
 
     ;; Add user meta-data.
     (iter (for (key value) on (rsb:event-meta-data domain-object) :by #'cddr)
-	  (vector-push-extend
-	   (make-instance 'rsb.protocol:user-info
-			  :key   (keyword->bytes key)
-			  :value (string->bytes value))
-	   (rsb.protocol:event-meta-data-user-infos meta-data)))
+	  (when (stringp value)
+	    (vector-push-extend
+	     (make-instance 'rsb.protocol:user-info
+			    :key   (keyword->bytes key)
+			    :value (string->bytes value))
+	     (rsb.protocol:event-meta-data-user-infos meta-data))))
 
     ;; Add user timestamps.
     (iter (for (key value) on (rsb:event-timestamps domain-object) :by #'cddr)
