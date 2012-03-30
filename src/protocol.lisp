@@ -27,6 +27,7 @@
 		      &rest args
 		      &key
 		      direction
+		      if-exists
 		      backend
 		      bag-class
 		      transform
@@ -38,6 +39,10 @@ arguments :backend, :bag-class and :transform) to the
 backend.
 
 DIRECTION can be any of :input, :output and :io.
+
+IF-EXISTS specifies the behavior when DIRECTION is :output or :io and
+SOURCE already exists. Valid values are :error and :overwrite. See
+`cl:open' for more information.
 
 BACKEND has to be a keyword naming a backend class. A list of backend
 classes can be obtained via the `rsbag.backend:backend-classes'
@@ -108,12 +113,13 @@ instead of ~S.~@:>"
 		     &rest args
 		     &key
 		     (direction :io)
+		     (if-exists :error)
 		     (backend   (make-keyword
 				 (string-upcase (pathname-type source)))))
   (let ((stream (open source
 		      :element-type      '(unsigned-byte 8)
 		      :direction         direction
-		      :if-exists         :overwrite
+		      :if-exists         if-exists
 		      :if-does-not-exist (case direction
 					   (:input        :error)
 					   ((:output :io) :create)))))
