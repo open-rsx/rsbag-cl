@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the backend.tidelog module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -38,4 +38,24 @@
 
   (:documentation
    "This package contains a cl-rsbag backend for the TIDE log file
-format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
+format as specified at https://retf.info/svn/drafts/rd-0001.txt.
+
+The most important interface classes are:
++ `file' which represents an entire TIDE log file (and handles
+  access to its channels)
++ `index' which represents the index for one channel of a TIDE log
+  file
+
+In addition, there is lower-level input/output machinery based on code
+generated according to the TIDE log specification. This level operates
+on TIDE log blocks.
+
+The interface consists of the generic functions
++ `scan' which finds blocks in a TIDE log file without reading their
+  entire contents
++ `pack' which stores blocks in TIDE log files
++ `unpack' which reads blocks from TIDE log files
+
+The code generation is implemented by
++ spec->* family of functions
++ `define-element' macro."))
