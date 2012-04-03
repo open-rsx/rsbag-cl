@@ -1,6 +1,6 @@
-;;; stream-mixin.lisp --- Mixin class for stream-based backends.
+;;; location-mixin.lisp --- Location information for backend objects.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -19,22 +19,13 @@
 
 (cl:in-package :rsbag.backend)
 
-(defclass stream-mixin (location-mixin)
-  ((stream :initarg  :stream
-	   :reader   backend-stream
-	   :type     stream
-	   :documentation
-	   "Stores the stream which contains the data read and written
-by the backend."))
-  (:default-initargs
-   :stream (required-argument :stream))
+(defclass location-mixin ()
+  ((location :initarg  :location
+	     :accessor backend-location
+	     :initform nil
+	     :documentation
+	     "Stores the location to which the backend object is
+connected. Can be NIL is such a location is not known."))
   (:documentation
-   "This class is intended to be mixed into backend classes which
-read/write data from/to a stream."))
-
-(defmethod close ((backend stream-mixin)
-		  &key &allow-other-keys)
-  "Make sure the stream is closed."
-  (when (next-method-p)
-    (call-next-method))
-  (close (backend-stream backend)))
+   "This mixin allows remembering the location to which
+a (e.g. stream-based) backend object is connected."))

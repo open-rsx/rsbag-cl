@@ -91,6 +91,7 @@ instead of ~S.~@:>"
 (defmethod open-bag ((source stream)
 		     &rest args
 		     &key
+		     location
 		     (direction (required-argument :direction))
 		     (backend   (required-argument :backend))
 		     (bag-class 'bag)
@@ -101,6 +102,7 @@ instead of ~S.~@:>"
   (let ((backend (apply #'make-instance
 			(rsbag.backend:find-backend-class backend)
 			:stream    source
+			:location  location
 			:direction direction
 			(remove-from-plist
 			 args :direction :backend :bag-class :transform))))
@@ -112,6 +114,7 @@ instead of ~S.~@:>"
 (defmethod open-bag ((source pathname)
 		     &rest args
 		     &key
+		     (location  source)
 		     (direction :io)
 		     (if-exists :error)
 		     (backend   (make-keyword
@@ -124,9 +127,11 @@ instead of ~S.~@:>"
 					   (:input        :error)
 					   ((:output :io) :create)))))
     (apply #'open-bag stream
+	   :location  location
 	   :direction direction
 	   :backend   backend
-	   (remove-from-plist args :direction :backend))))
+	   (remove-from-plist
+	    args :location :direction :if-exists :backend))))
 
 (defmethod open-bag ((source string)
 		     &rest args
@@ -136,6 +141,12 @@ instead of ~S.~@:>"
 
 ;;; Bag protocol
 ;;
+
+(defgeneric bag-location (bag)
+  (:documentation
+   "Return an object representing the location in which BAG is
+stored. Possible values include (but are not limited to) NIL and
+`cl:pathname' objects."))
 
 (defgeneric bag-direction (bag)
   (:documentation

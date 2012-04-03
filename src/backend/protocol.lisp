@@ -23,9 +23,16 @@
 ;;; Backend protocol
 ;;
 
-(defgeneric source-name (backend)
+(defgeneric backend-location (backend)
   (:documentation
-   "TODO(jmoringe): document"))
+   "Return an object representing the location in which the contents
+of BACKEND is stored. Return NIL if this information is not
+available."))
+
+(defgeneric backend-direction (backend)
+  (:documentation
+   "Return the direction for which BACKEND is configured. See type
+`rsbag:direction'."))
 
 (defgeneric get-channels (backend)
   (:documentation

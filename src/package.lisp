@@ -76,6 +76,7 @@
   (:export
    :bag
 
+   :bag-location
    :bag-direction
    :bag-transform
    :bag-channels

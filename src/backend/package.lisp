@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for backend module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -34,6 +34,9 @@
 
   ;; backend protocol
   (:export
+   :backend-location
+   :backend-direction
+
    :get-channels
    :make-channel-id
    :put-channel
@@ -58,9 +61,11 @@
 
   ;; `direction-mixin' class
   (:export
-   :direction-mixin
+   :direction-mixin)
 
-   :backend-direction)
+  ;; `location-mixin' class
+  (:export
+   :location-mixin)
 
   ;; `buffering-writer-mixin' class and protocol
   (:export
