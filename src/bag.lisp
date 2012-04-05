@@ -72,6 +72,9 @@ method. "))
 		  &key &allow-other-keys)
   (close (%bag-backend bag)))
 
+(defmethod bag-location ((bag bag))
+  (rsbag.backend:backend-location (%bag-backend bag)))
+
 (defmethod bag-channels ((bag bag))
   (hash-table-values (%bag-channels bag)))
 
@@ -124,10 +127,17 @@ method. "))
     (setf (gethash name channels) channel)))
 
 (defmethod print-object ((object bag) stream)
-  (bind (((:accessors-r/o (direction bag-direction)
-			  (channels  %bag-channels)) object))
+  (bind (((:accessors-r/o (location  bag-location)
+			  (direction bag-direction)
+			  (channels  %bag-channels)) object)
+	 (location/short (typecase location
+			   (pathname (format nil "~A.~A"
+					     (pathname-name location)
+					     (pathname-type location)))
+			   (t        location))))
    (print-unreadable-object (object stream :type t :identity t)
-     (format stream "~:[-~;r~]~:[-~;w~] (~D)"
+     (format stream "~S ~:[-~;r~]~:[-~;w~] (~D)"
+	     location/short
 	     (member direction '(:input :io))
 	     (member direction '(:output :io))
 	     (hash-table-count channels)))))
