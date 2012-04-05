@@ -37,16 +37,15 @@
 	    :type     ,type
 	    :accessor ,accessor-name
 	    ,@(when documentation
-		    `(:documentation
-		      ,documentation)))))
+		    `(:documentation ,documentation)))))
 
 (defun type-spec->lisp-type (spec)
-  (cond
-    ((and (listp spec) (eq (first spec) :string))
+  (typecase spec
+    ((cons (eql :string) list)
      'string)
-    ((and (listp spec) (eq (first spec) :repeated))
+    ((cons (eql :repeated) list)
      'vector)
-    ((and (listp spec) (eq (first spec) :blob))
+    ((cons (eql :blob) list)
      'binio:octet-vector)
     (t
      spec)))
@@ -66,8 +65,8 @@
     (type-spec->size type `(,accessor-name ,object))))
 
 (defun type-spec->size (type-spec value)
-  (cond
-    ((and (listp type-spec) (keywordp (first type-spec)))
+  (etypecase type-spec
+    ((cons keyword list)
      (destructuring-ecase type-spec
        ((:repeated count-slot sub-type)
 	(declare (ignore count-slot))
@@ -81,10 +80,10 @@
 	`(+ ,(type-spec->size length-type :unused)
 	    (length ,value)))))
 
-    ((and (listp type-spec) (eq (first type-spec) 'unsigned-byte))
+    ((cons (eql unsigned-byte) list)
      (ash (second type-spec) -3))
 
-    ((symbolp type-spec)
+    (symbol
      `(size ,value))))
 
 
@@ -113,8 +112,8 @@
        (incf offset length))))
 
 (defun type-spec->deserializer (type-spec source offset)
-  (cond
-    ((and (listp type-spec) (keywordp (first type-spec)))
+  (etypecase type-spec
+    ((cons keyword list)
      (destructuring-ecase type-spec
        ((:repeated count-slot sub-type)
 	`(iter (repeat (slot-value object ',count-slot)) ;;; TODO(jmoringe): slot access
@@ -138,13 +137,13 @@
 		    (subseq source data-offset (+ data-offset length)))
 		   (+ length-length length))))))
 
-    ((and (listp type-spec) (eq (first type-spec) 'unsigned-byte))
-     (case (second type-spec)
+    ((cons (eql unsigned-byte) list)
+     (ecase (second type-spec)
        (8  `(values (aref ,source ,offset) 1))
        (32 `(binio:decode-uint32-le ,source ,offset))
        (64 `(binio:decode-uint64-le ,source ,offset))))
 
-    ((symbolp type-spec)
+    (symbol
      `(let ((object (allocate-instance (find-class ',type-spec))))
 	(unpack ,source object ,offset)))))
 
@@ -155,7 +154,7 @@
 (defun specs->serializer (class-name specs)
   `(defmethod pack ((object ,class-name) (source simple-array)
 		    &optional
-		      (start 0))
+		    (start 0))
      (check-type source binio:octet-vector)
 
      (let ((offset start))
@@ -172,8 +171,8 @@
        (incf offset ,(type-spec->serializer type 'value source offset)))))
 
 (defun type-spec->serializer (type-spec value source offset)
-  (cond
-    ((and (listp type-spec) (keywordp (first type-spec)))
+  (etypecase type-spec
+    ((cons keyword list)
      (destructuring-ecase type-spec
        ((:repeated count-slot sub-type)
 	(declare (ignore count-slot))
@@ -196,11 +195,11 @@
 	   (incf offset* (binio:encode-utf8 ,value ,source offset*))
 	   (- offset* ,offset)))))
 
-    ((and (listp type-spec) (eq (first type-spec) 'unsigned-byte))
-     (case (second type-spec)
+    ((cons (eql unsigned-byte) list)
+     (ecase (second type-spec)
        (8  `(progn (setf (aref ,source ,offset) ,value) 1))
        (32 `(binio:encode-uint32-le ,value ,source ,offset))
        (64 `(binio:encode-uint64-le ,value ,source ,offset))))
 
-    ((symbolp type-spec)
+    (symbol
      `(pack ,value ,source ,offset))))
