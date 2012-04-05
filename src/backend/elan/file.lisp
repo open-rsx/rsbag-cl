@@ -19,9 +19,6 @@
 
 (cl:in-package :rsbag.backend.elan)
 
-(defmethod find-backend-class ((spec (eql :elan)))
-  (find-class 'file))
-
 (defmethod find-backend-class ((spec (eql :eaf)))
   (find-class 'file))
 
