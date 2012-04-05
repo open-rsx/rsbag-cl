@@ -289,9 +289,7 @@
 		 :depends-on ("test")
 		 :components ((:file       "package")
 			      (:file       "fixed-rate"
-			       :depends-on ("package")))))
-
-  :in-order-to ((test-op (load-op :cl-rsbag-test))))
+			       :depends-on ("package"))))))
 
 (defmethod perform ((op     test-op)
 		    (system (eql (find-system :cl-rsbag-test))))
