@@ -33,7 +33,7 @@ implementation (if any) in TRANSFORM."))
 			   &rest args)
   "Return event serialization version 0.4."
   (when args
-    (warn "~@<Serialization version ~A does not take arguments (but
+    (warn "~@<Serialization version ~A does not take arguments (but ~
 arguments ~A have been supplied).~:@>"
 	  :rsb-event-0.4 args))
   (make-transform :rsb-event-0.4 :utf-8-string))
@@ -42,7 +42,9 @@ arguments ~A have been supplied).~:@>"
 			   &rest args)
   "Return an instance of `rsb-event/version-detection' which passes
 ARGS to candidate serialization implementations."
-  (rsb:log1 :warn "Forced to use auto-detection of event serialization format")
+  (rsb:log1 :info "Forced to use auto-detection of event serialization ~
+format; version ~S with arguments ~{~S~^, ~}."
+	    spec args)
   (make-instance
    'rsb-event/version-detection
    :candidates (map 'list #'cons
