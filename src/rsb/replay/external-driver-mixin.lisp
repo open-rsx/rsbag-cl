@@ -95,8 +95,6 @@ and executes them until termination is requested."))
 			  emit
 			  terminate)
   "Return a default alist of commands."
-  (declare (ignore element))
-
   `(;; Queries
     (:length      . ,#'(lambda ()
 			 (length sequence)))
