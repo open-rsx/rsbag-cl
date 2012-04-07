@@ -35,6 +35,7 @@
    :bag         dest
    :channels    nil
    :participant source
+   :timestamp   timestamp
    :strategy    (apply #'make-channel-strategy
 		       (ensure-list channel-strategy))
    :start?      start?))
