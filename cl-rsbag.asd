@@ -189,13 +189,14 @@
 			      (:file       "macros"
 			       :depends-on ("package" "protocol"))
 
-			      (:file       "channel-strategies"
-			       :depends-on ("package" "protocol"))
-
 			      (:file       "channel-connection"
 			       :depends-on ("package" "protocol"))
 			      (:file       "bag-connection"
 			       :depends-on ("package" "protocol"))
+
+			      (:file       "channel-strategies"
+			       :depends-on ("package" "protocol"
+					    "channel-connection"))
 
 			      (:file       "construction"
 			       :depends-on ("package" "protocol"
