@@ -82,13 +82,16 @@
 					(dest   ,type)
 					&rest args
 					&key
+					(if-exists :error if-exists-supplied?)
 					backend
 					(bag-class 'synchronized-bag))
 		  (apply #'events->bag source
 			 (apply #'open-bag dest
 				:bag-class bag-class
 				:direction :io
-				(append (when backend
+				(append (when if-exists-supplied?
+					  (list :if-exists if-exists))
+					(when backend
 					  (list :backend backend))))
 			 (remove-from-plist args :backend :bag-class))))))
   (define-open-bag-method string)

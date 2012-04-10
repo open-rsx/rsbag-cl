@@ -29,6 +29,7 @@
 			 transports
 			 filters
 			 timestamp
+			 if-exists
 			 backend
 			 bag-class
 			 channel-strategy
@@ -55,6 +56,9 @@ timestamp that should be used for indexing the recorded
 events. Canonical RSB timestamp names are :create, :send, :receive
 and :deliver, but other user provided timestamp can be used as
 well.
+
+IF-EXISTS specifies the behavior DEST already exists. Valid values
+are :error and :overwrite. See `rsbag:open-bag' for more information.
 
 BACKEND can be used to explicitly select a file-format backend for
 DEST. If supplied, it has to be a keyword designating a file-format
