@@ -70,7 +70,18 @@ that is passed to the serialization during instantiation.")
 		   "Stores a transform instance which implements the
 serialization currently being tried or nil before the first instance
 has been constructed. The instance is replaced by the next candidate
-when it produces an error."))
+when it produces an error.")
+   (problems       :initarg  :problems
+		   :type     list
+		   :accessor %transform-problems
+		   :initform nil
+		   :documentation
+		   "Stores a list of problems encountered when trying
+serialization versions. Elements are of the form
+
+  (ACTION IMPLEMENTATION CONDITION)
+
+where ACTION is one of the keywords :INSTANTIATE and :USE."))
   (:default-initargs
    :candidates (required-argument :candidates))
   (:documentation
@@ -80,8 +91,9 @@ subsequent serialization implementations until one of those
 succeeds."))
 
 (defmethod next-implementation! ((transform rsb-event/version-detection))
-  (bind (((:accessors (candidates      transform-candidates)
-		      (%implementation %transform-implementation))
+  (bind (((:accessors (candidates     transform-candidates)
+		      (implementation %transform-implementation)
+		      (problems       %transform-problems))
 	  transform))
     (tagbody
      :start
@@ -89,11 +101,12 @@ succeeds."))
 	 (rsb:log1 :info "Trying ~A" candidate)
 	 (handler-bind
 	     ((error (lambda (condition)
+		       (appendf problems (list :instantiate candidate condition))
 		       (rsb:log1 :info "Failed to instantiate ~A with args ~{~A~^ ~}: ~A"
 				 (first candidate) (rest candidate) condition)
 		       (go :start))))
 	   (return-from next-implementation!
-	     (setf %implementation (apply #'make-transform candidate))))))))
+	     (setf implementation (apply #'make-transform candidate))))))))
 
 (defmethod transform-implementation ((transform rsb-event/version-detection))
   (or (%transform-implementation transform)
@@ -103,17 +116,20 @@ succeeds."))
     ((define-try-method (name &rest args)
        `(defmethod ,name ((transform rsb-event/version-detection)
 			  ,@args)
-	  (bind (((:accessors (implementation transform-implementation))
+	  (bind (((:accessors (implementation transform-implementation)
+			      (problems       %transform-problems))
 		  transform))
 	    (tagbody
 	     :start
 	       (handler-bind
 		   ((error (lambda (condition)
-			     (declare (ignore condition))
-			     (rsb:log1 :info "~A failed with ~A"
-				       ',name implementation)
-			     (when (next-implementation! transform)
-			       (go :start)))))
+			     (appendf problems (list (list :use implementation condition)))
+			     (rsb:log1 :info "~A failed with ~A: ~A"
+				       ',name implementation condition)
+			     (if (next-implementation! transform)
+				 (go :start)
+				 (error "~@<Could not detect serialization version:~{~2&~{When ~Aing ~S:~&~A~}~}~@:>"
+					problems)))))
 		 (return-from ,name
 		   (,name implementation ,@(mapcar #'first args)))))))))
 
