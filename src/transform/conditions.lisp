@@ -43,11 +43,12 @@ when a transform fails."))
 failed."))
   (:report
    (lambda (condition stream)
-     (format stream "~@<The domain object ~S could not be encoded by ~
+     (let ((*print-length* (or *print-length* 16)))
+       (format stream "~@<The domain object ~S could not be encoded by ~
 the transform ~A.~/rsb::maybe-print-cause/~@:>"
-	     (transform-error-domain-object condition)
-	     (transform-error-transform     condition)
-	     (chainable-condition-cause     condition))))
+	       (transform-error-domain-object condition)
+	       (transform-error-transform     condition)
+	       (chainable-condition-cause     condition)))))
   (:documentation
    "This error is signaled when the encoding of a domain object for
 storage in bag fails."))
@@ -60,11 +61,12 @@ storage in bag fails."))
 	    "Stores the encoded data, the decoding of which failed."))
   (:report
    (lambda (condition stream)
-     (format stream "~@<The encoded value ~S could not be decoded by ~
+     (let ((*print-length* (or *print-length* 16)))
+       (format stream "~@<The encoded value ~S could not be decoded by ~
 the transform ~A.~/rsb::maybe-print-cause/~@:>"
-	     (transform-error-encoded   condition)
-	     (transform-error-transform condition)
-	     (chainable-condition-cause condition))))
+	       (transform-error-encoded   condition)
+	       (transform-error-transform condition)
+	       (chainable-condition-cause condition)))))
   (:documentation
    "This error is signaled when the decoding of data, usually
 retrieved from a bag, fails."))
