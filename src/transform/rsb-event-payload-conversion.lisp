@@ -37,7 +37,8 @@ contained payloads using a specified converter."))
   ;; Encode the payload in-place.
   (bind (((:accessors-r/o (converter transform-converter)) transform))
     (setf (rsb:event-data domain-object)
-	  (rsb.converter:domain->wire converter domain-object)))
+	  (rsb.converter:domain->wire
+	   converter (rsb:event-data domain-object))))
   ;; Forward the modified event to the next method.
   (call-next-method transform domain-object))
 
