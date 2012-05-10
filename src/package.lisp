@@ -22,7 +22,8 @@
    :cl
    :alexandria
    :iterate
-   :bind)
+   :bind
+   :more-conditions)
 
   ;; Symbols
   (:export
