@@ -65,6 +65,8 @@
 		:metabang-bind
 		:iterate
 		:cl-dynamic-classes
+		:more-conditions
+
 		:local-time
 
 		:bordeaux-threads

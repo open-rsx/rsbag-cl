@@ -39,7 +39,7 @@ involving log files fail."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Invalid file structure encountered in ~
-~A~/rsb::maybe-print-explanation/~@:>" ;;; TODO(jmoringe): do not depend on cl-rsb for conditions
+~A~/more-conditions::maybe-print-explanation/~@:>"
 	     (log-file-error-source condition)
 	     condition)))
   (:documentation

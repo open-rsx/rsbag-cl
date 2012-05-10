@@ -52,10 +52,10 @@ errors occur during event recording into a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Event ~A could not be stored in ~
-~A.~/rsb::maybe-print-cause/~@:>"
+~A.~/more-conditions::maybe-print-cause/~@:>"
 	     (connection-error-event      condition)
 	     (connection-error-connection condition)
-	     (chainable-condition-cause   condition))))
+	     condition)))
   (:documentation
    "This error is signaled when an event cannot be stored during a
 recording process."))
@@ -82,10 +82,10 @@ errors occur during replay of events from a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Failed to retrieve next event from ~A for ~
-replay according to strategy ~A~/rsb::maybe-print-cause/~@:>"
+replay according to strategy ~A~/more-conditions::maybe-print-cause/~@:>"
 	     (connection-error-connection condition)
 	     (connection-error-strategy   condition)
-	     (chainable-condition-cause   condition))))
+	     condition)))
   (:documentation
    "This error is signaled when the retrieval of an event from a bag
 for replay fails."))

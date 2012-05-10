@@ -22,11 +22,8 @@
    :cl
    :alexandria
    :bind
-   :iterate)
-
-  (:import-from :rsb
-   :chainable-condition
-   :chainable-condition-cause)
+   :iterate
+   :more-conditions)
 
   ;; Variables
   (:export
