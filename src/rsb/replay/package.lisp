@@ -34,6 +34,7 @@
    :split-sequence
    :bind
    :iterate
+   :more-conditions
 
    :rsbag
    :rsbag.transform
