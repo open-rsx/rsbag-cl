@@ -65,11 +65,9 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 
 (defmethod open-bag :around ((source t)
 			     &rest args &key)
-  (handler-bind
-      (((and error (not open-error)) #'(lambda (condition)
-					 (error 'open-error
-						:source source
-						:cause  condition))))
+  (with-condition-translation
+      (((error open-error)
+	:source source))
     (iter (restart-case
 	      (return (apply #'call-next-method source args))
 	    (retry ()

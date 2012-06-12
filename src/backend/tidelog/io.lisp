@@ -23,18 +23,17 @@
 ;;; Scan
 ;;
 
-(defmethod scan :around ((source t) (object t)
-			 &optional start)
-  (declare (ignore start))
-
-  (handler-bind
-      (((and error (not tidelog-condition))
-	#'(lambda (condition)
-	    (error 'invalid-tidelog-structure
-		   :source           source
-		   :format-control   "~@<Failed to scan for block ~A: ~A~@:>"
-		   :format-arguments (list object (format nil "~A" condition))))))
-    (call-next-method)))
+(define-condition-translating-method scan ((source t) (object t)
+					   &optional start)
+  (((and error (not tidelog-condition)) invalid-tidelog-structure
+    :var           condition
+    :cause-initarg nil)
+   :source           source
+   :format-control   "~@<Failed to scan for block ~A~@[ at position ~:D~]: ~A~@:>"
+   :format-arguments (list object
+			   (when (streamp source)
+			     (file-position source))
+			   (format nil "~A" condition))))
 
 (defmethod scan :before ((source stream) (object t)
 			 &optional start)
@@ -85,18 +84,16 @@
 ;;;
 ;;
 
-(defmethod unpack :around ((source t) (object t)
-			   &optional start)
-  (declare (ignore start))
-
-  (handler-bind
-      (((and error (not tidelog-condition))
-	#'(lambda (condition)
-	    (error 'invalid-tidelog-structure
-		   :source           source
-		   :format-control   "~@<Failed to unpack block ~A: ~A~@:>"
-		   :format-arguments (list object (format nil "~A" condition))))))
-    (call-next-method)))
+(define-condition-translating-method unpack ((source t) (object t)
+					     &optional start)
+  (((and error (not tidelog-condition)) invalid-tidelog-structure
+    :var condition)
+   :source           source
+   :format-control   "~@<Failed to unpack block ~A~@[ at position ~:D~]: ~A~@:>"
+   :format-arguments (list object
+			   (when (streamp source)
+			     (file-position source))
+			   (format nil "~A" condition))))
 
 (defmethod unpack :before ((source stream) (object t)
 			   &optional start)

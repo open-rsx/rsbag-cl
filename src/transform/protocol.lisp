@@ -54,13 +54,10 @@ TRANSFORM."
 			   (domain-object t))
   "Establish a use-value restart and wrap arbitrary conditions in an
 `encoding-error' instance."
-  (handler-bind
-      (((and error (not encoding-error))
-	#'(lambda (condition)
-	    (error 'encoding-error
-		   :transform     transform
-		   :domain-object domain-object
-		   :cause         condition))))
+  (with-condition-translation
+      (((error encoding-error)
+	:transform     transform
+	:domain-object domain-object))
     (restart-case
 	(call-next-method)
       (use-value (value)
@@ -78,13 +75,10 @@ value (unevaluated): ~@:>")
 			   (data      t))
   "Establish a use-value restart and wrap arbitrary conditions in a
 `decoding-error' instance."
-  (handler-bind
-      (((and error (not decoding-error))
-	#'(lambda (condition)
-	    (error 'decoding-error
-		   :transform transform
-		   :encoded   data
-		   :cause     condition))))
+  (with-condition-translation
+      (((error decoding-error)
+	:transform transform
+	:encoded   data))
     (restart-case
 	(call-next-method)
       (use-value (value)
