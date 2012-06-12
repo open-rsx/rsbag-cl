@@ -37,7 +37,7 @@ opened."))
      (format stream "~@<Failed to open bag in source ~
 ~A.~/more-conditions::maybe-print-cause/~@:>"
 	     (open-error-source condition)
-	     (cause             condition))))
+	     condition)))
   (:default-initargs
    :source (missing-required-initarg 'open-error :source))
   (:documentation
