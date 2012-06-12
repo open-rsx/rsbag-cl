@@ -123,13 +123,10 @@ translation of their values into indices before replay."))
 				 :selector #'channel-timestamps))
 	 ((:labels timestamp->index (timestamp))
 	  (etypecase timestamp
-	    (non-negative-real
+	    (real
 	     (timestamp->index
-	      (local-time:adjust-timestamp (rsbag:start bag)
-		(:offset :sec timestamp))))
-	    (negative-real
-	     (timestamp->index
-	      (local-time:adjust-timestamp (end bag)
+	      (local-time:adjust-timestamp
+		  (if (minusp timestamp) (end bag) (rsbag:start bag))
 		(:offset :sec  (floor timestamp))
 		(:offset :nsec (mod (floor timestamp 1/1000000000)
 				    1000000000)))))
