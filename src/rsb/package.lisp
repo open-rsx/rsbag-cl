@@ -92,7 +92,7 @@
   (:export
    :channel-connection
 
-   :connection-participant)
+   :connection-endpoint)
 
   ;; `participant-channel-connection' subclass
   (:export

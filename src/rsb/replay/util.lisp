@@ -40,7 +40,7 @@ sequence."))
   ;; the informer and pass it to a new `informer-injector' instance.
   (make-instance 'informer-injector
 		 :channel  channel
-		 :informer (connection-participant
+		 :informer (connection-endpoint
 			    (find channel (connection-channels connection)
 				  :test #'member
 				  :key  #'connection-channels))))

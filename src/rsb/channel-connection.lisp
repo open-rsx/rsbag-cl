@@ -24,29 +24,31 @@
 ;;
 
 (defclass channel-connection ()
-  ((bag         :initarg  :bag
-		:reader   connection-bag
-		:documentation
-		"Stores the bag object that is connected to RSB
-participants as a data source or sink.")
-   (channels    :initarg  :channels
-		:type     list
-		:accessor connection-channels
-		:initform nil
-		:documentation
-		"Stores the bag channels that are connected to an RSB
-participant.")
-   (participant :initarg  :participant
-		:reader   connection-participant
-		:documentation
-		"Stores the RSB participant that is connected to a bag
+  ((bag      :initarg  :bag
+	     :reader   connection-bag
+	     :documentation
+	     "Stores the bag object that is connected to event sources
+or sinks.")
+   (channels :initarg  :channels
+	     :type     list
+	     :accessor connection-channels
+	     :initform nil
+	     :documentation
+	     "Stores the bag channels that are connected to event
+sources or sinks.")
+   (endpoint :initarg  :endpoint
+	     :reader   connection-endpoint
+	     :documentation
+	     "Stores the endpoint that is connected to a bag
 channel."))
   (:default-initargs
-   :participant (required-argument :participant))
+   :bag      (required-argument :bag)
+   :endpoint (required-argument :endpoint))
   (:documentation
    "Instances of this class represent the connections being
 established when individual channels of bags are used as data sources
-or sinks of RSB participants."))
+or sinks and connected to event sources or sinks such as RSB
+participants."))
 
 (defmethod close ((connection channel-connection)
 		  &key abort)
@@ -65,7 +67,7 @@ participant."))
 (defmethod close ((connection participant-channel-connection)
 		  &key abort)
   (declare (ignore abort))
-  (detach/ignore-errors (connection-participant connection)))
+  (detach/ignore-errors (connection-endpoint connection)))
 
 
 ;;; `recording-channel-connection' class
@@ -108,9 +110,9 @@ recorded into bag channels."))
     (setf (entry channel (timestamp event timestamp)) event)))
 
 (defmethod start ((connection recording-channel-connection))
-  (bind (((:accessors-r/o (participant connection-participant)) connection))
+  (bind (((:accessors-r/o (participant connection-endpoint)) connection))
     (push connection (rsb.ep:handlers participant))))
 
 (defmethod stop ((connection recording-channel-connection))
-  (bind (((:accessors-r/o (participant connection-participant)) connection))
+  (bind (((:accessors-r/o (participant connection-endpoint)) connection))
     (removef (rsb.ep:handlers participant) connection)))

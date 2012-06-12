@@ -58,11 +58,11 @@ As an example, an event on scope /foo/bar/ with wire-schema
 	(values channel t)
 	(make-channel-for connection event strategy))))
 
-(defmethod make-channel-for ((connection channel-connection)
+(defmethod make-channel-for ((connection participant-channel-connection)
 			     (event      event)
 			     (strategy   scope-and-type))
   (bind (((:accessors-r/o (bag         connection-bag)
-			  (participant connection-participant)) connection)
+			  (participant connection-endpoint)) connection)
 	 ((:accessors-r/o (id participant-id)) participant)
 	 (name        (channel-name-for connection event strategy))
 	 (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))

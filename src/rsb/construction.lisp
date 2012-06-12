@@ -32,13 +32,13 @@
 			&allow-other-keys)
   (make-instance
    'recording-channel-connection
-   :bag         dest
-   :channels    nil
-   :participant source
-   :timestamp   timestamp
-   :strategy    (apply #'make-channel-strategy
-		       (ensure-list channel-strategy))
-   :start?      start?))
+   :bag       dest
+   :channels  nil
+   :endpoint  source
+   :timestamp timestamp
+   :strategy  (apply #'make-channel-strategy
+		     (ensure-list channel-strategy))
+   :start?    start?))
 
 (defmethod events->bag ((source puri:uri)
 			(dest   bag)
@@ -167,17 +167,17 @@
 	 (participant (make-informer
 		       uri t :converters `((t . ,converter)))))
     (make-instance 'participant-channel-connection
-		   :bag         (channel-bag source)
-		   :channels    (list source)
-		   :participant participant)))
+		   :bag      (channel-bag source)
+		   :channels (list source)
+		   :endpoint participant)))
 
 (defmethod bag->events ((source channel)
 			(dest   function)
 			&key)
   (make-instance 'channel-connection
-		 :bag         (channel-bag source)
-		 :channels    (list source)
-		 :participant dest))
+		 :bag      (channel-bag source)
+		 :channels (list source)
+		 :endpoint dest))
 
 
 ;;; Utility functions
