@@ -55,3 +55,17 @@
 			 :test #'eq)
 	    (ensure-same value* e-value
 			 :test #'eq)))))
+
+(addtest (serialized-root
+          :documentation
+	  "Test constructing `serialized' view instances using
+`make-serialized-view'.")
+  construction
+
+  (ensure-cases (sequences expected-length)
+      `((nil            0)
+	(,one-sequence  3)
+	(,two-sequences 4))
+
+    (let ((sequence (make-serialized-view sequences)))
+      (ensure-same (length sequence) expected-length))))
