@@ -27,7 +27,29 @@
 (addtest (protocol-root
           :documentation
 	  "Test case for the `open-bag' function.")
-  open-bag
+  open-bag/valid
+
+  (let* ((pathname   (asdf:system-relative-pathname
+		      (asdf:find-system :cl-rsbag-test)
+		      "test/data/minimal.tide"))
+	 (namestring (namestring pathname))
+	 (stream     (open pathname
+			   :element-type '(unsigned-byte 8)
+			   :direction    :input)))
+    (ensure-cases (args)
+	`((,namestring :direction :input)
+	  (,pathname   :direction :input)
+	  (,namestring :direction :input :backend :tide)
+	  (,pathname   :direction :input :backend :tide)
+	  (,stream     :direction :input :backend :tide))
+      (let ((bag (apply #'open-bag args)))
+	(close bag)))))
+
+(addtest (protocol-root
+          :documentation
+	  "Test cases for which the `open-bag' function has to signal
+errors.")
+  open-bag/invalid
 
   (let* ((pathname   (asdf:system-relative-pathname
 		      (asdf:find-system :cl-rsbag-test)
@@ -50,7 +72,10 @@
 	  ;; invalid backend
 	  (,namestring :direction :io :backend :no-such-backend)
 	  (,pathname   :direction :io :backend :no-such-backend)
-	  (,stream     :direction :io :backend :no-such-backend))
+	  (,stream     :direction :io :backend :no-such-backend)
+	  ;; file exists
+	  (,namestring :direction :output  :backend :tidelog)
+	  (,pathname   :direction :output  :backend :tidelog))
 
       (ensure-condition 'error
 	(apply #'open-bag args)))))
