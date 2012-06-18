@@ -1,4 +1,4 @@
-;;; types.lisp ---
+;;; types.lisp --- types used in the rsb.replay module.
 ;;
 ;; Copyright (C) 2012 Jan Moringen
 ;;
@@ -37,3 +37,42 @@
        non-negative-real
        negative-real
        local-time:timestamp))
+
+
+;;; Timestamp adjustment specifications
+;;
+
+(deftype timestamp-adjustment-value/now ()
+  "Indicates that the current time (i.e. time of replaying the event)
+  should replace the stored timestamp."
+  '(eql :now))
+
+(deftype timestamp-adjustment-value/copy ()
+  "A value of the form
+
+  (:COPY TIMESTAMP-DESIGNATOR)
+
+indicates that the timestamp designated by TIMESTAMP-DESIGNATOR should
+be extracted from the current event and used to replace the stored
+timestamp."
+  '(cons (eql :copy) (cons timestamp-designator null)))
+
+(deftype timestamp-adjustment-value/delta ()
+  `(cons (eql :delta) (cons non-negative-real null)))
+
+(deftype timestamp-adjustment-value ()
+  "Specification of a replacement value for a particular timestamp."
+  '(or timestamp-adjustment-value/now
+       timestamp-adjustment-value/copy
+       timestamp-adjustment-value/delta
+       local-time:timestamp))
+
+(deftype timestamp-adjustment-spec ()
+  "Replacement rule of the form
+
+  (TIMESTAMP-DESIGNATOR TIMESTAMP-ADJUSTMENT-VALUE)
+
+specifying that the timestamp designated by TIMESTAMP-DESIGNATOR
+should be replaced with the timestamp value specified by
+TIMESTAMP-ADJUSTMENT-VALUE"
+  '(cons timestamp-designator (cons timestamp-adjustment-value null)))

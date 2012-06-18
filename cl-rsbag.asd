@@ -292,6 +292,8 @@
 		 :depends-on ("test")
 		 :components ((:file       "package")
 			      (:file       "fixed-rate"
+			       :depends-on ("package"))
+			      (:file       "timestamp-adjustment-mixin"
 			       :depends-on ("package"))))))
 
 (defmethod perform ((op     test-op)
