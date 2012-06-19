@@ -135,33 +135,32 @@ and executes them until termination is requested."))
 		   (strategy   external-driver-mixin)
 		   &key
 		   progress)
-  (bind (((:accessors-r/o (start-index strategy-start-index)
+  (let+ (((&accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence        (make-view connection strategy))
 	 (update-progress (%make-progress-reporter sequence progress))
 	 terminate?
 	 ;; Iteration state
-	 ((:values current _ from-end?)
+	 ((&values current nil from-end?)
 	  (sequence:make-simple-sequence-iterator
 	   sequence :start start-index :end end-index))
 	 (previous-timestamp)
 	 ;; Primitive state manipulation functions
-	 ((:flet step* (back?))
-	  (setf current (sequence:iterator-step
-			 sequence current (xor back? from-end?))))
-	 ((:flet index ())
-	  (sequence:iterator-index sequence current))
-	 ((:flet element ())
-	  (sequence:iterator-element sequence current))
-
-	 ((:flet emit ())
-	  (bind (((timestamp event informer) (element)))
-	    (process-event connection strategy
-			   timestamp previous-timestamp
-			   event informer)
-	    (setf previous-timestamp timestamp)))
-	 ((:flet terminate ())
-	  (setf terminate? t)))
+	 ((&flet step* (back?)
+	    (setf current (sequence:iterator-step
+			   sequence current (xor back? from-end?)))))
+	 ((&flet index ()
+	    (sequence:iterator-index sequence current)))
+	 ((&flet element ()
+	    (sequence:iterator-element sequence current)))
+	 ((&flet emit ()
+	    (let+ (((timestamp event informer) (element)))
+	      (process-event connection strategy
+			     timestamp previous-timestamp
+			     event informer)
+	      (setf previous-timestamp timestamp))))
+	 ((&flet terminate ()
+	    (setf terminate? t))))
 
     (setf (%strategy-commands strategy)
 	  (make-commands strategy sequence

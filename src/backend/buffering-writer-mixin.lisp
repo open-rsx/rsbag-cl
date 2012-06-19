@@ -44,7 +44,7 @@ buffer added entries before writing them to disk."))
 (defmethod close ((backend buffering-writer-mixin)
 		  &key &allow-other-keys)
   "Flush the buffer if necessary, then proceed."
-  (bind (((:accessors-r/o (buffer backend-buffer)) backend))
+  (let+ (((&accessors-r/o (buffer backend-buffer)) backend))
     (when buffer
       (write-buffer backend buffer))
     (when (next-method-p)
@@ -56,7 +56,7 @@ buffer added entries before writing them to disk."))
 			     (entry   t))
   "After adding an entry, check whether the buffer has to be flushed
 and potentially do it."
-  (bind (((:accessors-r/o (buffer      backend-buffer)
+  (let+ (((&accessors-r/o (buffer      backend-buffer)
 			  (flush?-func backend-flush?-func)) backend))
     (when (funcall flush?-func backend buffer)
       (write-buffer backend buffer))))

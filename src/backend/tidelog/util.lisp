@@ -40,10 +40,10 @@ sequence of ~:D byte~:P at stream position ~:D.~@:>"
 ;;
 
 (defun uint64->timestamp (value)
-  (bind (((:values secs nsecs) (truncate value 1000000000)))
+  (let+ (((&values secs nsecs) (truncate value 1000000000)))
     (local-time:unix-to-timestamp secs :nsec nsecs)))
 
 (defun timestamp->uint64 (value)
-  (bind (((:accessors-r/o (secs  local-time:timestamp-to-unix)
+  (let+ (((&accessors-r/o (secs  local-time:timestamp-to-unix)
 			  (nsecs local-time:nsec-of)) value))
     (+ (* (expt 10 9) secs) nsecs)))

@@ -91,7 +91,7 @@ subsequent serialization implementations until one of those
 succeeds."))
 
 (defmethod next-implementation! ((transform rsb-event/version-detection))
-  (bind (((:accessors (candidates     transform-candidates)
+  (let+ (((&accessors (candidates     transform-candidates)
 		      (implementation %transform-implementation)
 		      (problems       %transform-problems))
 	  transform))
@@ -116,7 +116,7 @@ succeeds."))
     ((define-try-method (name &rest args)
        `(defmethod ,name ((transform rsb-event/version-detection)
 			  ,@args)
-	  (bind (((:accessors (implementation transform-implementation)
+	  (let+ (((&accessors (implementation transform-implementation)
 			      (problems       %transform-problems))
 		  transform))
 	    (tagbody

@@ -75,18 +75,18 @@ following commands are available:
 (defmethod (setf %strategy-commands) :after ((new-value list)
 					     (strategy  remote-controlled))
   "Create methods in the RPC server for the elements of NEW-VALUE."
-  (bind (((:accessors-r/o (server %strategy-server)) strategy)
-	 ((:flet make-command (function request future))
-	  #'(lambda ()
-	      (handler-case
-		  (let ((result (multiple-value-list
-				 (apply function request))))
-		    (setf (future-result future)
-			  (if result
-			      (first result)
-			      rsb.converter:+no-value+))) ;;; TODO(jmoringe): ugly
-		(error (condition)
-		  (setf (future-error future) condition))))))
+  (let+ (((&accessors-r/o (server %strategy-server)) strategy)
+	 ((&flet make-command (function request future)
+	    #'(lambda ()
+		(handler-case
+		    (let ((result (multiple-value-list
+				   (apply function request))))
+		      (setf (future-result future)
+			    (if result
+				(first result)
+				rsb.converter:+no-value+))) ;;; TODO(jmoringe): ugly
+		  (error (condition)
+		    (setf (future-error future) condition)))))))
     ;; Remove registered methods from the server.
     (iter (for method in (server-methods server))
 	  (setf (server-method server (method-name method)) nil))
@@ -97,7 +97,7 @@ following commands are available:
 	  ;; We cannot use iterate for destructuring since the closed
 	  ;; over variables NAME and LAMBDA would change due during
 	  ;; iteration.
-	  (bind (((name . lambda) name-and-lambda)
+	  (let+ (((name . lambda) name-and-lambda)
 		 (name (format nil "~(~A~)" name)))
 	    (setf (server-method server name)
 		  #'(lambda (&rest request)
@@ -118,7 +118,7 @@ following commands are available:
 (defmethod replay ((connection replay-bag-connection)
 		   (strategy   remote-controlled)
 		   &key &allow-other-keys)
-  (bind (((:accessors (uri    strategy-control-uri)
+  (let+ (((&accessors (uri    strategy-control-uri)
 		      (server %strategy-server)) strategy))
     (with-local-server (server* uri)
       (setf server server*)

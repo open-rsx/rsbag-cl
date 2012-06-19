@@ -110,15 +110,15 @@ according to their timestamps."))
 						   from-end
 						   (start   0)
 						   end)
-  (bind (((:accessors-r/o (sequences view-sequences)
+  (let+ (((&accessors-r/o (sequences view-sequences)
 			  (compare   view-compare)
 			  (key       view-key)) view)
-	 ((:flet make-iterator (sequence))
-	  (bind (((:values iterator limit from-end)
-		  (sequence:make-simple-sequence-iterator
-		   sequence :from-end from-end)))
-	    (list (funcall key sequence iterator limit from-end)
-		  sequence iterator limit from-end)))
+	 ((&flet make-iterator (sequence)
+	    (let+ (((&values iterator limit from-end)
+		    (sequence:make-simple-sequence-iterator
+		     sequence :from-end from-end)))
+	      (list (funcall key sequence iterator limit from-end)
+		    sequence iterator limit from-end))))
 	 (iterator (make-instance
 		    'serialized-iterator
 		    :iterators (map 'list #'make-iterator sequences)
@@ -158,10 +158,10 @@ are serialized views on multiple sequences."))
 (defmethod sequence:iterator-step ((sequence serialized)
 				   (iterator serialized-iterator)
 				   (from-end t))
-  (bind (((:accessors-r/o (compare view-compare)
+  (let+ (((&accessors-r/o (compare view-compare)
 			  (key     view-key)) sequence)
 	 (current (%iterator-current iterator))
-	 ((_ sequence* iterator* _ from-end*) current))
+	 ((nil sequence* iterator* nil from-end*) current))
     (declare (type function key))
     (setf (third current)
 	  (sequence:iterator-step sequence* iterator* from-end*)
@@ -173,7 +173,7 @@ are serialized views on multiple sequences."))
 
 (defmethod sequence:iterator-element ((sequence serialized)
 				      (iterator serialized-iterator))
-  (bind (((:accessors-r/o (current %iterator-current)) iterator))
+  (let+ (((&accessors-r/o (current %iterator-current)) iterator))
     (sequence:iterator-element (second current) (third current))))
 
 

@@ -114,46 +114,45 @@ translation of their values into indices before replay."))
 (defmethod replay :before ((connection replay-bag-connection)
 			   (strategy   time-bounds-mixin)
 			   &key &allow-other-keys)
-  (bind (((:accessors-r/o (bag connection-bag)) connection)
-	 ((:accessors (start-time  strategy-start-time)
+  (let+ (((&accessors-r/o (bag connection-bag)) connection)
+	 ((&accessors (start-time  strategy-start-time)
 		      (start-index %strategy-start-index)
 		      (end-time    strategy-end-time)
 		      (end-index   strategy-end-index)) strategy)
 	 (sequence    (make-view connection strategy
 				 :selector #'channel-timestamps))
-	 ((:labels timestamp->index (timestamp))
-	  (etypecase timestamp
-	    (real
-	     (timestamp->index
-	      (local-time:adjust-timestamp
-		  (if (minusp timestamp) (end bag) (rsbag:start bag))
-		(:offset :sec  (floor timestamp))
-		(:offset :nsec (mod (floor timestamp 1/1000000000)
-				    1000000000)))))
-	    (local-time:timestamp
-	     (values
-	      (or (position timestamp sequence
-			    :test #'local-time:timestamp<=)
-		  (error "~@<Could not find requested timestamp ~A in bag ~
+	 ((&labels timestamp->index (timestamp)
+	    (etypecase timestamp
+	      (real
+	       (timestamp->index
+		(local-time:adjust-timestamp
+		    (if (minusp timestamp) (end bag) (rsbag:start bag))
+		  (:offset :sec  (floor timestamp))
+		  (:offset :nsec (mod (floor timestamp 1/1000000000)
+				      1000000000)))))
+	      (local-time:timestamp
+	       (values
+		(or (position timestamp sequence
+			      :test #'local-time:timestamp<=)
+		    (error "~@<Could not find requested timestamp ~A in bag ~
 ~A (with temporal range [~A, ~A]).~@:>"
-			 timestamp (connection-bag connection)
-			 (rsbag:start bag) (end bag)))
-	      timestamp))))
-	 ((:flet set-index (timestamp setter name))
-	  (log1 :info "Mapping requested ~A ~A to index (this can take a moment)"
-		name timestamp)
-	  (bind (((:values index timestamp)
-		  (timestamp->index timestamp))
-		 (effective  (elt sequence index))
-		 (difference (abs (local-time:timestamp-difference
-				   timestamp effective))))
-	    (funcall setter index)
-	    (log1 :info "Mapped requested ~A ~A to index ~:D (at time ~A, ~,6F seconds difference)"
-		  name timestamp index effective difference)
-	    (when (> difference 1)
-	      (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
+			   timestamp (connection-bag connection)
+			   (rsbag:start bag) (end bag)))
+		timestamp)))))
+	 ((&flet set-index (timestamp setter name)
+	    (log1 :info "Mapping requested ~A ~A to index (this can take a moment)"
+		  name timestamp)
+	    (let+ (((&values index timestamp) (timestamp->index timestamp))
+		   (effective  (elt sequence index))
+		   (difference (abs (local-time:timestamp-difference
+				     timestamp effective))))
+	      (funcall setter index)
+	      (log1 :info "Mapped requested ~A ~A to index ~:D (at time ~A, ~,6F seconds difference)"
+		    name timestamp index effective difference)
+	      (when (> difference 1)
+		(warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
 requested ~A ~A~@:>"
-		    name effective difference name timestamp)))))
+		      name effective difference name timestamp))))))
     (when start-time
       (if (and (rsbag:start bag) (end bag))
 	  (set-index start-time

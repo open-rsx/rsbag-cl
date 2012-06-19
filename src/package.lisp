@@ -22,7 +22,7 @@
    :cl
    :alexandria
    :iterate
-   :bind
+   :let-plus
    :more-conditions)
 
   ;; Symbols

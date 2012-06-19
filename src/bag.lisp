@@ -55,13 +55,13 @@ method. "))
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
                                      &key)
-  (bind (((:accessors-r/o (backend   %bag-backend)
+  (let+ (((&accessors-r/o (backend   %bag-backend)
 			  (transform bag-transform)
 			  (channels  %bag-channels)) instance)
-	 ((:flet make-transform (name meta-data id))
-	  (%make-channel-transform instance name meta-data
-				   :id   id
-				   :spec transform)))
+	 ((&flet make-transform (name meta-data id)
+	    (%make-channel-transform instance name meta-data
+				     :id   id
+				     :spec transform))))
     (iter (for (id name meta-data) in (rsbag.backend:get-channels backend))
 	  (setf (gethash name channels)
 		(%make-channel instance name meta-data
@@ -115,7 +115,7 @@ method. "))
   ;; If NEW-VALUE does not have a type, but TRANSFORM is non-nil,
   ;; augment the meta-data with TRANSFORM's type. Make a channel
   ;; instance and store it.
-  (bind (((:accessors-r/o (channels %bag-channels)
+  (let+ (((&accessors-r/o (channels %bag-channels)
 			  (backend  %bag-backend)) bag)
 	 (meta-data (if (and transform (not (getf new-value :type)))
 			(append (list :type (rsbag.transform:transform-name transform))
@@ -127,7 +127,7 @@ method. "))
     (setf (gethash name channels) channel)))
 
 (defmethod print-object ((object bag) stream)
-  (bind (((:accessors-r/o (location  bag-location)
+  (let+ (((&accessors-r/o (location  bag-location)
 			  (direction bag-direction)
 			  (channels  %bag-channels)) object)
 	 (location/short (typecase location
@@ -135,12 +135,12 @@ method. "))
 					     (pathname-name location)
 					     (pathname-type location)))
 			   (t        location))))
-   (print-unreadable-object (object stream :type t :identity t)
-     (format stream "~S ~:[-~;r~]~:[-~;w~] (~D)"
-	     location/short
-	     (member direction '(:input :io))
-	     (member direction '(:output :io))
-	     (hash-table-count channels)))))
+    (print-unreadable-object (object stream :type t :identity t)
+      (format stream "~S ~:[-~;r~]~:[-~;w~] (~D)"
+	      location/short
+	      (member direction '(:input :io))
+	      (member direction '(:output :io))
+	      (hash-table-count channels)))))
 
 
 ;;; Time range protocol
@@ -174,7 +174,7 @@ method. "))
 			  &rest args
 			  &key
 			  id)
-  (bind (((:accessors-r/o (backend       %bag-backend)
+  (let+ (((&accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
     (apply #'make-instance channel-class
 	   :bag       bag
@@ -194,12 +194,12 @@ method. "))
 				    spec)
   (declare (ignore id))
 
-  (bind (((:plist type) meta-data)
-	 ((:flet parse-type ())
-	  (typecase type
-	    (null (list nil))
-	    (list type)
-	    (t    (ensure-list type))))
+  (let+ (((&plist-r/o (type :type)) meta-data)
+	 ((&flet parse-type ()
+	    (typecase type
+	      (null (list nil))
+	      (list type)
+	      (t    (ensure-list type)))))
 	 ((class-name &rest args)
 	  (etypecase spec
 	    ;; No spec - derive everything from TYPE.

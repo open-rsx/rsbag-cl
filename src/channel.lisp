@@ -57,7 +57,7 @@ implements access to the bag to which this channel belongs."))
 data items."))
 
 (defmethod channel-timestamps ((channel channel))
-  (bind (((:accessors-r/o (id      %channel-id)
+  (let+ (((&accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
     (rsbag.backend:get-timestamps backend id)))
 
@@ -81,7 +81,7 @@ timestamps and entries."
 		  (transform        (channel-transform channel)))
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (bind (((:accessors-r/o (id      %channel-id)
+  (let+ (((&accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel)
 	 (raw (or (rsbag.backend:get-entry backend id index)
 		  (ecase if-does-not-exist
@@ -100,7 +100,7 @@ timestamps and entries."
 		  if-does-not-exist)
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (bind (((:accessors-r/o (id      %channel-id)
+  (let+ (((&accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
     (or (rsbag.backend:get-entry backend id timestamp)
 	(ecase if-does-not-exist
@@ -129,7 +129,7 @@ timestamps and entries."
   (when (eq if-exists :supersede)
     (error "Superseding entries is not supported yet"))
 
-  (bind (((:accessors-r/o (id      %channel-id)
+  (let+ (((&accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel)
 	 (raw (if transform
 		  (rsbag.transform:encode transform new-value)
@@ -163,7 +163,7 @@ timestamps and entries."
 
 #+sbcl
 (defmethod sequence:length ((channel channel))
-  (bind (((:accessors-r/o (id      %channel-id)
+  (let+ (((&accessors-r/o (id      %channel-id)
 			  (backend %channel-backend)) channel))
     (rsbag.backend:get-num-entries backend id)))
 
@@ -218,6 +218,6 @@ associated entries of a channel."))
 #+sbcl
 (defmethod sequence:elt ((items channel-items)
 			 (index integer))
-  (bind (((:accessors-r/o (channel    %channel-items-channel)
+  (let+ (((&accessors-r/o (channel    %channel-items-channel)
 			  (timestamps %channel-items-timestamps)) items))
     (list (elt timestamps index) (elt channel index))))

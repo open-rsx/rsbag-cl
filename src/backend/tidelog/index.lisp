@@ -128,7 +128,7 @@ of entries to corresponding file offsets for one channel."))
 		      (timestamp integer)
 		      (offset    integer)
 		      (chunk-id  integer))
-  (bind (((:accessors-r/o (buffer    index-buffer)
+  (let+ (((&accessors-r/o (buffer    index-buffer)
 			  (entries   index-entries)
 			  (sorted-to %index-sorted-to)) index))
     ;; Add to entries.
@@ -175,19 +175,19 @@ insertions.~@:>")
 ;;
 
 (defun make-entries (indices chunks)
-  (bind ((result (make-array (* 2 (reduce #'+ indices
+  (let+ ((result (make-array (* 2 (reduce #'+ indices
 					  :key #'indx-count))
 			     :element-type '(unsigned-byte 64)
 			     :adjustable   t
 			     :fill-pointer 0))
-	 ((:flet add-offset! (entry))
-	  (bind (((:accessors-r/o
-		   (timestamp    index-entry-timestamp)
-		   (chunk-id     index-entry-chunk-id)
-		   (inner-offset index-entry-offset)) entry)
-		 (outer-offset (%chunk-id->offset chunk-id chunks)))
-	    (vector-push timestamp result)
-	    (vector-push (+ outer-offset 12 25 inner-offset) result)))) ;;; TODO(jmoringe):  get rid of the constants
+	 ((&flet add-offset! (entry)
+	    (let+ (((&accessors-r/o
+		     (timestamp    index-entry-timestamp)
+		     (chunk-id     index-entry-chunk-id)
+		     (inner-offset index-entry-offset)) entry)
+		   (outer-offset (%chunk-id->offset chunk-id chunks)))
+	      (vector-push timestamp result)
+	      (vector-push (+ outer-offset 12 25 inner-offset) result))))) ;;; TODO(jmoringe):  get rid of the constants
     (iter (for index each indices)
 	  (map nil #'add-offset! (indx-entries index)))
     result))

@@ -101,18 +101,18 @@ recorded into bag channels."))
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
 			  (event event))
-  (bind (((:accessors-r/o (timestamp connection-timestamp)
+  (let+ (((&accessors-r/o (timestamp connection-timestamp)
 			  (strategy  connection-strategy)) sink)
-	 ((:values channel found?)
+	 ((&values channel found?)
 	  (ensure-channel-for sink event strategy)))
     (unless found?
       (push channel (connection-channels sink)))
     (setf (entry channel (timestamp event timestamp)) event)))
 
 (defmethod start ((connection recording-channel-connection))
-  (bind (((:accessors-r/o (participant connection-endpoint)) connection))
+  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
     (push connection (rsb.ep:handlers participant))))
 
 (defmethod stop ((connection recording-channel-connection))
-  (bind (((:accessors-r/o (participant connection-endpoint)) connection))
+  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
     (removef (rsb.ep:handlers participant) connection)))

@@ -62,7 +62,7 @@
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
 		:split-sequence
-		:metabang-bind
+		:let-plus
 		:iterate
 		:cl-dynamic-classes
 		:more-conditions

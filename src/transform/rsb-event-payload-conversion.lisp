@@ -35,7 +35,7 @@ contained payloads using a specified converter."))
 (defmethod encode ((transform     rsb-event/payload-conversion)
 		   (domain-object rsb:event))
   ;; Encode the payload in-place.
-  (bind (((:accessors-r/o (converter transform-converter)) transform))
+  (let+ (((&accessors-r/o (converter transform-converter)) transform))
     (setf (rsb:event-data domain-object)
 	  (rsb.converter:domain->wire
 	   converter (rsb:event-data domain-object))))
@@ -46,7 +46,7 @@ contained payloads using a specified converter."))
 		   (data      simple-array))
   ;; Retrieve event (with encoded payload) from next method and decode
   ;; payload in-place.
-  (bind (((:accessors-r/o (wire-schema transform-wire-schema)
+  (let+ (((&accessors-r/o (wire-schema transform-wire-schema)
 			  (converter   transform-converter)) transform)
 	 (event (call-next-method)))
     (setf (rsb:event-data event)

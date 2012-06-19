@@ -31,7 +31,7 @@ from it."))
 (defmethod sequence:elt ((view  elt-via-iterator-mixin)
 			 (index integer))
   ;; Create an iterator and advance it to INDEX.
-  (bind (((:values iterator _ from-end)
+  (let+ (((&values iterator nil from-end)
 	  (sequence:make-simple-sequence-iterator view)))
     (iter (repeat index) (sequence:iterator-step view iterator from-end))
     (sequence:iterator-element view iterator)))

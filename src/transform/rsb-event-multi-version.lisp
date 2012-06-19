@@ -21,9 +21,9 @@
 
 (defmacro define-serialization-version (version &key versioned?)
   "Define a serialization version VERSION."
-  (bind (((:flet versioned-symbol (name package))
-	  (find-symbol name (find-package (make-versioned-name
-					   package version))))
+  (let+ (((&flet versioned-symbol (name package)
+	    (find-symbol name (find-package (make-versioned-name
+					     package version)))))
 	(designator (make-versioned-name :rsb-event version)))
    `(progn
       (unless (member ,designator *serialization-versions*)
@@ -39,8 +39,8 @@
 			      :rsb-event))
 		       :wire-schema (first args))
 
-	(bind (((wire-schema &rest rest) args)
-	       ((:plist converter) rest))
+	(let+ (((wire-schema &rest rest) args)
+	       ((&plist-r/o (converter :converter)) rest))
 	  (apply #'make-instance
 		 (if converter
 		     ',(versioned-symbol

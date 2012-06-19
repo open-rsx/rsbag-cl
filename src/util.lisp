@@ -29,7 +29,7 @@ slot. Define the following accessors along with the class:
 + `NAME-values' :: Return item values.
 + `NAME-plist' :: Return items as plist.
 + `NAME-alist' :: Return items as alist."
-  (bind ((class-name (symbolicate "PLIST-" name "-MIXIN"))
+  (let+ ((class-name (symbolicate "PLIST-" name "-MIXIN"))
 	 (initarg    (make-keyword slot-name))
 	 ((count-name keys-name values-name plist-name alist-name)
 	  (map 'list (curry #'symbolicate name)

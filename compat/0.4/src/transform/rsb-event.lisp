@@ -53,14 +53,14 @@ octet vectors."))
 	(transform-wire-schema transform)))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (bind (((:accessors-r/o (holder      %transform-holder)
+  (let+ (((&accessors-r/o (holder      %transform-holder)
 			  (wire-schema transform-wire-schema)) transform)
 	 (meta-data (rsb.serialization::event-meta-data holder))
-	 ((:flet process-timestamp (name))
-	  (let ((value (rsb:timestamp domain-object name)))
-	    (if value
-		(timestamp->unix-microseconds value)
-		0))))
+	 ((&flet process-timestamp (name)
+	    (let ((value (rsb:timestamp domain-object name)))
+	      (if value
+		  (timestamp->unix-microseconds value)
+		  0)))))
     ;; Prepare meta-data container.
     (reinitialize-instance meta-data
 			   :create-time  (process-timestamp :create)
@@ -105,7 +105,7 @@ octet vectors."))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
   (pb:unpack data (%transform-holder transform))
-  (bind (((:accessors-r/o (holder %transform-holder)) transform)
+  (let+ (((&accessors-r/o (holder %transform-holder)) transform)
 	 (meta-data (rsb.serialization::event-meta-data holder))
 	 ;; Create output event.
 	 (event
@@ -119,10 +119,10 @@ octet vectors."))
 	   :method            nil
 	   :data              (rsb.serialization::event-data holder)
 	   :create-timestamp? nil))
-	 ((:flet process-timestamp (name value))
-	  (unless (zerop value)
-	    (setf (rsb:timestamp event name)
-		  (unix-microseconds->timestamp value)))))
+	 ((&flet process-timestamp (name value)
+	    (unless (zerop value)
+	      (setf (rsb:timestamp event name)
+		    (unix-microseconds->timestamp value))))))
 
     ;; Fill fixed timestamps.
     (process-timestamp :create  (rsb.protocol::meta-data-create-time  meta-data))
@@ -166,7 +166,7 @@ integer which counts the number of microseconds since UNIX epoch."
 (defun unix-microseconds->timestamp (unix-microseconds)
   "Convert UNIX-MICROSECONDS to an instance of
 `local-time:timestamp'."
-  (bind (((:values unix-seconds microseconds)
+  (let+ (((&values unix-seconds microseconds)
 	  (floor unix-microseconds 1000000)))
     (local-time:unix-to-timestamp
      unix-seconds :nsec (* 1000 microseconds))))

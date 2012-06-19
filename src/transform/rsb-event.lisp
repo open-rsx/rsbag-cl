@@ -29,8 +29,8 @@
   (check-type args (cons keyword list)
 	      "a wire-schema keyword, optionally followed by keyword arguments")
 
-  (bind (((wire-schema &rest rest) args)
-	 ((:plist converter) rest))
+  (let+ (((wire-schema &rest rest) args)
+	 ((&plist-r/o (converter :converter)) rest))
     (apply #'make-instance
 	   (if converter 'rsb-event/payload-conversion 'rsb-event)
 	   :wire-schema wire-schema
@@ -64,7 +64,7 @@ octet vectors without (de)serializing payloads."))
 ;;; TODO(jmoringe, 2012-03-04): this is a horrible hack
 ;; maybe the converter should supply the schema information?
 (defmethod transform-format ((transform rsb-event))
-  (bind (((:accessors-r/o (wire-schema transform-wire-schema)) transform))
+  (let+ (((&accessors-r/o (wire-schema transform-wire-schema)) transform))
     (with-output-to-string (stream)
       ;; Outer serialization: RSB event serialization.
       (pbb:emit
@@ -85,14 +85,14 @@ serialization; not inner payload serialization.~@:>"
 		wire-schema))))))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (id        rsb.protocol:notification-event-id)
+  (let+ (((&accessors-r/o (holder %transform-holder)) transform)
+	 ((&accessors-r/o (id        rsb.protocol:notification-event-id)
 			  (meta-data rsb.protocol:notification-meta-data)
 			  (causes    rsb.protocol:notification-causes)) holder)
-	 ((:flet process-timestamp (name))
-	  (if-let ((value (rsb:timestamp domain-object name)))
-	    (timestamp->unix-microseconds value)
-	    0)))
+	 ((&flet process-timestamp (name)
+	    (if-let ((value (rsb:timestamp domain-object name)))
+	      (timestamp->unix-microseconds value)
+	      0))))
     ;; Prepare event id
     (reinitialize-instance
      id
@@ -149,12 +149,12 @@ serialization; not inner payload serialization.~@:>"
     (pb:pack* holder)))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
-  (bind (((:flet decode-event-id (id))
-	  (cons (uuid:byte-array-to-uuid
-		 (rsb.protocol:event-id-sender-id id))
-		(rsb.protocol:event-id-sequence-number id)))
-	 ((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (id        rsb.protocol:notification-event-id)
+  (let+ (((&flet decode-event-id (id)
+	    (cons (uuid:byte-array-to-uuid
+		   (rsb.protocol:event-id-sender-id id))
+		  (rsb.protocol:event-id-sequence-number id))))
+	 ((&accessors-r/o (holder %transform-holder)) transform)
+	 ((&accessors-r/o (id        rsb.protocol:notification-event-id)
 			  (meta-data rsb.protocol:notification-meta-data)
 			  (causes    rsb.protocol:notification-causes)) holder)
 	 ;; Create output event.
@@ -180,10 +180,10 @@ serialization; not inner payload serialization.~@:>"
 				     (rsb.protocol:notification-causes holder))
 	     :create-timestamp? nil
 	     :intern-scope?     t)))
-	 ((:flet process-timestamp (name value))
-	  (unless (zerop value)
-	    (setf (rsb:timestamp event name)
-		  (unix-microseconds->timestamp value)))))
+	 ((&flet process-timestamp (name value)
+	    (unless (zerop value)
+	      (setf (rsb:timestamp event name)
+		    (unix-microseconds->timestamp value))))))
 
     ;; Fill fixed timestamps.
     (process-timestamp :create  (rsb.protocol:event-meta-data-create-time  meta-data))
@@ -231,7 +231,7 @@ integer which counts the number of microseconds since UNIX epoch."
 (defun unix-microseconds->timestamp (unix-microseconds)
   "Convert UNIX-MICROSECONDS to an instance of
 `local-time:timestamp'."
-  (bind (((:values unix-seconds microseconds)
+  (let+ (((&values unix-seconds microseconds)
 	  (floor unix-microseconds 1000000)))
     (local-time:unix-to-timestamp
      unix-seconds :nsec (* 1000 microseconds))))

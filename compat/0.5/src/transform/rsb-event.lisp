@@ -52,14 +52,14 @@ octet vectors."))
   (list (call-next-method) (transform-wire-schema transform)))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (bind (((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (causes    rsb.serialization:event-causes)
+  (let+ (((&accessors-r/o (holder %transform-holder)) transform)
+	 ((&accessors-r/o (causes    rsb.serialization:event-causes)
 			  (meta-data rsb.serialization:event-meta-data)) holder)
-	 ((:flet process-timestamp (name))
-	  (let ((value (rsb:timestamp domain-object name)))
-	    (if value
-		(timestamp->unix-microseconds value)
-		0))))
+	 ((&flet+ process-timestamp (name)
+	    (let ((value (rsb:timestamp domain-object name)))
+	      (if value
+		  (timestamp->unix-microseconds value)
+		  0)))))
     ;; Prepare meta-data container.
     (reinitialize-instance meta-data
 			   :create-time  (process-timestamp :create)
@@ -111,12 +111,12 @@ octet vectors."))
     (pb:pack* holder)))
 
 (defmethod decode ((transform rsb-event) (data simple-array))
-  (bind (((:flet decode-event-id (id))
-	  (cons (uuid:byte-array-to-uuid
-		 (rsb.serialization:event-id-sender-id id))
-		(rsb.serialization:event-id-sequence-number id)))
-	 ((:accessors-r/o (holder %transform-holder)) transform)
-	 ((:accessors-r/o (meta-data rsb.serialization:event-meta-data)
+  (let+ (((&flet decode-event-id (id)
+	    (cons (uuid:byte-array-to-uuid
+		   (rsb.serialization:event-id-sender-id id))
+		  (rsb.serialization:event-id-sequence-number id))))
+	 ((&accessors-r/o (holder %transform-holder)) transform)
+	 ((&accessors-r/o (meta-data rsb.serialization:event-meta-data)
 			  (causes    rsb.serialization:event-causes)) holder)
 	 ;; Create output event.
 	 (event
@@ -141,10 +141,10 @@ octet vectors."))
 				     (rsb.serialization:event-causes holder))
 	     :create-timestamp? nil
 	     :intern-scope?     t)))
-	 ((:flet process-timestamp (name value))
-	  (unless (zerop value)
-	    (setf (rsb:timestamp event name)
-		  (unix-microseconds->timestamp value)))))
+	 ((&flet process-timestamp (name value)
+	    (unless (zerop value)
+	      (setf (rsb:timestamp event name)
+		    (unix-microseconds->timestamp value))))))
 
     ;; Fill fixed timestamps.
     (process-timestamp :create  (rsb.protocol:meta-data-create-time  meta-data))
@@ -188,7 +188,7 @@ integer which counts the number of microseconds since UNIX epoch."
 (defun unix-microseconds->timestamp (unix-microseconds)
   "Convert UNIX-MICROSECONDS to an instance of
 `local-time:timestamp'."
-  (bind (((:values unix-seconds microseconds)
+  (let+ (((&values unix-seconds microseconds)
 	  (floor unix-microseconds 1000000)))
     (local-time:unix-to-timestamp
      unix-seconds :nsec (* 1000 microseconds))))

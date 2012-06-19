@@ -49,7 +49,7 @@
   (unpack source :block)
   ;; Scan through remaining blocks.
   (iter (while (listen source))
-	(bind (((:values offset block) (scan source :block)))
+	(let+ (((&values offset block) (scan source :block)))
 	  (typecase block
 	    (chan    (collect block               :into channels))
 	    (indx    (collect block               :into indices))
@@ -60,8 +60,8 @@
 		 &optional start)
   (declare (ignore start))
 
-  (bind ((offset (file-position source))
-	 ((:values name length) (unpack source :block-header))
+  (let+ ((offset (file-position source))
+	 ((&values name length) (unpack source :block-header))
 	 (name (intern name #.*package*)))
     (values
      offset
@@ -112,7 +112,7 @@
 		   &optional start)
   (declare (ignore start))
 
-  (bind (((:values name length) (unpack source :block-header))
+  (let+ (((&values name length) (unpack source :block-header))
 	 (name  (find-symbol name #.*package*)) ;;; TODO(jmoringe): bottleneck
 	 (class (find-class name)))
     (unpack (read-chunk-of-length (if (eq name 'tide) 10 length) source)  ;;; TODO(jmoringe): hack
@@ -126,7 +126,7 @@
 		 &optional start)
   (declare (ignore start))
 
-  (bind ((name   (string (class-name (class-of object))))
+  (let* ((name   (string (class-name (class-of object))))
 	 (length (size object))
 	 (buffer (nibbles:make-octet-vector length)))
     (pack (cons name length) source)
@@ -137,7 +137,7 @@
 		 &optional start)
   (declare (ignore start))
 
-  (bind (((kind . length) object)
+  (let+ (((kind . length) object)
 	 (header (nibbles:make-octet-vector 12)))
     (declare (type (string 4) kind))
     (replace header (sb-ext:string-to-octets kind :external-format :ascii)) ;;; TODO(jmoringe, 2012-04-13): check length

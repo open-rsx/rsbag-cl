@@ -69,8 +69,7 @@ timestamp.~:@>"
 			      event key))))
 
 		(timestamp-adjustment-value/delta
-		 (bind ((amount (second value))
-			((:values sec nsec) (floor amount)))
+		 (let+ (((&values sec nsec) (floor (second value))))
 		   (local-time:adjust-timestamp (timestamp event key)
 		     (:offset :sec  sec)
 		     (:offset :nsec (floor (* 1000000000 nsec))))))

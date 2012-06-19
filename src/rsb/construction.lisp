@@ -131,11 +131,11 @@
 			&key
 			(replay-strategy :recorded-timing)
 			(channels        t))
-  (bind ((predicate  (if (eq channels t) (constantly t) channels))
+  (let+ ((predicate  (if (eq channels t) (constantly t) channels))
 	 (channels   (remove-if-not predicate (bag-channels source)))
 	 (other-args (remove-from-plist args :replay-strategy :channels))
-	 ((:flet do-channel (channel))
-	  (apply #'bag->events channel dest other-args))
+	 ((&flet do-channel (channel)
+	    (apply #'bag->events channel dest other-args)))
 	 (connections (map 'list #'do-channel channels))
 	 ((class &rest args) (ensure-list replay-strategy))
 	 (strategy (apply #'make-replay-strategy class
@@ -153,12 +153,12 @@
 (defmethod bag->events ((source channel)
 			(dest   puri:uri)
 			&key)
-  (bind ((name (%legalize-name
+  (let+ ((name (%legalize-name
 		(if (starts-with #\/ (channel-name source))
 		    (subseq (channel-name source) 1)
 		    (channel-name source))))
 	 (uri  (%make-playback-uri name dest))
-	 ((:plist type) (channel-meta-data source))
+	 ((&plist-r/o (type :type)) (channel-meta-data source))
 	 (converter   (make-instance
 		       'rsb.converter:force-wire-schema
 		       :wire-schema (if (listp type)

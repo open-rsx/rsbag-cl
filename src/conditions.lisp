@@ -78,7 +78,7 @@ within a bag an cannot or may not be created."))
   ()
   (:report
    (lambda (condition stream)
-     (bind (((:accessors-r/o (bag bag-error-bag)) condition))
+     (let+ (((&accessors-r/o (bag bag-error-bag)) condition))
        (format stream "~@<The bag ~A has not been opened for output (but ~
 ~A).~@:>"
 	       bag

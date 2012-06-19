@@ -42,9 +42,9 @@ for user interaction.")
 by means of textual commands."))
 
 (defmethod next-command ((strategy interactive))
-  (bind (((:accessors-r/o (commands strategy-commands)
+  (let+ (((&accessors-r/o (commands strategy-commands)
 			  (stream   strategy-stream)) strategy)
-	 ((:accessors (previous strategy-previous-command)) strategy))
+	 ((&accessors (previous strategy-previous-command)) strategy))
 
     ;; Read commands an existing one is specified.
     (iter (for (name . args) next (%read-command stream))
@@ -67,7 +67,7 @@ previous command~;~:*No such command: ~S~]. Available commands: ~
 
 (defmethod execute-command ((strategy interactive)
 			    (command  function))
-  (bind (((:accessors-r/o (stream strategy-stream)) strategy))
+  (let+ (((&accessors-r/o (stream strategy-stream)) strategy))
     (handler-case
 	(funcall command)
       (error (condition)
@@ -77,7 +77,7 @@ previous command~;~:*No such command: ~S~]. Available commands: ~
 (defmethod replay ((connection replay-bag-connection)
 		   (strategy   interactive)
 		   &key &allow-other-keys)
-  (bind (((:accessors-r/o (stream strategy-stream)) strategy))
+  (let+ (((&accessors-r/o (stream strategy-stream)) strategy))
     (format stream "~&~@<OHAI, type command; unambiguous prefix ~
 suffices. empty command repeats previous one.~@:>~%")
     (call-next-method)
@@ -88,7 +88,7 @@ suffices. empty command repeats previous one.~@:>~%")
 ;;
 
 (defun %read-command (stream)
-  (bind ((line (progn
+  (let+ ((line (progn
 		 (format stream "~&> ")
 		 (force-output stream)
 		 (read-line stream nil "quit")))

@@ -30,7 +30,7 @@
 	     `((:documentation ,documentation)))))
 
 (defun spec->slot (class-name spec)
-  (bind (((name type &key documentation) spec)
+  (let+ (((name type &key documentation) spec)
 	 (type          (type-spec->lisp-type type))
 	 (accessor-name (symbolicate class-name "-" name)))
     `(,name :initarg  ,(make-keyword name)
@@ -60,7 +60,7 @@
 	       specs))))
 
 (defun spec->size (spec class-name object)
-  (bind (((name type &rest _) spec)
+  (let+ (((name type &rest nil) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     (type-spec->size type `(,accessor-name ,object))))
 
@@ -103,9 +103,9 @@
        (values object (- offset start)))))
 
 (defun spec->deserializer (spec class-name source object offset)
-  (bind (((name type &rest _) spec)
+  (let+ (((name type &rest nil) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
-    `(bind (((:values value length)
+    `(let+ (((&values value length)
 	     ,(type-spec->deserializer type source offset)))
        (declare (type ,(type-spec->lisp-type type) value))
        (setf (,accessor-name ,object) value)
@@ -118,7 +118,7 @@
        ((:repeated count-slot sub-type)
 	`(iter (repeat (slot-value object ',count-slot)) ;;; TODO(jmoringe): slot access
 	       (with offset = ,offset)
-	       (bind (((:values value length)
+	       (let+ (((&values value length)
 		       ,(type-spec->deserializer sub-type source offset)))
 		 (incf offset length)
 		 (collect value  :into result :result-type vector)
@@ -130,7 +130,7 @@
 	   (values (subseq ,source ,offset (+ ,offset length)) length)))
 
        ((:string length-type)
-	`(bind (((:values length length-length)
+	`(let+ (((&values length length-length)
 		 ,(type-spec->deserializer length-type source offset))
 		(data-offset (+ ,offset length-length)))
 	   (values (sb-ext:octets-to-string
@@ -164,7 +164,7 @@
        (- offset start))))
 
 (defun spec->serializer (spec class-name source object offset)
-  (bind (((name type &rest _) spec)
+  (let+ (((name type &rest nil) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     `(let ((value (,accessor-name ,object)))
        (declare (type ,(type-spec->lisp-type type) value))
@@ -194,7 +194,7 @@
 			   length-type `(length ,value) source 'offset*))
 	   (let ((octets (sb-ext:string-to-octets ,value)))
 	     (replace ,source octets :start1 offset*)
-	     (incf offset* octets))
+	     (incf offset* (length octets)))
 	   (- offset* ,offset)))))
 
     ((cons (eql unsigned-byte) list)

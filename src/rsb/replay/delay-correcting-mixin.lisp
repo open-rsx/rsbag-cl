@@ -45,7 +45,7 @@ this delay adjusted to compensate for processing latencies."))
   ;; Compute the difference between the previously scheduled duration
   ;; and the actual duration. Adjust the next scheduled duration
   ;; accordingly.
-  (bind (((:accessors (previous-delay strategy-previous-delay)
+  (let+ (((&accessors (previous-delay strategy-previous-delay)
 		      (previous-call  strategy-previous-call)) strategy)
 	 (now          (local-time:now))
 	 (actual-delay (when previous-call

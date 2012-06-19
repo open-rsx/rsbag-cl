@@ -34,7 +34,7 @@ and processes all elements of the sequence by sequential calls to
 		   (strategy   sequential-mixin)
 		   &key
 		   progress)
-  (bind (((:accessors-r/o (start-index strategy-start-index)
+  (let+ (((&accessors-r/o (start-index strategy-start-index)
 			  (end-index   strategy-end-index)) strategy)
 	 (sequence        (make-view connection strategy))
 	 (update-progress (%make-progress-reporter sequence progress)))

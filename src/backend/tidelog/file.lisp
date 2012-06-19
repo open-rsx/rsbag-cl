@@ -64,13 +64,13 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   ;; Scan through the TIDElog file collecting deserialized CHAN and
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.
   ;; Use the INDX blocks to build per-channel indices.
-  (bind (((:accessors (stream          backend-stream)
+  (let+ (((&accessors (stream          backend-stream)
 		      (buffer          backend-buffer)
 		      (channels        %file-channels)
 		      (indices         %file-indices)
 		      (next-channel-id %file-next-channel-id)
 		      (next-chunk-id   %file-next-chunk-id)) instance)
-	 ((:values chans indxs chnks) (scan stream :tide)))
+	 ((&values chans indxs chnks) (scan stream :tide)))
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks           (sort (coerce chnks 'vector) #'<
 				:key #'car)
@@ -104,13 +104,13 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 			(channel   integer)
 			(name      string)
 			(meta-data list))
-  (bind (((:accessors (stream   backend-stream)
+  (let+ (((&accessors (stream   backend-stream)
 		      (channels %file-channels)
 		      (indices  %file-indices)) file)
-	 ((:plist (type          :type)
-		  (source-name   :source-name   "")
-		  (source-config :source-config "")
-		  (format        :format        "")) meta-data)
+	 ((&plist-r/o (type          :type)
+		      (source-name   :source-name   "")
+		      (source-config :source-config "")
+		      (format        :format        "")) meta-data)
 	 (channel1 (make-instance
 		   'chan
 		   :id            channel
@@ -144,7 +144,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 		      (channel   integer)
 		      (timestamp local-time:timestamp)
 		      (entry     simple-array))
-  (bind (((:accessors-r/o (buffer  backend-buffer)
+  (let+ (((&accessors-r/o (buffer  backend-buffer)
 			  (indices %file-indices)) file)
 	 (timestamp* (timestamp->uint64 timestamp))
 	 (size       (length entry))
@@ -169,7 +169,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 (defmethod get-entry ((file    file)
 		      (channel integer)
 		      (index   integer))
-  (bind (((:accessors-r/o (stream backend-stream)) file)
+  (let+ (((&accessors (stream backend-stream)) file)
 	 (index1 (gethash channel (%file-indices file))) ;;; TODO(jmoringe): make a method?
 	 (offset (index-offset index1 index))
 	 (length (prog2
@@ -191,7 +191,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod make-buffer ((file     file)
 			(previous chnk))
-  (bind (((:accessors (next-chunk-id %file-next-chunk-id)) file))
+  (let+ (((&accessors (next-chunk-id %file-next-chunk-id)) file))
     (reinitialize-instance previous
 			   :chunk-id (incf next-chunk-id)
 			   :start    (1- (ash 1 64))
@@ -259,7 +259,7 @@ type information."
     ((emptyp type)
      nil)
     ((find #\: type)
-     (bind (((class-name &rest arg-strings) (split-sequence #\: type))
+     (let+ (((class-name &rest arg-strings) (split-sequence #\: type))
 	    (*package*   (find-package :keyword))
 	    (*readtable* (copy-readtable))
 	    (class       (progn
