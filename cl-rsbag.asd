@@ -67,11 +67,9 @@
 		:cl-dynamic-classes
 		:more-conditions
 
-		:local-time
-
 		:bordeaux-threads
-
-		:cl-protobuf
+		:local-time
+		:nibbles
 
 		(:version :cl-rsb #.(version/string)))
   :components  ((:module     "src/early"
@@ -318,6 +316,8 @@
 			       :depends-on ("package"))
 			      (:file       "variables"
 			       :depends-on ("package"))
+			      (:file       "util"
+			       :depends-on ("package"))
 
 			      (:file       "generator"
 			       :depends-on ("package"))
@@ -328,7 +328,7 @@
 			       :depends-on ("package" "macros"))
 			      (:file       "io"
 			       :depends-on ("package" "conditions"
-					    "spec"))
+					    "util" "spec"))
 
 			      (:file       "index"
 			       :depends-on ("package" "spec" "io"))

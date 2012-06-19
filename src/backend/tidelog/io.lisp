@@ -67,15 +67,11 @@
      offset
      (case name
        ((chan indx)
-	(let ((object (make-instance name))
-	      (buffer (binio:make-octet-vector length)))
-	  (read-sequence buffer source)
-	  (unpack buffer object))) ;;; TODO(jmoringe): make a function; maybe read-octet-vector source length
+	(unpack (read-chunk-of-length length source)
+		(allocate-instance (find-class name))))
        (chnk
 	(prog1
-	    (let ((buffer (binio:make-octet-vector 4)))
-	      (read-sequence buffer source)
-	      (binio:decode-uint32-le buffer))  ;;; TODO(jmoringe):  make a function
+	    (nibbles:read-ub32/le source)
 	  (file-position source (+ (file-position source) (- length 4)))))
        (t
 	(file-position source (+ (file-position source) length)))))))
@@ -105,23 +101,22 @@
 		   &optional start)
   (declare (ignore start))
 
-  (let ((header (binio:make-octet-vector 12)))
-    (unless (= (read-sequence header source) 12)
-      (error "~@<Could not read complete block header at position ~D.~@>"
-	     (file-position source)))
-    (values (binio:decode-utf8 header 0 4) ;;; TODO(jmoringe): bottleneck
-	    (binio:decode-uint64-le header 4))))
+  (let ((header (read-chunk-of-length 12 source)))
+    (values (sb-ext:octets-to-string header
+				     :external-format :ascii
+				     :start           0
+				     :end             4)
+	    (nibbles:ub64ref/le header 4))))
 
 (defmethod unpack ((source stream) (object (eql :block))
 		   &optional start)
   (declare (ignore start))
 
   (bind (((:values name length) (unpack source :block-header))
-	 (object (make-instance (intern name #.*package*))) ;;; TODO(jmoringe): bottleneck
-	 (buffer (binio:make-octet-vector
-		  (if (typep object 'tide) 10 length)))) ;;; TODO(jmoringe): hack
-    (read-sequence buffer source)
-    (unpack buffer object)))
+	 (name  (find-symbol name #.*package*)) ;;; TODO(jmoringe): bottleneck
+	 (class (find-class name)))
+    (unpack (read-chunk-of-length (if (eq name 'tide) 10 length) source)  ;;; TODO(jmoringe): hack
+	    (allocate-instance class))))
 
 
 ;;; Packing
@@ -133,7 +128,7 @@
 
   (bind ((name   (string (class-name (class-of object))))
 	 (length (size object))
-	 (buffer (binio:make-octet-vector length))) ;;; TODO(jmoringe): hack
+	 (buffer (nibbles:make-octet-vector length)))
     (pack (cons name length) source)
     (pack object buffer)
     (write-sequence buffer source)))
@@ -143,20 +138,8 @@
   (declare (ignore start))
 
   (bind (((kind . length) object)
-	 (header (binio:make-octet-vector 12)))
-    (binio:encode-utf8 kind header 0)
-    (binio:encode-uint64-le length header 4)
+	 (header (nibbles:make-octet-vector 12)))
+    (declare (type (string 4) kind))
+    (replace header (sb-ext:string-to-octets kind :external-format :ascii)) ;;; TODO(jmoringe, 2012-04-13): check length
+    (setf (nibbles:ub64ref/le header 4) length)
     (write-sequence header source)))
-
-
-;;;
-;;
-
-(defun uint64->timestamp (value)
- (bind (((:values secs nsecs) (truncate value 1000000000)))
-   (local-time:unix-to-timestamp secs :nsec nsecs)))
-
-(defun timestamp->uint64 (value)
-  (bind (((:accessors-r/o (secs  local-time:timestamp-to-unix)
-			  (nsecs local-time:nsec-of)) value))
-    (+ (* (expt 10 9) secs) nsecs)))

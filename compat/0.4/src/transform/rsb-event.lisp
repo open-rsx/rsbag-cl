@@ -98,7 +98,7 @@ octet vectors."))
 			  (string->bytes
 			   (rsb:event-method domain-object))
 			  (load-time-value
-			   (binio:make-octet-vector 0)))
+			   (nibbles:make-octet-vector 0)))
      :wire-schema     (wire-schema->bytes wire-schema)
      :data            (rsb:event-data domain-object))
     (pb:pack* holder)))
@@ -181,7 +181,7 @@ integer which counts the number of microseconds since UNIX epoch."
   "Convert BYTES into a string."
   (sb-ext:octets-to-string bytes :external-format :ascii))
 
-(declaim (ftype (function (keyword) binio:octet-vector) keyword->bytes))
+(declaim (ftype (function (keyword) nibbles:octet-vector) keyword->bytes))
 
 (defun keyword->bytes (keyword)
   "Convert the name of KEYWORD into an octet-vector."
@@ -190,7 +190,7 @@ integer which counts the number of microseconds since UNIX epoch."
       (let ((*readtable* *keyword-readtable*))
 	(string->bytes (princ-to-string keyword)))))
 
-(declaim (ftype (function (binio:octet-vector) keyword) bytes->keyword))
+(declaim (ftype (function (nibbles:octet-vector) keyword) bytes->keyword))
 
 (defun bytes->keyword (bytes)
   "Converter BYTES into a keyword."

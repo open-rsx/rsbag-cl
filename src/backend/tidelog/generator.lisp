@@ -46,7 +46,7 @@
     ((cons (eql :repeated) list)
      'vector)
     ((cons (eql :blob) list)
-     'binio:octet-vector)
+     'nibbles:octet-vector)
     (t
      spec)))
 
@@ -94,7 +94,7 @@
   `(defmethod unpack ((source simple-array) (object ,class-name)
 		      &optional
 		      (start 0))
-     (check-type source binio:octet-vector)
+     (check-type source nibbles:octet-vector)
 
      (let ((offset start))
        ,@(map 'list (rcurry #'spec->deserializer
@@ -140,8 +140,8 @@
     ((cons (eql unsigned-byte) list)
      (ecase (second type-spec)
        (8  `(values (aref ,source ,offset) 1))
-       (32 `(binio:decode-uint32-le ,source ,offset))
-       (64 `(binio:decode-uint64-le ,source ,offset))))
+       (32 `(values (nibbles:ub32ref/le ,source ,offset) 4))
+       (64 `(values (nibbles:ub64ref/le ,source ,offset) 8))))
 
     (symbol
      `(let ((object (allocate-instance (find-class ',type-spec))))
@@ -155,7 +155,7 @@
   `(defmethod pack ((object ,class-name) (source simple-array)
 		    &optional
 		    (start 0))
-     (check-type source binio:octet-vector)
+     (check-type source nibbles:octet-vector)
 
      (let ((offset start))
        ,@(map 'list (rcurry #'spec->serializer
@@ -192,14 +192,18 @@
 	`(let ((offset* ,offset))
 	   (incf offset* ,(type-spec->serializer
 			   length-type `(length ,value) source 'offset*))
-	   (incf offset* (binio:encode-utf8 ,value ,source offset*))
+	   (let ((octets (sb-ext:string-to-octets ,value)))
+	     (replace ,source octets :start1 offset*)
+	     (incf offset* octets))
 	   (- offset* ,offset)))))
 
     ((cons (eql unsigned-byte) list)
-     (ecase (second type-spec)
-       (8  `(progn (setf (aref ,source ,offset) ,value) 1))
-       (32 `(binio:encode-uint32-le ,value ,source ,offset))
-       (64 `(binio:encode-uint64-le ,value ,source ,offset))))
+     `(progn
+	,(ecase (second type-spec)
+	   (8  `(setf (aref ,source ,offset) ,value))
+	   (32 `(setf (nibbles:ub32ref/le ,source ,offset) ,value))
+	   (64 `(setf (nibbles:ub64ref/le ,source ,offset) ,value)))
+	,(ash (second type-spec) -3)))
 
     (symbol
      `(pack ,value ,source ,offset))))

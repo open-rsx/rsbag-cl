@@ -169,20 +169,15 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 (defmethod get-entry ((file    file)
 		      (channel integer)
 		      (index   integer))
-  (bind (((:accessors (stream backend-stream)) file)
+  (bind (((:accessors-r/o (stream backend-stream)) file)
 	 (index1 (gethash channel (%file-indices file))) ;;; TODO(jmoringe): make a method?
 	 (offset (index-offset index1 index))
-	 (buffer (binio:make-octet-vector 16)) ;;; TODO(jmoringe): temp
-	 (entry  (make-instance 'chunk-entry))) ;;; TODO(jmoringe): keep instead of reallocating
-    (file-position stream offset)
-    (read-sequence buffer stream)
-    (setf buffer
-	  (let* ((length  (binio:decode-uint32-le buffer 12))
-		 (buffer1 (binio:make-octet-vector (+ length 16))))
-	    (setf (subseq buffer1 0) buffer)
-	    (read-sequence buffer1 stream :start 16)
-	    buffer1))
-    (unpack buffer entry)
+	 (length (prog2
+		     (file-position stream (+ offset 12))
+		     (nibbles:read-ub32/le stream)
+		   (file-position stream offset)))
+	 (entry  (allocate-instance (find-class 'chunk-entry)))) ;;; TODO(jmoringe): keep instead of reallocating?
+    (unpack (read-chunk-of-length (+ 16 length) stream) entry)
     (chunk-entry-entry entry)))
 
 
