@@ -134,7 +134,7 @@
 		 ,(type-spec->deserializer length-type source offset))
 		(data-offset (+ ,offset length-length)))
 	   (values (sb-ext:octets-to-string
-		    (subseq source data-offset (+ data-offset length)))
+		    source :start data-offset :end (+ data-offset length))
 		   (+ length-length length))))))
 
     ((cons (eql unsigned-byte) list)
