@@ -238,7 +238,7 @@
 			      (:file       "delay-correcting-mixin"
 			       :depends-on ("package"))
 			      (:file       "timestamp-adjustment-mixin"
-			       :depends-on ("package"))
+			       :depends-on ("package" "types"))
 
 			      (:file       "recorded-timing"
 			       :depends-on ("package" "timed-replay-mixin"
