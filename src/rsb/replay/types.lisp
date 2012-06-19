@@ -58,7 +58,7 @@ timestamp."
   '(cons (eql :copy) (cons timestamp-designator null)))
 
 (deftype timestamp-adjustment-value/delta ()
-  `(cons (eql :delta) (cons non-negative-real null)))
+  `(cons (eql :delta) (cons real null)))
 
 (deftype timestamp-adjustment-value ()
   "Specification of a replacement value for a particular timestamp."

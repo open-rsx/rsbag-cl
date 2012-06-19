@@ -56,20 +56,27 @@ during replay."))
 				  (informer           t))
   "The default behavior consists in sending EVENT via INFORMER."
   (iter (for (key value) in (strategy-adjustments strategy))
-	(setf (timestamp event key) (etypecase value
-				      (timestamp-adjustment-value/now
-				       (local-time:now))
-				      (timestamp-adjustment-value/copy
-				       (let ((key (second value)))
-					 (or (timestamp event key)
-					     (error "~@<Event ~A does ~
-not have a ~A timestamp.~:@>"
-						    event key))))
-				      (timestamp-adjustment-value/delta
-				       (let ((amount (second value)))
-					 (error "TODO: not implemented.")))
-				      (local-time:timestamp
-				       value)))))
+	(setf (timestamp event key)
+	      (etypecase value
+		(timestamp-adjustment-value/now
+		 (local-time:now))
+
+		(timestamp-adjustment-value/copy
+		 (let ((key (second value)))
+		   (or (timestamp event key)
+		       (error "~@<Event ~A does not have a ~A ~
+timestamp.~:@>"
+			      event key))))
+
+		(timestamp-adjustment-value/delta
+		 (bind ((amount (second value))
+			((:values sec nsec) (floor amount)))
+		   (local-time:adjust-timestamp (timestamp event key)
+		     (:offset :sec  sec)
+		     (:offset :nsec (floor (* 1000000000 nsec))))))
+
+		(local-time:timestamp
+		 value)))))
 
 (defmethod print-object ((object timestamp-adjustment-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
