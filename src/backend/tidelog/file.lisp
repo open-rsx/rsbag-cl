@@ -49,7 +49,9 @@ new channel.")
 		    "Stores the id that will be assigned to the next
 new chunk."))
   (:default-initargs
-   :flush?-func (rcurry #'buffer-size-> 100))
+   :flush-strategy (make-flush-strategy :property-limit
+					:property :length/bytes
+					:limit    (expt 2 25)))
   (:documentation
    "Instances of this class represent files using the TIDE log file
 format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
@@ -209,6 +211,16 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
     (setf (chnk-count buffer) (length (chnk-entries buffer)))
     (pack buffer (backend-stream file))))
 
+(defmethod buffer-property ((backend file)
+			    (buffer  chnk)
+			    (name    (eql :length/entries)))
+  (length (chnk-entries buffer)))
+
+(defmethod buffer-property ((backend file)
+			    (buffer  chnk)
+			    (name    (eql :length/bytes)))
+  (chnk-count buffer))
+
 
 ;;; Utility functions
 ;;
@@ -290,8 +302,3 @@ type information."
       ((> pivot* id)
        (%chunk-id->offset id index start pivot))
       (t (cdr (aref index pivot))))))
-
- ;;; TODO(jmoringe): proper counter
-(defun buffer-size-> (file buffer limit)
-  (declare (ignore file))
-  (> (length (chnk-entries buffer)) limit))

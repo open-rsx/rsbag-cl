@@ -20,18 +20,19 @@
 (cl:in-package :rsbag.backend)
 
 (defclass buffering-writer-mixin ()
-  ((buffer      :accessor backend-buffer
-		:initform nil
-		:documentation
-		"")
-   (flush?-func :initarg  :flush?-func
-		:type     function
-		:accessor backend-flush?-func
-		:documentation
-		"Stores a function that is called to determine whether
-the current buffer should be flushed."))
+  ((buffer         :accessor backend-buffer
+		   :initform nil
+		   :documentation
+		   "Stores a buffer which is flushed when `flush?' is
+non-nil.")
+   (flush-strategy :initarg  :flush-strategy
+		   :accessor backend-flush-strategy
+		   :documentation
+		   "Stores a strategy that is used to determine
+whether the current buffer should be flushed."))
   (:default-initargs
-   :flush?-func (required-argument :flush?-func))
+   :flush-strategy (missing-required-initarg
+		    'buffering-writer-mixin :flush-strategy))
   (:documentation
    "This class is intended to be mixed into backend classes that
 buffer added entries before writing them to disk."))
@@ -46,7 +47,7 @@ buffer added entries before writing them to disk."))
   "Flush the buffer if necessary, then proceed."
   (let+ (((&accessors-r/o (buffer backend-buffer)) backend))
     (when buffer
-      (write-buffer backend buffer))
+      (flush backend buffer))
     (when (next-method-p)
       (call-next-method))))
 
@@ -56,12 +57,16 @@ buffer added entries before writing them to disk."))
 			     (entry   t))
   "After adding an entry, check whether the buffer has to be flushed
 and potentially do it."
-  (let+ (((&accessors-r/o (buffer      backend-buffer)
-			  (flush?-func backend-flush?-func)) backend))
-    (when (funcall flush?-func backend buffer)
-      (write-buffer backend buffer))))
+  (let+ (((&accessors-r/o (buffer   backend-buffer)
+			  (strategy backend-flush-strategy)) backend))
+    (when (flush? strategy backend buffer)
+      (flush backend buffer))))
 
-(defmethod write-buffer :after ((backend buffering-writer-mixin)
-				(buffer  t))
-  "Reset the buffer after flushing."
+(defmethod flush ((backend buffering-writer-mixin)
+		  (buffer  t))
+  (write-buffer backend buffer))
+
+(defmethod flush :after ((backend buffering-writer-mixin)
+			 (buffer  t))
+  "Reset the buffer of BACKEND after flushing."
   (setf (backend-buffer backend) (make-buffer backend buffer)))

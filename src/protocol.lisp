@@ -29,6 +29,7 @@
 		      direction
 		      if-exists
 		      backend
+		      flush-strategy
 		      bag-class
 		      transform
 		      &allow-other-keys)
@@ -90,20 +91,30 @@ instead of ~S.~@:>"
 		     &rest args
 		     &key
 		     location
-		     (direction (required-argument :direction))
-		     (backend   (required-argument :backend))
-		     (bag-class 'bag)
+		     (direction      (missing-required-argument :direction))
+		     (backend        (missing-required-argument :backend))
+		     (flush-strategy nil)
+		     (bag-class      'bag)
 		     transform)
   (check-type direction direction      "either :input, :output or :io")
   (check-type transform transform-spec "a transformation specification")
+  (when (and flush-strategy (eq direction :input))
+    (incompatible-arguments :direction      direction
+			    :flush-strategy flush-strategy))
 
   (let ((backend (apply #'make-instance
 			(rsbag.backend:find-backend-class backend)
 			:stream    source
 			:location  location
 			:direction direction
-			(remove-from-plist
-			 args :direction :backend :bag-class :transform))))
+			(append
+			 (when flush-strategy
+			   (list :flush-strategy
+				 (apply #'rsbag.backend:make-flush-strategy
+					(ensure-list flush-strategy))))
+			 (remove-from-plist
+			  args :direction :backend :flush-strategy
+			       :bag-class :transform)))))
     (make-instance bag-class
 		   :backend   backend
 		   :direction direction

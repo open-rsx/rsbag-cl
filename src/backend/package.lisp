@@ -22,6 +22,7 @@
    :cl
    :alexandria
    :let-plus
+   :more-conditions
 
    :rsbag)
 
@@ -71,9 +72,26 @@
   (:export
    :buffering-writer-mixin
 
+   :buffer-property
+
    :backend-buffer
    :make-buffer
-   :write-buffer)
+   :write-buffer
+   :flush
+
+   :backend-flush-strategy)
+
+  ;; Flush strategy protocol
+  (:export
+   :flush?)
+
+  ;; Flush strategy class family
+  (:export
+   :no-such-flush-strategy-class
+   :find-flush-strategy-class
+   :flush-strategy-classes
+
+   :make-flush-strategy)
 
   (:documentation
    "This package contains protocol and implementation aids for file

@@ -21,6 +21,19 @@
 
 (deftestsuite protocol-root (root)
   ()
+  (:function
+   (pathname/existing ()
+     (asdf:system-relative-pathname
+      (asdf:find-system :cl-rsbag-test)
+      "test/data/minimal.tide")))
+  (:function
+   (namestring/existing ()
+     (pathname/existing)))
+  (:function
+   (stream ()
+     (open (pathname/existing)
+	   :element-type '(unsigned-byte 8)
+	   :direction    :input)))
   (:documentation
    "Unit test for the client-facing protocol."))
 
@@ -29,21 +42,14 @@
 	  "Test case for the `open-bag' function.")
   open-bag/valid
 
-  (let* ((pathname   (asdf:system-relative-pathname
-		      (asdf:find-system :cl-rsbag-test)
-		      "test/data/minimal.tide"))
-	 (namestring (namestring pathname))
-	 (stream     (open pathname
-			   :element-type '(unsigned-byte 8)
-			   :direction    :input)))
-    (ensure-cases (args)
-	`((,namestring :direction :input)
-	  (,pathname   :direction :input)
-	  (,namestring :direction :input :backend :tide)
-	  (,pathname   :direction :input :backend :tide)
-	  (,stream     :direction :input :backend :tide))
-      (let ((bag (apply #'open-bag args)))
-	(close bag)))))
+  (ensure-cases (args)
+      `((,(namestring/existing) :direction :input)
+	(,(pathname/existing)   :direction :input)
+	(,(namestring/existing) :direction :input :backend :tide)
+	(,(pathname/existing)   :direction :input :backend :tide)
+	(,(stream)              :direction :input :backend :tide))
+    (let ((bag (apply #'open-bag args)))
+      (close bag))))
 
 (addtest (protocol-root
           :documentation
@@ -51,31 +57,32 @@
 errors.")
   open-bag/invalid
 
-  (let* ((pathname   (asdf:system-relative-pathname
-		      (asdf:find-system :cl-rsbag-test)
-		      "test/data/minimal.tide"))
-	 (namestring (namestring pathname))
-	 (stream     (open pathname
-			   :element-type '(unsigned-byte 8)
-			   :direction    :input)))
-    (ensure-cases (args)
-	`(;; :backend, :direction missing
-	  (,stream)
-	  ;; :backend missing
-	  (,stream     :direction :io)
-	  ;; :direction missing
-	  (,stream     :backend :tidelog)
-	  ;; invalid direction
-	  (,namestring :direction :invalid :backend :tidelog)
-	  (,pathname   :direction :invalid :backend :tidelog)
-	  (,stream     :direction :invalid :backend :tidelog)
-	  ;; invalid backend
-	  (,namestring :direction :io :backend :no-such-backend)
-	  (,pathname   :direction :io :backend :no-such-backend)
-	  (,stream     :direction :io :backend :no-such-backend)
-	  ;; file exists
-	  (,namestring :direction :output  :backend :tidelog)
-	  (,pathname   :direction :output  :backend :tidelog))
+  (ensure-cases (args)
+      `(;; :backend, :direction missing
+	(,(stream))
+	;; :backend missing
+	(,(stream)              :direction :input)
+	;; :direction missing
+	(,(stream)              :backend :tide)
+	;; invalid direction
+	(,(namestring/existing) :direction :invalid :backend :tide)
+	(,(pathname/existing)   :direction :invalid :backend :tide)
+	(,(stream)              :direction :invalid :backend :tide)
+	;; invalid backend
+	(,(namestring/existing) :direction :input :backend :no-such-backend)
+	(,(pathname/existing)   :direction :input :backend :no-such-backend)
+	(,(stream)              :direction :input :backend :no-such-backend)
+	;; file exists
+	(,(namestring/existing) :direction :output :backend :tide)
+	(,(pathname/existing)   :direction :output :backend :tide)
+	;; cannot specify flush strategy for input direction
+	(,(namestring/existing) :direction :input :flush-strategy :some-strategy)
+	(,(pathname/existing)   :direction :input :flush-strategy :some-strategy)
+	(,(stream)              :direction :input :backend :tide :flush-strategy :some-strategy)
+	;; invalid flush strategy
+	(,(namestring/existing) :direction :io :flush-strategy :no-such-strategy)
+	(,(pathname/existing)   :direction :io :flush-strategy :no-such-strategy)
+	(,(stream)              :direction :io :backend :tide :flush-strategy :no-such-strategy))
 
-      (ensure-condition 'error
-	(apply #'open-bag args)))))
+    (ensure-condition 'error
+      (apply #'open-bag args))))

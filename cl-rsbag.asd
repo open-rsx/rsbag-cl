@@ -100,6 +100,9 @@
 			      (:file       "direction-mixin"
 			       :depends-on ("package" "protocol"))
 			      (:file       "buffering-writer-mixin"
+			       :depends-on ("package" "protocol"))
+
+			      (:file       "flush-strategies"
 			       :depends-on ("package" "protocol"))))
 
 		(:module     "transform"
@@ -274,6 +277,13 @@
 			      (:file       "protocol"
 			       :depends-on ("package"))
 			      (:file       "bag"
+			       :depends-on ("package"))))
+
+		(:module     "backend"
+	         :pathname   "test/backend"
+		 :depends-on ("test")
+		 :components ((:file       "package")
+			      (:file       "flush-strategies"
 			       :depends-on ("package"))))
 
 		#+sbcl

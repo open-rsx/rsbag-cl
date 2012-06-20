@@ -83,6 +83,11 @@ data source represented by BACKEND."))
 ;;; Buffering protocol
 ;;
 
+(defgeneric buffer-property (backend buffer name)
+  (:documentation
+   "Return the property of BUFFER used in BACKEND designated by
+NAME."))
+
 (defgeneric make-buffer (backend previous)
   (:documentation
    "Allocate and return a suitable buffer for BACKEND based on the
@@ -90,8 +95,18 @@ buffer PREVIOUS. PREVIOUS can be nil, for the initial allocation."))
 
 (defgeneric write-buffer (backend buffer)
   (:documentation
+   "Write the entries accumulated in BUFFER to the data source
+represented by BACKEND."))
+
+(defgeneric flush (backend buffer)
+  (:documentation
    "Commit the entries accumulated in BUFFER to the data source
 represented by BACKEND."))
+
+(defgeneric backend-flush-strategy (backend)
+  (:documentation
+   "Return the strategy which is used by backend to schedule buffer
+flushes."))
 
 
 ;;; Finding backend classes
@@ -99,3 +114,36 @@ represented by BACKEND."))
 
 (dynamic-classes:define-findable-class-family backend
     "This class family consists of file format backends.")
+
+
+;;; Flush strategy protocol
+;;
+
+(defgeneric flush? (strategy backend buffer)
+  (:documentation
+   "Return non-nil when BUFFER which is used by BACKEND should be
+flushed according to STRATEGY."))
+
+
+;;; Flush strategy classes
+;;
+
+(dynamic-classes:define-findable-class-family flush-strategy
+    "This class family consist of flush strategy classes which
+implement strategies for flushing backend buffers when writing log
+files.")
+
+(defgeneric make-flush-strategy (thing &rest args)
+  (:documentation
+   "Return (potentially creating it first) an instance of the flushing
+strategy designated by THING."))
+
+(defmethod make-flush-strategy ((thing symbol) &rest args)
+  (apply #'make-flush-strategy
+	 (if (keywordp thing)
+	     (find-flush-strategy-class thing)
+	     (find-class thing))
+	 args))
+
+(defmethod make-flush-strategy ((thing class) &rest args)
+  (apply #'make-instance thing args))
