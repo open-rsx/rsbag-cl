@@ -92,15 +92,6 @@
 			      (:file       "protocol"
 			       :depends-on ("package"))
 
-			      (:file       "location-mixin"
-			       :depends-on ("package" "protocol"))
-			      (:file       "stream-mixin"
-			       :depends-on ("package" "protocol"
-					    "location-mixin"))
-			      (:file       "direction-mixin"
-			       :depends-on ("package" "protocol"))
-			      (:file       "buffering-writer-mixin"
-			       :depends-on ("package" "protocol"))
 			      (:file       "backend-mixins"
 			       :depends-on ("package" "protocol"))
 
