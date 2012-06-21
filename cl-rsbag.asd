@@ -101,6 +101,8 @@
 			       :depends-on ("package" "protocol"))
 			      (:file       "buffering-writer-mixin"
 			       :depends-on ("package" "protocol"))
+			      (:file       "backend-mixins"
+			       :depends-on ("package" "protocol"))
 
 			      (:file       "flush-strategies"
 			       :depends-on ("package" "protocol"))))

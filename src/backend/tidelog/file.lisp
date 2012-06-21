@@ -24,7 +24,8 @@
 
 (defclass file (stream-mixin
 		direction-mixin
-		buffering-writer-mixin)
+		buffering-writer-mixin
+		last-write-time-mixin)
   ((channels        :type     list
 		    :reader   get-channels
 		    :accessor %file-channels

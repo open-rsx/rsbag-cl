@@ -81,6 +81,10 @@
 
    :backend-flush-strategy)
 
+  ;; `last-write-time-mixin'
+  (:export
+   :last-write-time-mixin)
+
   ;; Flush strategy protocol
   (:export
    :flush?)
