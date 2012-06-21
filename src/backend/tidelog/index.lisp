@@ -1,4 +1,4 @@
-;;; index.lisp ---
+;;; index.lisp --- Representation of TIDELog indices.
 ;;
 ;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
@@ -32,7 +32,7 @@
 	    :documentation
 	    "Points to the list of entries of the associated index."))
   (:default-initargs
-   :entries (required-argument :entries))
+   :entries (missing-required-initarg 'timestamps :entries))
   (:documentation
    "Instances of this class are sequence of `local-time:timestamp'
 instances that produced lazily."))
@@ -51,7 +51,7 @@ instances that produced lazily."))
 ;;;
 ;;
 
-(defclass index ()
+(defclass index (buffering-writer-mixin)
   ((channel   :initarg  :channel
 	      :type     non-negative-integer
 	      :reader   index-channel
@@ -73,17 +73,6 @@ storage is sorted and interleaved of the form
 	      :documentation
 	      "Stores the stream to which the data of this index
 should be written when flushing.")
-   (buffer    :type     indx
-	      :reader   index-buffer
-	      :initform (make-instance
-			 'indx
-			 :count   0
-			 :entries (make-array 1024
-					      :adjustable   t
-					      :fill-pointer 0))
-	      :documentation
-	      "Stores the index object which in turn contains the
-index entry objects.")
    (sorted-to :initarg  :sorted-to
 	      :type     (or integer null)
 	      :accessor %index-sorted-to
@@ -93,9 +82,13 @@ index entry objects.")
 entries are sorted. The value nil indicates that entries are not
 sorted."))
   (:default-initargs
-   :channel (required-argument :channel)
-   :indices (required-argument :indices)
-   :chunks  (required-argument :chunks))
+   :channel        (missing-required-initarg 'index :channel)
+   :stream         (missing-required-initarg 'index :stream)
+   :indices        (missing-required-initarg 'index :indices)
+   :chunks         (missing-required-initarg 'index :chunks)
+   :flush-strategy (make-flush-strategy :property-limit
+					:property :length/entries
+					:limit    most-positive-fixnum))
   (:documentation
    "Instances of this class store mappings of indices and timestamps
 of entries to corresponding file offsets for one channel."))
@@ -106,12 +99,8 @@ of entries to corresponding file offsets for one channel."))
 				       chunks)
   (setf (index-entries instance)
 	(make-entries indices chunks)
-	(indx-channel-id (index-buffer instance))
+	(indx-channel-id (backend-buffer instance))
 	(index-channel instance)))
-
-(defmethod close ((index index)
-		  &key &allow-other-keys)
-  (write-buffer index (index-buffer index)))
 
 (defmethod index-num-entries ((index index))
   (ash (length (index-entries index)) -1))
@@ -128,7 +117,7 @@ of entries to corresponding file offsets for one channel."))
 		      (timestamp integer)
 		      (offset    integer)
 		      (chunk-id  integer))
-  (let+ (((&accessors-r/o (buffer    index-buffer)
+  (let+ (((&accessors-r/o (buffer    backend-buffer)
 			  (entries   index-entries)
 			  (sorted-to %index-sorted-to)) index))
     ;; Add to entries.
@@ -154,6 +143,18 @@ of entries to corresponding file offsets for one channel."))
 ;;; Buffering
 ;;
 
+(defmethod make-buffer ((index  index)
+			(buffer (eql nil)))
+  (make-buffer index (make-instance 'indx)))
+
+(defmethod make-buffer ((index  index)
+			(buffer indx))
+  (reinitialize-instance buffer
+			 :count   0
+			 :entries (make-array 0
+					      :adjustable   t
+					      :fill-pointer 0)))
+
 (defmethod write-buffer ((index  index)
 			 (buffer indx))
   ;; If some timestamps have been inserted out of order, sort the
@@ -165,10 +166,20 @@ insertions.~@:>")
       (sort entries #'< :key #'index-entry-timestamp)
       (setf (indx-entries buffer) entries)))
 
+  ;; If we have anything to write, write it and reset fill pointers so
+  ;; we can start filling the buffer again.
   (unless (zerop (indx-count buffer))
-    (pack buffer (index-stream index)))
-  (setf (indx-count buffer)                  0
-	(fill-pointer (indx-entries buffer)) 0))
+    (pack buffer (index-stream index))))
+
+(defmethod buffer-property ((backend index)
+			    (buffer  indx)
+			    (name    (eql :length/entries)))
+  (indx-count buffer))
+
+(defmethod buffer-property ((backend index)
+			    (buffer  indx)
+			    (name    (eql :length/bytes)))
+  (+ 8 (* 20 (buffer-property backend buffer :length/entries))))
 
 
 ;;; Utility functions
