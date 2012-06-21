@@ -1,0 +1,167 @@
+;;; backend-mixins.lisp --- Mixin classes for backend classes
+;;
+;; Copyright (C) 2012 Jan Moringen
+;;
+;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+;;
+;; This Program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This Program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <http://www.gnu.org/licenses>.
+
+(cl:in-package :rsbag.backend)
+
+
+;;; `direction-mixin' mixin class
+;;
+
+(defclass direction-mixin ()
+  ((direction :initarg  :direction
+	      :type     rsbag:direction
+	      :reader   backend-direction
+	      :documentation
+	      "Stores the direction with which the backend has been
+opened."))
+  (:default-initargs
+   :direction (missing-required-initarg 'direction-mixin :direction))
+  (:documentation
+   "This class is intended to be mixed into backend classes that have
+to keep track of the direction for which the data source has been
+opened."))
+
+
+;;; `stream-mixin' mixin class
+;;
+
+(defclass stream-mixin (location-mixin)
+  ((stream :initarg  :stream
+	   :reader   backend-stream
+	   :type     stream
+	   :documentation
+	   "Stores the stream which contains the data read and written
+by the backend."))
+  (:default-initargs
+   :stream (missing-required-initarg 'stream-mixin :stream))
+  (:documentation
+   "This class is intended to be mixed into backend classes which
+read/write data from/to a stream."))
+
+(defmethod close ((backend stream-mixin)
+		  &key &allow-other-keys)
+  "Make sure the stream is closed."
+  (when (next-method-p)
+    (call-next-method))
+  (close (backend-stream backend)))
+
+
+;;; `location-mixin' mixin class
+;;
+
+(defclass location-mixin ()
+  ((location :initarg  :location
+	     :accessor backend-location
+	     :initform nil
+	     :documentation
+	     "Stores the location to which the backend object is
+connected. Can be NIL is such a location is not known."))
+  (:documentation
+   "This mixin allows remembering the location to which
+a (e.g. stream-based) backend object is connected."))
+
+
+;;; `buffering-writer-mixin' mixin class
+;;
+
+(defclass buffering-writer-mixin ()
+  ((buffer         :accessor backend-buffer
+		   :initform nil
+		   :documentation
+		   "Stores a buffer which is flushed when `flush?' is
+non-nil.")
+   (flush-strategy :initarg  :flush-strategy
+		   :accessor backend-flush-strategy
+		   :documentation
+		   "Stores a strategy that is used to determine
+whether the current buffer should be flushed."))
+  (:default-initargs
+   :flush-strategy (missing-required-initarg
+		    'buffering-writer-mixin :flush-strategy))
+  (:documentation
+   "This class is intended to be mixed into backend classes that
+buffer added entries before writing them to disk."))
+
+(defmethod shared-initialize :after ((instance   buffering-writer-mixin)
+                                     (slot-names t)
+                                     &key)
+  (setf (backend-buffer instance) (make-buffer instance nil)))
+
+(defmethod close ((backend buffering-writer-mixin)
+		  &key abort)
+  "Flush the buffer if necessary, then proceed."
+  (let+ (((&accessors-r/o (buffer backend-buffer)) backend))
+    (when (and buffer (not abort))
+      (flush backend buffer))
+    (when (next-method-p)
+      (call-next-method))))
+
+(defmethod put-entry :after ((backend buffering-writer-mixin)
+			     (channel t)
+			     (index   t)
+			     (entry   t))
+  "After adding an entry, check whether the buffer has to be flushed
+and potentially do it."
+  (let+ (((&accessors-r/o (buffer   backend-buffer)
+			  (strategy backend-flush-strategy)) backend))
+    (when (flush? strategy backend buffer)
+      (flush backend buffer))))
+
+(defmethod flush ((backend buffering-writer-mixin)
+		  (buffer  t))
+  (write-buffer backend buffer))
+
+(defmethod flush :after ((backend buffering-writer-mixin)
+			 (buffer  t))
+  "Reset the buffer of BACKEND after flushing."
+  (setf (backend-buffer backend) (make-buffer backend buffer)))
+
+
+;;; `last-write-time-mixin' mixin class
+;;
+
+(defclass last-write-time-mixin ()
+  ((last-write-time :initarg  :last-write-time
+		    :type     (or null local-time:timestamp)
+		    :accessor last-write-time
+		    :initform nil
+		    :documentation
+		    "Stores the most recent time at which the
+associated buffer has been flushed."))
+  (:documentation
+   "This class can be mixed into backend class which should expose the
+most recent times at which their associated buffers have been
+flushed."))
+
+(defmethod buffer-property ((backend last-write-time-mixin)
+			    (buffer  t)
+			    (name    (eql :last-write-time)))
+  (or (last-write-time backend)
+      (setf (last-write-time backend) (local-time:now))))
+
+(defmethod buffer-property ((backend last-write-time-mixin)
+			    (buffer  t)
+			    (name    (eql :time-to-last-write)))
+  (when-let ((last-write-time (buffer-property
+			       backend buffer :last-write-time)))
+    (local-time:timestamp-difference (local-time:now) last-write-time)))
+
+(defmethod flush :after ((backend last-write-time-mixin)
+			 (buffer  t))
+  (setf (last-write-time backend) (local-time:now)))
