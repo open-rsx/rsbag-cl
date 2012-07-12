@@ -264,7 +264,8 @@
   :license     "GPL3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
   :depends-on  ((:version :cl-rsbag #.(version/string))
-		:lift)
+
+		(:version :lift     "1.7.1"))
   :components  ((:module     "test"
 		 :components ((:file       "package")
 			      (:file       "protocol"
