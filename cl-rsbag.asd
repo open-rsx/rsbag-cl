@@ -1,6 +1,6 @@
 ;;; cl-rsbag.asd ---
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -240,7 +240,7 @@
   :license     "GPL3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
   :depends-on  (:cl-rsbag
-		:lift)
+		(:version :lift     "1.7.1"))
   :components  ((:module     "test"
 		 :components ((:file       "package")
 			      (:file       "protocol"
