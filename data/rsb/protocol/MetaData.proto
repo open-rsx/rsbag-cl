@@ -1,0 +1,66 @@
+/* ============================================================
+ *
+ * This file is part of the RSB project.
+ *
+ * Copyright (C) 2011 The RSB developers.
+ *
+ * This program is free software; you can redistribute it
+ * and/or modify it under the terms of the GNU General
+ * Public License as published by the Free Software Foundation;
+ * either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * ============================================================ */
+
+package rsb.protocol;
+
+option java_outer_classname = "Protocol";
+
+// Additional user-provided timing information.
+message UserTime {
+    // The key is a string consisting of ASCII characters that
+    // determines the meaning of the timestamp.
+    required bytes      key                     = 1;
+
+    // A timestamp in microseconds.
+    required uint64     timestamp               = 2;
+}
+
+// Additional user-provided key-value-style meta data.
+message UserInfo {
+    required bytes      key                     = 1;
+    required bytes      value                   = 2;
+}
+
+message MetaData {
+    // A time stamp that is automatically filled with the time the
+    // event instance was created by the language binding. This should
+    // usually reflect the time at which the notified condition most
+    // likely occurred in the sender. If event instances are reused,
+    // it has to be reset manually by the client.
+    required int64      create_time             = 2;
+
+    // The time at which the generated notification for an event was
+    // sent on the bus (after serialization).
+    required int64      send_time               = 3;
+
+    // The time at which an event is received by listener in its
+    // encoded form.
+    optional int64      receive_time            = 4;
+
+    // The time at which an event was decoded and will be dispatched
+    // to the client as soon as possible (set directly before passing
+    // it to the client handler).
+    optional int64      deliver_time            = 5;
+
+    // A set of key-value user-defined time-stamps.
+    repeated UserTime   user_times              = 6;
+
+    // A set of key-value user-defined options with string keys and values
+    repeated UserInfo   user_infos              = 7;
+}
