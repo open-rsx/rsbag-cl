@@ -69,6 +69,8 @@ following commands are available:
   Publish the entry at which the replay cursor is currently positioned.
 + emitandnext : void   -> uint64
   Publish the entry at which the replay cursor is currently positioned, advance to the next entry, return new index.
++ get         : void   -> bytes
+  Return the entry at which the replay cursor is currently positioned. Do not emit or change anything.
 + quit        : void   -> void
   Terminate the replay."))
 

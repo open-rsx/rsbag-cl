@@ -122,6 +122,10 @@ and executes them until termination is requested."))
 			 (funcall emit)
 			 (funcall step nil)
 			 (funcall index)))
+
+    (:get         . ,#'(lambda ()
+			 (event-data (second (funcall element)))))
+
     ;; Session
     (:quit        . ,#'(lambda ()
 			 (funcall terminate)
