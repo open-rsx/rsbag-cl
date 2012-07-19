@@ -37,6 +37,11 @@ opened."))
 to keep track of the direction for which the data source has been
 opened."))
 
+(defmethod flush :around ((backend direction-mixin)
+			  (buffer  t))
+  (when (member (backend-direction backend) '(:output :io))
+    (call-next-method)))
+
 
 ;;; `stream-mixin' mixin class
 ;;
@@ -131,6 +136,15 @@ and potentially do it."
 			 (buffer  t))
   "Reset the buffer of BACKEND after flushing."
   (setf (backend-buffer backend) (make-buffer backend buffer)))
+
+(defmethod write-buffer :before ((backend t)
+				 (buffer  t))
+  (rsb:log1 :info backend "Writing ~A (~@[~:D entr~:@P~]~@[, ~:D ~
+byte~:P~]~@[, ~,2F sec~:P~])"
+	    buffer
+	    (buffer-property backend buffer :length/entries)
+	    (buffer-property backend buffer :length/bytes)
+	    (buffer-property backend buffer :time-to-last-write)))
 
 
 ;;; `last-write-time-mixin' mixin class

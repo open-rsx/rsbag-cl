@@ -68,6 +68,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.
   ;; Use the INDX blocks to build per-channel indices.
   (let+ (((&accessors (stream          backend-stream)
+		      (direction       backend-direction)
 		      (buffer          backend-buffer)
 		      (channels        %file-channels)
 		      (indices         %file-indices)
@@ -89,7 +90,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
     ;; Create indices for all channels.
     (iter (for (id name meta-data) in channels)
 	  (setf (gethash id indices)
-		(make-index id indxs chnks stream)))))
+		(make-index id indxs chnks stream direction)))))
 
 (defmethod close ((file file)
 		  &key &allow-other-keys)
@@ -107,9 +108,10 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 			(channel   integer)
 			(name      string)
 			(meta-data list))
-  (let+ (((&accessors (stream   backend-stream)
-		      (channels %file-channels)
-		      (indices  %file-indices)) file)
+  (let+ (((&accessors (stream    backend-stream)
+		      (direction backend-direction)
+		      (channels  %file-channels)
+		      (indices   %file-indices)) file)
 	 ((&plist-r/o (type          :type)
 		      (source-name   :source-name   "")
 		      (source-config :source-config "")
@@ -126,7 +128,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
     ;; Add an index for the new channel
     (setf (gethash channel indices)
-	  (make-index channel nil nil stream))
+	  (make-index channel nil nil stream direction))
 
     (pack channel1 stream)))
 
@@ -245,15 +247,16 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 		      :source-config (chan-source-config chan)
 		      :format        (chan-format        chan)))))
 
-(defun make-index (channel-id indices chunks stream)
+(defun make-index (channel-id indices chunks stream direction)
   (let ((relevant (remove channel-id indices
 			  :test-not #'=
 			  :key      #'indx-channel-id)))
     (make-instance 'index
-		   :stream  stream
-		   :channel channel-id
-		   :indices relevant
-		   :chunks  chunks)))
+		   :stream    stream
+		   :direction direction
+		   :channel   channel-id
+		   :indices   relevant
+		   :chunks    chunks)))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."

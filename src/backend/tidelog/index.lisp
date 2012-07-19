@@ -51,7 +51,8 @@ instances that produced lazily."))
 ;;;
 ;;
 
-(defclass index (buffering-writer-mixin
+(defclass index (direction-mixin
+		 buffering-writer-mixin
 		 last-write-time-mixin)
   ((channel   :initarg  :channel
 	      :type     non-negative-integer
