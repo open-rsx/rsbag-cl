@@ -57,3 +57,64 @@ property violates a given limit."))
     (format stream "~S @ ~:D"
 	    (flush-strategy-property object)
 	    (flush-strategy-limit    object))))
+
+
+;;; `composite-flush-strategy-mixin' mixin class
+;;
+
+(defclass composite-flush-strategy-mixin ()
+  ((children :initarg  :children
+	     :type     list
+	     :accessor children
+	     :initform nil
+	     :documentation
+	     "A list of child strategies which are consulted to
+produce a decision."))
+  (:documentation
+   "This class is intended to be mixed into flush strategy classes
+which produce their decisions by consulting subordinate strategies."))
+
+(defmethod print-object ((object composite-flush-strategy-mixin) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~A (~D)"
+	    (class-name (class-of object))
+	    (length (children object)))))
+
+(macrolet
+    ((define-simple-composite-strategy (name
+					&key
+					(spec       (make-keyword name))
+					(class-name (format-symbol "FLUSH-IF-~A" name))
+					reducer)
+       `(progn
+	  (defmethod find-flush-strategy-class ((spec (eql ,spec)))
+	    (find-class ',class-name))
+
+	  (defclass ,class-name (composite-flush-strategy-mixin)
+	    ()
+	    (:documentation
+	     ,(format nil "This strategy flushes buffers when ~A of ~
+its child strategies indicate that buffers should be flushed."
+		      reducer)))
+
+	  (defmethod flush? ((strategy ,class-name)
+			     (backend  t)
+			     (buffer   t))
+	    (,reducer (rcurry #'flush? backend buffer) (children strategy)))
+
+	  (defmethod make-flush-strategy ((thing (eql (find-class ',class-name)))
+					  &rest args)
+	    (make-instance
+	     thing
+	     :children (mapcar (curry #'apply #'make-flush-strategy)
+			       args))))))
+
+  (define-simple-composite-strategy or
+    :class-name flush-if-some
+    :reducer    some)
+  (define-simple-composite-strategy and
+    :class-name flush-if-every
+    :reducer    every)
+  (define-simple-composite-strategy not
+    :class-name flush-if-notany
+    :reducer    notany))
