@@ -69,3 +69,38 @@
 
     (let ((sequence (make-serialized-view sequences)))
       (ensure-same (length sequence) expected-length))))
+
+
+(addtest (serialized-root
+          :documentation
+	  "Test forward and backward iteration on a serialized view on
+multiple random sequences.")
+  iterator
+
+  (let+ (((&labels make-random-sequence ()
+	    (let ((raw (map-into (make-list (random 100)) (curry #'random 100))))
+	     (sort (remove-duplicates raw) #'<))))
+	 ((&labels make-random-sequences ()
+	    (let ((count (random 10)))
+	      (map-into (make-list count) #'make-random-sequence )))))
+    (ensure-cases (sequences)
+	(map-into (make-list 100) #'make-random-sequences)
+
+      (let+ ((flat (sort (copy-list (reduce #'append sequences)) #'<))
+	     (view (make-serialized-view sequences :compare #'<))
+	     ((&values iterator limit from-end)
+	      (sequence:make-simple-sequence-iterator view))
+	     ((&flet traverse (backward?)
+		(iter (repeat (length view))
+		      (unless (first-iteration-p)
+			(setf iterator (sequence:iterator-step
+					view iterator (xor backward? from-end))))
+		      (collect (sequence:iterator-element view iterator)))))
+	     (forward  (traverse nil))
+	     (backward (traverse t)))
+	(ensure-same forward flat
+		     :test   #'equal
+		     :report "Forward iteration failed")
+	(ensure-same (reverse backward) flat
+		     :test   #'equal
+		     :report "Backward iteration failed")))))

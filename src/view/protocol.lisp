@@ -25,17 +25,21 @@
 
 (defgeneric make-serialized-view (sequences
 				  &key
-				  selector)
+				  selector
+				  compare)
   (:documentation
    "Make and return a sequence that consists of a serialization of the
 elements of SEQUENCES. The serialization is performed by comparing
 timestamps of elements arranging elements in the order of increasing
 timestamps.
+
 SELECTOR is a function that is applied to each element of SEQUENCES
 before the view is constructed. When SEQUENCES is a sequence of
 `channel's or a `bag', functions such as `channel-timestamps',
 `channel-entries' and `channel-items' can be supplied as SELECTOR to
-select the elements of the returned sequence."))
+select the elements of the returned sequence.
+
+COMPARE is a ordering predicate."))
 
 
 ;;; Extensible support functions

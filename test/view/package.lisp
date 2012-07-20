@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for unit tests of the view module.
 ;;
-;; Copyright (C) 2011 Jan Moringen
+;; Copyright (C) 2011, 2012 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -22,6 +22,7 @@
    :cl
    :alexandria
    :iterate
+   :let-plus
    :lift
 
    :rsbag

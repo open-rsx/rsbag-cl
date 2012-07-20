@@ -25,21 +25,25 @@
 
 (defmethod make-serialized-view ((sequences bag)
 				 &key
-				 (selector #'identity))
+				 (selector #'identity)
+				 (compare  #'local-time:timestamp<))
   "Create a serialized view for the channels of a bag."
   (make-serialized-view (bag-channels sequences)
-			:selector selector))
+			:selector selector
+			:compare  compare))
 
 (defmethod make-serialized-view ((sequences sequence)
 				 &key
-				 (selector #'identity))
+				 (selector #'identity)
+				 (compare  #'local-time:timestamp<) )
   (let* ((transformed (map 'list selector sequences))
 	 (key         (if transformed
 			  (%make-key-function (first transformed))
 			  #'identity)))
     (make-instance 'serialized
 		   :sequences transformed
-		   :key       key)))
+		   :key       key
+		   :compare   compare)))
 
 
 ;;; Key creation methods
@@ -119,9 +123,12 @@ according to their timestamps."))
 		     sequence :from-end from-end)))
 	      (list (funcall key sequence iterator limit from-end)
 		    sequence iterator limit from-end))))
+	 ;; Build the iterator, omitting empty sequences for
+	 ;; simplicity and efficiency.
 	 (iterator (make-instance
 		    'serialized-iterator
-		    :iterators (map 'list #'make-iterator sequences)
+		    :iterators (map 'list #'make-iterator
+				    (remove-if #'emptyp sequences))
 		    :compare   compare)))
     (iter (repeat start)
 	  (setf iterator (sequence:iterator-step view iterator from-end)))
@@ -146,7 +153,7 @@ are serialized views on multiple sequences."))
                                      &key
 				     compare)
   (setf (%iterator-current instance)
-	(%next-iterator (%iterator-iterators instance) compare)))
+	(%iterator-for-forward-step (%iterator-iterators instance) compare)))
 
 (defmethod sequence:iterator-endp ((sequence serialized)
 				   (iterator serialized-iterator)
@@ -160,36 +167,43 @@ are serialized views on multiple sequences."))
 				   (from-end t))
   (let+ (((&accessors-r/o (compare view-compare)
 			  (key     view-key)) sequence)
-	 (current (%iterator-current iterator))
-	 ((nil sequence* iterator* nil from-end*) current))
-    (declare (type function key))
-    (setf (third current)
-	  (sequence:iterator-step sequence* iterator* from-end*)
-	  (first current)
-	  (apply key (rest current))
-	  (%iterator-current iterator)
-	  (%next-iterator (%iterator-iterators iterator) compare)))
+	 ((&accessors-r/o (iterators %iterator-iterators)) iterator))
+    (declare (type function compare key))
+    ;; Step the appropriate sub-iterator (depending on forward
+    ;; vs. backward step), then find and store the next sub-iterator.
+    (%iterator-step (if from-end
+			(%iterator-for-backward-step iterators key compare)
+			(%iterator-current iterator))
+		    key from-end)
+    (setf (%iterator-current iterator)
+	  (%iterator-for-forward-step iterators compare)))
   iterator)
 
 (defmethod sequence:iterator-element ((sequence serialized)
 				      (iterator serialized-iterator))
-  (let+ (((&accessors-r/o (current %iterator-current)) iterator))
-    (sequence:iterator-element (second current) (third current))))
+  (let+ (((&accessors-r/o
+	   ((nil sequence* iterator* &rest nil) %iterator-current)) iterator))
+    (sequence:iterator-element sequence* iterator*)))
 
 
 ;;; Utility functions
 ;;
 
-(declaim (inline %next-iterator)
-	 (ftype (function (list function) t) %next-iterator))
+(declaim (inline %iterator-step)
+	 (ftype (function (list function boolean) list) %iterator-step))
 
-(defun %next-iterator (iterators compare)
-  "Return the iterator in ITERATORS that should be used to retrieve
-the next element of the serialized sequence or nil."
-  (when iterators
-    (reduce (rcurry #'%iterator-min compare) iterators)))
+(defun+ %iterator-step ((&whole state nil sequence iterator nil from-end*) key from-end)
+  "Destructively perform a step with iterator STATE and update its
+sorting key using KEY.
+Return the modified STATE."
+  ;; Update the iterator and its sorting key.
+  (setf (third state) (sequence:iterator-step
+		       sequence iterator (xor from-end from-end*))
+	(first state) (apply key (rest state)))
+  state)
 
-(declaim (ftype (function (list list function) t) %iterator-min))
+(declaim (inline %iterator-min)
+	 (ftype (function (list list function) list) %iterator-min))
 
 (defun %iterator-min (left right compare)
   (cond
@@ -201,3 +215,31 @@ the next element of the serialized sequence or nil."
      left)
     (t
      right)))
+
+(declaim (inline %iterator-for-forward-step)
+	 (ftype (function (list function) (or null list))
+		%iterator-for-forward-step))
+
+(defun %iterator-for-forward-step (iterators compare)
+  "Return the iterator in ITERATORS that should be used to retrieve
+the next element of the serialized sequence or nil."
+  (when iterators
+    (reduce (rcurry #'%iterator-min compare) iterators)))
+
+(declaim (ftype (function (list function function) (or null list))
+		%iterator-for-backward-step))
+
+(defun %iterator-for-backward-step (iterators key compare)
+  "Return the iterator in ITERATORS that should be used to retrieve
+the previous element of the serialized sequence of nil."
+  (let+ (((&flet cannot-step-back? (iterator)
+	    (when-let ((index (sequence:iterator-index
+			       (second iterator) (third iterator))))
+	      (zerop index))))
+	 ((&flet back (iterator)
+	    (cons (%iterator-step (copy-list iterator) key t) iterator))))
+    (cdr (reduce
+	  #'(lambda (left right)
+	      (if (eq (%iterator-min (car left) (car right) compare) (car left))
+		  right left))
+	  (mapcar #'back (remove-if #'cannot-step-back? iterators))))))
