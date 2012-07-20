@@ -145,14 +145,23 @@ and executes them until termination is requested."))
 	 (update-progress (%make-progress-reporter sequence progress))
 	 terminate?
 	 ;; Iteration state
-	 ((&values current nil from-end?)
+	 ((&values current limit from-end?)
 	  (sequence:make-simple-sequence-iterator
 	   sequence :start start-index :end end-index))
 	 (previous-timestamp)
 	 ;; Primitive state manipulation functions
+	 ((&flet end? (back?)
+	   (sequence:iterator-endp sequence current limit (xor back? from-end?))))
 	 ((&flet step* (back?)
 	    (setf current (sequence:iterator-step
-			   sequence current (xor back? from-end?)))))
+			   sequence current (xor back? from-end?)))
+	    (when (end? current)
+	      (setf current (sequence:iterator-step
+			     sequence current (xor (not back?) from-end?)))
+	      (error "~@<Attempt to step beyond end of ~
+sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
+		     (sequence:iterator-index sequence current)
+		     0 (length sequence)))))
 	 ((&flet index ()
 	    (sequence:iterator-index sequence current)))
 	 ((&flet element ()
