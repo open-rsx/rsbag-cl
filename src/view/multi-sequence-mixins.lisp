@@ -31,7 +31,7 @@
 	      "Stores the list of sequences from the view aggregates
 data."))
   (:default-initargs
-   :sequences (required-argument :sequences))
+   :sequences (missing-required-initarg 'multi-sequence-view-mixin :sequences))
   (:documentation
    "This class is intended to be mixed into view classes that
 aggregate data from multiple sequences."))
@@ -58,7 +58,7 @@ iteration states.")
 	      :documentation
 	      "Stores the current index of the iteration."))
   (:default-initargs
-   :iterators (required-argument :iterators))
+   :iterators (missing-required-initarg 'multi-sequence-iterator-mixin :iterators))
   (:documentation
    "This class is intended to be mixed into iterator classes that
 represent the state of iterations which span multiple sequences."))

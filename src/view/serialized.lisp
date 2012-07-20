@@ -94,7 +94,7 @@ stepped.")
 	    "Stores a function that extracts keys from iterator states
 which are used to decide which iterator has to be stepped."))
   (:default-initargs
-   :key (required-argument :key))
+   :key (missing-required-initarg 'serialized :key))
   (:documentation
    "Instances of this class provide the data of multiple channels as a
 single sequence in which items from different channels are serialized

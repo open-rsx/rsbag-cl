@@ -23,6 +23,7 @@
    :alexandria
    :iterate
    :let-plus
+   :more-conditions
 
    :rsbag)
 
