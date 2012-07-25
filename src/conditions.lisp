@@ -99,6 +99,20 @@ occurred."))
    "Subclasses of this class are signaled when an error can be
 associated to a specific channel within a bag."))
 
+(define-condition channel-open-error (channel-error
+				      chainable-condition)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Could not open channel ~A in bag
+~A~/more-conditions::maybe-print-cause/~@:>"
+	     (channel-error-channel condition)
+	     (bag-error-bag         condition)
+	     condition)))
+  (:documentation
+   "This error is signaled when an existing channel cannot be
+opened."))
+
 (define-condition channel-exists (channel-error)
   ()
   (:report

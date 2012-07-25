@@ -59,6 +59,8 @@
    :channel-error
    :channel-error-channel
 
+   :channel-open-error
+
    :channel-exists
 
    :no-such-entry

@@ -176,15 +176,19 @@ method. "))
 			  id)
   (let+ (((&accessors-r/o (backend       %bag-backend)
 			  (channel-class %channel-class)) bag))
-    (apply #'make-instance channel-class
-	   :bag       bag
-	   :name      name
-	   :transform transform
-	   :id        (or id (rsbag.backend:make-channel-id
-			      backend name))
-	   :meta-data meta-data
-	   :backend   backend
-	   (remove-from-plist args :id))))
+    (with-condition-translation
+	(((error channel-open-error)
+	  :bag     bag
+	  :channel name))
+      (apply #'make-instance channel-class
+	     :bag       bag
+	     :name      name
+	     :transform transform
+	     :id        (or id (rsbag.backend:make-channel-id
+				backend name))
+	     :meta-data meta-data
+	     :backend   backend
+	     (remove-from-plist args :id)))))
 
 (defmethod %make-channel-transform ((bag       bag)
 				    (name      string)
@@ -192,32 +196,43 @@ method. "))
 				    &key
 				    id
 				    spec)
+  "Use SPEC and, optionally the :type entry of META-DATA to determine
+the appropriate transform for the channel designated by NAME."
   (declare (ignore id))
 
-  (let+ (((&plist-r/o (type :type)) meta-data)
-	 ((&flet parse-type ()
-	    (typecase type
-	      (null (list nil))
-	      (list type)
-	      (t    (ensure-list type)))))
-	 ((class-name &rest args)
-	  (etypecase spec
-	    ;; No spec - derive everything from TYPE.
-	    (transform-spec/default
-	     (parse-type))
+  (with-condition-translation
+      (((error channel-open-error)
+	:bag     bag
+	:channel name))
+    (let+ (((&plist-r/o (type :type)) meta-data)
+	   ((&flet parse-type ()
+	      (typecase type
+		(null (list nil))
+		(list type)
+		(t    (ensure-list type)))))
+	   ((class-name &rest args)
+	    (etypecase spec
+	      ;; No spec - derive everything from TYPE.
+	      (transform-spec/default
+	       (parse-type))
 
-	    ;; Spec with :FROM-SOURCE - append spec to information
-	    ;; derived from TYPE.
-	    (transform-spec/augment
-	     (append (parse-type) (rest spec)))
+	      ;; Spec with :FROM-SOURCE - append spec to information
+	      ;; derived from TYPE.
+	      (transform-spec/augment
+	       (append (parse-type) (rest spec)))
 
-	    ;; Spec without :FROM-SOURCE - ignore TYPE and use
-	    ;; supplied spec unmodified.
-	    (transform-spec/full
-	     spec))))
-    (when class-name
-      (handler-case ;;; TODO(jmoringe): add :error? nil in find-transform-class
-	  (apply #'rsbag.transform:make-transform class-name args)
-	(rsbag.transform:no-such-transform-class (condition)
-	  (declare (ignore condition))
-	  nil)))))
+	      ;; Spec without :FROM-SOURCE - ignore TYPE and use
+	      ;; supplied spec unmodified.
+	      (transform-spec/full
+	       spec)
+
+	      ;; A function - call it.
+	      (function
+	       (funcall spec bag name meta-data)))))
+      (when class-name
+	(restart-case
+	    (apply #'rsbag.transform:make-transform class-name args)
+	  (continue (&optional condition)
+	    :report (lambda (stream)
+		      (format stream "~@<Do not transform events in channel ~A.~@:>"
+			      name))))))))
