@@ -1,0 +1,63 @@
+/* ============================================================
+ *
+ * This file is part of the RSB project.
+ *
+ * Copyright (C) 2011 The RSB developers.
+ *
+ * This program is free software; you can redistribute it
+ * and/or modify it under the terms of the GNU General
+ * Public License as published by the Free Software Foundation;
+ * either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * ============================================================ */
+
+package rsb.protocol;
+
+import "rsb/protocol/EventId.proto";
+import "rsb/protocol/EventMetaData.proto";
+
+option java_outer_classname = "NotificationType";
+
+// The Notification message is the wire format and serialization
+// mechanism used by the RSB Spread transport: Notification messages
+// contain event routing information, event payloads and optional
+// event meta-data such as timestamps.
+//
+// See https://code.cor-lab.org/projects/rsb/wiki/Events for more
+// information regarding events.
+message Notification {
+    // Identity, transportation and routing information fields
+
+    // The unique ID of the transmitted event.
+    // The field number of this required field is generated based on
+    // the current wire format version number to ensure runtime errors
+    // for incompatible wire format versions.
+    required EventId     event_id               = 108;
+
+    // The scope under which the encoded event was sent
+    optional bytes      scope                   = 6;
+
+    // a method type that is associated with this notification
+    optional bytes      method                  = 14 [default = ""];
+
+    // Data fields
+
+    // The encoding format of the user data contained in the event
+    optional bytes      wire_schema             = 7;
+
+    // The contained user data
+    optional bytes      data                    = 9;
+
+    repeated EventId    causes                  = 13;
+
+    // Meta-data fields
+
+    // meta-data storage
+    optional EventMetaData meta_data            = 15;
+}

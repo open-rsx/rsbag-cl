@@ -64,6 +64,39 @@
 	  transform domain-object)))))
 
 
+;;; 0.7 Version
+;;
+
+(eval-when (:compile-toplevel :load-toplevel)
+  (with-versioned-packages ("0.7"
+			    :rsb.protocol
+			    :rsbag.transform)
+    (with-compilation-unit ()
+      (let* ((path                  (asdf:system-relative-pathname
+				     :cl-rsbag "compat/0.7/"))
+	     (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
+					  pbf:*proto-load-path*)))
+	;; Load relevant protocol buffer types.
+	(iter (for file in '("data/rsb/protocol/EventId.proto"
+			     "data/rsb/protocol/EventMetaData.proto"
+			     "data/rsb/protocol/Notification.proto"))
+	      (map nil (curry #'pbb:emit (pbf:load/text (merge-pathnames file path)))
+		   '(:class :packed-size :serializer :deserializer)))
+	;; Load implementation.
+	(map nil (compose #'load (rcurry #'merge-pathnames path))
+	     '("src/transform/package.lisp"
+	       "src/transform/protocol.lisp"
+	       "src/transform/conditions.lisp"
+	       "src/transform/rsb-event.lisp"))
+	;; Inject the version of rsb-event that supports payload
+	;; conversion.
+	(load (asdf:component-pathname
+	       (asdf:find-component
+		:cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+
+(define-serialization-version "0.7" :versioned? t)
+
+
 ;;; 0.6 Version
 ;;
 
