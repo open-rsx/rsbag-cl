@@ -48,8 +48,10 @@
 	(,(namestring/existing) :direction :input :backend :tide)
 	(,(pathname/existing)   :direction :input :backend :tide)
 	(,(stream)              :direction :input :backend :tide))
-    (let ((bag (apply #'open-bag args)))
-      (close bag))))
+    (handler-bind
+	((open-error #'continue))
+      (let ((bag (apply #'open-bag args)))
+	(close bag)))))
 
 (addtest (protocol-root
           :documentation

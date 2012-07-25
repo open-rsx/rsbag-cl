@@ -204,35 +204,43 @@ the appropriate transform for the channel designated by NAME."
       (((error channel-open-error)
 	:bag     bag
 	:channel name))
-    (let+ (((&plist-r/o (type :type)) meta-data)
-	   ((&flet parse-type ()
-	      (typecase type
-		(null (list nil))
-		(list type)
-		(t    (ensure-list type)))))
-	   ((class-name &rest args)
-	    (etypecase spec
-	      ;; No spec - derive everything from TYPE.
-	      (transform-spec/default
-	       (parse-type))
+    (restart-case
+	(let+ (((&plist-r/o (type :type)) meta-data)
+	       ((&flet parse-type ()
+		       (typecase type
+			 (null (list nil))
+			 (list type)
+			 (t    (ensure-list type)))))
+	       ((class-name &rest args)
+		(etypecase spec
+		  ;; No spec - derive everything from TYPE.
+		  (transform-spec/default
+		   (parse-type))
 
-	      ;; Spec with :FROM-SOURCE - append spec to information
-	      ;; derived from TYPE.
-	      (transform-spec/augment
-	       (append (parse-type) (rest spec)))
+		  ;; Spec with :FROM-SOURCE - append spec to information
+		  ;; derived from TYPE.
+		  (transform-spec/augment
+		   (append (parse-type) (rest spec)))
 
-	      ;; Spec without :FROM-SOURCE - ignore TYPE and use
-	      ;; supplied spec unmodified.
-	      (transform-spec/full
-	       spec)
+		  ;; Spec without :FROM-SOURCE - ignore TYPE and use
+		  ;; supplied spec unmodified.
+		  (transform-spec/full
+		   spec)
 
-	      ;; A function - call it.
-	      (function
-	       (funcall spec bag name meta-data)))))
-      (when class-name
-	(restart-case
-	    (apply #'rsbag.transform:make-transform class-name args)
-	  (continue (&optional condition)
-	    :report (lambda (stream)
-		      (format stream "~@<Do not transform events in channel ~A.~@:>"
-			      name))))))))
+		  ;; A function - call it.
+		  (function
+		   (funcall spec bag name meta-data)))))
+	      (when class-name
+		(apply #'rsbag.transform:make-transform class-name args)))
+	(continue (&optional condition)
+	  :report (lambda (stream)
+		    (format stream "~@<Do not transform events in ~
+channel ~A.~@:>"
+			    name))
+	  (declare (ignore condition)))
+	(use-value (transform)
+	  :report (lambda (stream)
+		    (format stream "~@<Use the supplied transform for ~
+events in channel ~A.~@:>"
+			    name))
+	  transform))))

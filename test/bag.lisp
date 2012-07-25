@@ -32,14 +32,15 @@
   (let* ((pathname (asdf:system-relative-pathname
 		    (asdf:find-system :cl-rsbag-test)
 		    "test/data/minimal.tide"))
-	 (bag (open-bag pathname :direction :input)))
-    (ensure-same (map 'list #'channel-name (bag-channels bag))
+	 (bag      (handler-bind
+		       ((open-error #'continue))
+		     (open-bag pathname :direction :input))))
+    (ensure-same (mapcar #'channel-name (bag-channels bag))
 		 '("MYCHAN")
 		 :test #'equal)
     (let ((channel (first (bag-channels bag))))
       (ensure-same (length (channel-timestamps channel)) 1
 		   :test #'=)
-      (ensure-same (coerce channel 'list)
-		   '(#(1 2 3))
+      (ensure-same (coerce channel 'list) '(#(1 2 3))
 		   :test #'equalp))
     (close bag)))
