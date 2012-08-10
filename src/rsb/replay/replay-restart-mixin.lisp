@@ -35,10 +35,11 @@ around the actual work of the `replay' method."))
 			     :connection connection
 			     :strategy   strategy
 			     :cause      condition)
-		    (continue ()
+		    (continue (&optional condition)
 		      :report (lambda (stream)
 				(format stream "~@<Ignore the ~
 failed event and continue with the next event.~@:>"))
+                      (declare (ignore condition))
 		      (use-value :skip))
 		    (log (&optional condition)
 		      :report (lambda (stream)
