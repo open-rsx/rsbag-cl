@@ -23,7 +23,7 @@
 ;;; `channel-connection' class
 ;;
 
-(defclass channel-connection ()
+(defclass channel-connection (rsb.ep:error-policy-mixin)
   ((bag      :initarg  :bag
 	     :reader   connection-bag
 	     :documentation
@@ -63,6 +63,17 @@ participants."))
   (:documentation
    "A `channel-connection' subclass in which the sink is a RSB
 participant."))
+
+(defmethod shared-initialize :after ((instance   participant-channel-connection)
+                                     (slot-names t)
+                                     &key)
+  (setf (rsb.ep:processor-error-policy instance)
+	(rsb.ep:processor-error-policy instance)))
+
+(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
+							 (object    participant-channel-connection))
+  (setf (hooks:hook-handlers (rsb:participant-error-hook (connection-endpoint object)))
+	(when new-value (list new-value))))
 
 (defmethod close ((connection participant-channel-connection)
 		  &key abort)

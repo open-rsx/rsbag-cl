@@ -23,7 +23,7 @@
 ;;; `bag-connection' class
 ;;
 
-(defclass bag-connection ()
+(defclass bag-connection (rsb.ep:error-policy-mixin)
   ((bag      :initarg  :bag
 	     :reader   connection-bag
 	     :documentation
@@ -43,6 +43,17 @@ sinks."))
    "Instances of this class represent the connections being
 established when channels of bags are used as data sources or sinks of
 RSB participants. "))
+
+(defmethod shared-initialize :after ((instance   bag-connection)
+                                     (slot-names t)
+                                     &key)
+  (setf (rsb.ep:processor-error-policy instance)
+	(rsb.ep:processor-error-policy instance)))
+
+(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
+							 (object    bag-connection))
+  (iter (for channel in (connection-channels object))
+	(setf (rsb.ep:processor-error-policy channel) new-value)))
 
 (defmethod close ((connection bag-connection)
 		  &key &allow-other-keys)
@@ -80,3 +91,8 @@ from the associated bag of the connection."))
    "Instances of this class associated an event replay strategy, a
 source bag and `rsb:informer' instances to collaboratively replay the
 events from the bag."))
+
+(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
+							 (object    replay-bag-connection))
+  (let+ (((&accessors-r/o (strategy connection-strategy)) object))
+    (setf (rsb.ep:processor-error-policy strategy) new-value)))
