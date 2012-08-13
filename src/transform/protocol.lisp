@@ -110,3 +110,11 @@ SPEC passing ARGS to the constructed instance."))
 (defmethod make-transform ((spec symbol)
 			   &rest args)
   (apply #'make-instance (find-transform-class spec) args))
+
+(defmethod make-transform ((spec (eql :utf-8-string))
+                           &rest args)
+  "Return nil for SPEC :utf-8-string since no transform is necessary
+in this case."
+  (declare (ignore args))
+
+  nil)
