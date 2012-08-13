@@ -104,7 +104,7 @@ associated to a specific channel within a bag."))
   ()
   (:report
    (lambda (condition stream)
-     (format stream "~@<Could not open channel ~A in bag
+     (format stream "~@<Could not open channel ~S in bag
 ~A~/more-conditions::maybe-print-cause/~@:>"
 	     (channel-error-channel condition)
 	     (bag-error-bag         condition)

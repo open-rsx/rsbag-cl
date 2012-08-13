@@ -197,7 +197,25 @@ method. "))
 				    id
 				    spec)
   "Use SPEC and, optionally the :type entry of META-DATA to determine
-the appropriate transform for the channel designated by NAME."
+the appropriate transform for the channel designated by NAME.
+
+SPEC can be of the following types:
+
+  `transform-spec/default'
+
+    Use the :type entry of META-DATA to determine the appropriate
+    transform.
+
+  `transform-spec/augment'
+
+    Append to the :type entry of META-DATA the remainder of SPEC. This
+    will instantiate the transform class specified by the :type entry,
+    but append initargs given in SPEC.
+
+  `transform-spec/full'
+
+    Use the contents of SPEC as class name and initargs to instantiate
+    the transform class. Ignore :type entry of META-DATA."
   (declare (ignore id))
 
   (with-condition-translation
@@ -207,23 +225,23 @@ the appropriate transform for the channel designated by NAME."
     (restart-case
 	(let+ (((&plist-r/o (type :type)) meta-data)
 	       ((&flet parse-type ()
-		       (typecase type
-			 (null (list nil))
-			 (list type)
-			 (t    (ensure-list type)))))
+		  (typecase type
+		    (null (list nil))
+		    (list type)
+		    (t    (ensure-list type)))))
 	       ((class-name &rest args)
 		(etypecase spec
 		  ;; No spec - derive everything from TYPE.
 		  (transform-spec/default
 		   (parse-type))
 
-		  ;; Spec with :FROM-SOURCE - append spec to information
-		  ;; derived from TYPE.
+		  ;; Spec with &FROM-SOURCE - append rest of SPEC to
+		  ;; information derived from TYPE.
 		  (transform-spec/augment
 		   (append (parse-type) (rest spec)))
 
-		  ;; Spec without :FROM-SOURCE - ignore TYPE and use
-		  ;; supplied spec unmodified.
+		  ;; Spec without &FROM-SOURCE - ignore TYPE and use
+		  ;; supplied SPEC unmodified.
 		  (transform-spec/full
 		   spec)
 
@@ -241,6 +259,6 @@ channel ~A.~@:>"
 	(use-value (transform)
 	  :report (lambda (stream)
 		    (format stream "~@<Use the supplied transform for ~
-events in channel ~A.~@:>"
+events in channel ~S.~@:>"
 			    name))
 	  transform))))
