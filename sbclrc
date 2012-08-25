@@ -1,0 +1,10 @@
+(setf *terminal-io* (make-two-way-stream
+		     (make-synonym-stream '*standard-input*)
+		     (make-synonym-stream '*standard-output*)))
+
+(defun load-system (system)
+  (let ((*compile-verbose* nil)
+	(*compile-print*   nil)
+	(*load-verbose*    nil)
+	(*load-print*      nil))
+    (ql:quickload system :verbose nil :explain nil :prompt nil)))
