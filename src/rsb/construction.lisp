@@ -82,9 +82,10 @@
 					(dest   ,type)
 					&rest args
 					&key
-					(if-exists :error if-exists-supplied?)
+					(if-exists      :error if-exists-supplied?)
 					backend
-					(bag-class 'synchronized-bag))
+					(flush-strategy nil)
+					(bag-class      'synchronized-bag))
 		  (apply #'events->bag source
 			 (apply #'open-bag dest
 				:bag-class bag-class
@@ -92,8 +93,10 @@
 				(append (when if-exists-supplied?
 					  (list :if-exists if-exists))
 					(when backend
-					  (list :backend backend))))
-			 (remove-from-plist args :backend :bag-class))))))
+					  (list :backend backend))
+					(when flush-strategy
+					  (list :flush-strategy flush-strategy))))
+			 (remove-from-plist args :backend :flush-strategy :bag-class))))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
