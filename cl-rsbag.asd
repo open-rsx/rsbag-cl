@@ -4,18 +4,23 @@
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
-;; This Program is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; This file may be licensed under the terms of the GNU Lesser General
+;; Public License Version 3 (the ``LGPL''), or (at your option) any
+;; later version.
 ;;
-;; This Program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-;; GNU General Public License for more details.
+;; Software distributed under the License is distributed on an ``AS
+;; IS'' basis, WITHOUT WARRANTY OF ANY KIND, either express or
+;; implied. See the LGPL for the specific language governing rights
+;; and limitations.
 ;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program. If not, see <http://www.gnu.org/licenses>.
+;; You should have received a copy of the LGPL along with this
+;; program. If not, go to http://www.gnu.org/licenses/lgpl.html or
+;; write to the Free Software Foundation, Inc., 51 Franklin Street,
+;; Fifth Floor, Boston, MA 02110-1301, USA.
+;;
+;; The development of this software was supported by:
+;;   CoR-Lab, Research Institute for Cognition and Robotics
+;;     Bielefeld University
 
 (cl:defpackage :cl-rsbag-system
   (:use
@@ -87,7 +92,7 @@ See `version/list' for details on keyword parameters."
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "GPL3; see COPYING file for details."
+  :license     "LGPLv3; see COPYING file for details."
   :description "Common Lisp implementation of rsbag."
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
@@ -291,7 +296,7 @@ See `version/list' for details on keyword parameters."
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "GPL3; see COPYING file for details."
+  :license     "LGPLv3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
   :depends-on  ((:version :cl-rsbag #.(version/string))
 
@@ -340,7 +345,7 @@ See `version/list' for details on keyword parameters."
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "GPL3; see COPYING file for details."
+  :license     "LGPLv3; see COPYING file for details."
   :description "TIDE log file format backend for cl-rsbag."
   :depends-on  ((:version :cl-rsbag #.(version/string)))
   :components  ((:module     "tidelog"
@@ -378,7 +383,7 @@ See `version/list' for details on keyword parameters."
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "GPL3; see COPYING file for details."
+  :license     "LGPLv3; see COPYING file for details."
   :description "Elan file format backend for cl-rsbag."
   :depends-on  (:cxml-location
 
