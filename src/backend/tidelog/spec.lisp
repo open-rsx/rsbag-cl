@@ -38,9 +38,13 @@
 		 :documentation
 		 "Number of chunk blocks that are in the file.")
   (:documentation
-   "Implementations are REQUIRED to support any TIDE file with the
-same major version as the implementation, although not all features
-supported by the file may be available."))
+   "Header block of TIDELog file. Implementations are required to
+support any TIDE file with the same major version as the
+implementation, although not all features supported by the file may be
+available.
+
+Note: num-channels and num-chunks are not used or written by RSBag and
+will hopefully be removed from the specification."))
 
 (define-element (chan)
   (id            (unsigned-byte 32)
@@ -65,40 +69,39 @@ data.")
 		 "Raw data describing the format of the channel's
 data.")
 (:documentation
- "The ``CHAN`` block stores the meta-data for ONE channel of data.
+ "The CHAN block stores the meta-data for one channel of data.
 
 A channel stores a set of data entries of a single type, indexed by
-time. The channel is identified internally in the TIDE file by its
-unique identification, stored in the ``ID`` field. The channel may be
-identified externally by its ID or by its unique human-readable name,
-stored in the ``Name`` field.
+time. The channel is identified internally within the file by its
+unique identification, stored in the `id' field. The channel may be
+identified externally by its id or by its unique human-readable name,
+stored in the `name' field.
 
-The ``Type`` field indicates the type of source and format in use by
+The `type' field indicates the type of source and format in use by
 this channel. It should indicate both the connection/transport type
 and serialization type, and will vary by these. For example, a logging
-tool for the OpenRTM-aist architecture may specify ``openrtm-cdr`` or
-``openrtm-ros`` to indicate that the source connection was an
+tool for the OpenRTM-aist architecture may specify \"openrtm-cdr\" or
+\"openrtm-ros\" to indicate that the source connection was an
 OpenRTM-aist port using either the CDR serialisation or the ROS
 serialisation scheme.
 
-The ``Source string`` field provides a human-readable form of the
-source information. This allows TIDE file introspection tools to
-describe the file contents more completely. For example, this field
-could contain the human-readable path of a ROS topic that provided the
-data.
+The `source-name' field provides a human-readable form of the source
+information. This allows introspection tools to describe the file
+contents more completely. For example, this field could contain the
+human-readable path of a ROS topic that provided the data.
 
-The ``Source`` field provides space for describing the source of the
-channel's data in a machine-readable form. Typically this will
+The `source-config' field provides space for describing the source of
+the channel's data in a machine-readable form. Typically this will
 describe the connection that was recorded. For example, an
 implementation for ROS may store the connection header in this field,
 while an implementation for OpenRTM-aist may store the name of the
 source port and the port's properties.
 
-The ``Format`` field provides space for describing the serialised
+The `format' field provides space for describing the serialized
 data. It is intended that this field contain enough information to
-deserialise the data stored in the file, such that it can be
+deserialize the data stored in the file, such that it can be
 reconstructed later without any extra information from external to the
-TIDE file. For example, a ROS implementation may store the message
+file. For example, a ROS implementation may store the message
 description in this field."))
 
 (define-element (indx)
@@ -110,12 +113,13 @@ description in this field."))
 	      "Number of indices in this block.")
   (entries    (:repeated count index-entry))
   (:documentation
-   "The ``INDX`` block provides an index for random-access in time to
-the data of one channel stored in the file. It links time stamps with
-the data values stored in the chunk blocks.
+   "The INDX block provides an index for random-access in time to the
+data of one channel stored in the file. It links timestamps with the
+data values stored in the chunk blocks.
 
-This block has a fixed-length section and a variable-length
-section."))
+This block has a fixed-length section consisting of the `channel-id'
+and `count' fields and a variable-length section consisting of COUNT
+`index-entry' elements."))
 
 (define-element (index-entry)
   (chunk-id  (unsigned-byte 32)
@@ -123,18 +127,15 @@ section."))
 	     "Points to the chunk this entry is stored in.")
   (timestamp (unsigned-byte 64)
 	     :documentation
-	     "Time stamp of the entry.")
+	     "Timestamp of the entry.")
   (offset    (unsigned-byte 64)
 	     :documentation
 	     "Offset (in bytes) in the chunk's uncompressed data of
 the entry.")
   (:documentation
-   "The variable-length section contains the indices. It has exactly
-``Count`` occurances of the following fields:
-
-The offset points to the specific position in the data of the entry
-relative to the start of its chunk. If the chunk is compressed, the
-offset refers to the data once it has been uncompressed."))
+   "The offset points to the specific position in the data of the
+entry relative to the start of its chunk. If the chunk is compressed,
+the offset refers to the data once it has been uncompressed."))
 
 (define-element (chnk)
   (chunk-id    (unsigned-byte 32)
@@ -145,31 +146,25 @@ offset refers to the data once it has been uncompressed."))
 	       "Number of entries in this chunk.")
   (start       (unsigned-byte 64)
 	       :documentation
-	       "Time stamp of the first entry in this chunk.")
+	       "Timestamp of the first entry in this chunk.")
   (end         (unsigned-byte 64)
 	       :documentation
-	       "Time stamp of the last entry in this chunk.")
+	       "Timestamp of the last entry in this chunk.")
   (compression (unsigned-byte 8)
 	       :documentation
 	       "Indicates the compression used on the entries.
 
-The value of the ``Compression`` field must be one of the following
-values:
-
-0
-No compression.
-
-1
-gzip compression.
-
-2
-bzip2 compression.")
+The value must be one of the following values:
+0: No compression.
+1: gzip compression.
+2: bzip2 compression.")
   (entries     (:repeated count chunk-entry))
   (:documentation
-   "``CHNK`` blocks store the recorded data entries.
+   "Each CHNK block stores a collection of recorded data items.
 
-This block has a fixed-length section and a variable-length
-section."))
+This block has a fixed-length section consisting of the `chunk-id',
+`count', `start', `end' and `compression' fields and a variable-length
+section consisting of COUNT `chunk-entry' elements."))
 
 (define-element (chunk-entry)
   (channel-id (unsigned-byte 32)
@@ -177,10 +172,13 @@ section."))
 	      "Points to the channel this entry belongs to.")
   (timestamp  (unsigned-byte 64)
 	      :documentation
-	      "Time stamp of the entry.")
+	      "Timestamp of the entry.")
   (size       (unsigned-byte 32)
 	      :documentation
 	      "Size of the following serialised data.")
   (entry      (:blob size)
 	      :documentation
-	      "Serialized entry data."))
+	      "Serialized entry data.")
+  (:documentation
+   "A CHUNK-ENTRY block stores a single data item that was recorded on
+a particular channel and a particular point in time."))

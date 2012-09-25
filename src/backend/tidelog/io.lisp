@@ -38,7 +38,7 @@
    :format-arguments (list object
 			   (when (streamp source)
 			     (file-position source))
-			   (format nil "~A" condition))))
+			   condition)))
 
 (defmethod scan :before ((source stream) (object t)
 			 &optional start)

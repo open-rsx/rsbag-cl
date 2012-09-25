@@ -51,4 +51,6 @@ sequence of ~:D byte~:P at stream position ~:D.~@:>"
 (defun timestamp->uint64 (value)
   (let+ (((&accessors-r/o (secs  local-time:timestamp-to-unix)
 			  (nsecs local-time:nsec-of)) value))
+    (declare (type non-negative-integer     secs)
+	     (type (integer 0 (1000000000)) nsecs))
     (+ (* (expt 10 9) secs) nsecs)))

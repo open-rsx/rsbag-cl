@@ -110,7 +110,7 @@ of entries to corresponding file offsets for one channel."))
 	(index-channel instance)))
 
 (defmethod index-num-entries ((index index))
-  (ash (length (index-entries index)) -1))
+  (/ (length (index-entries index)) 2))
 
 (defmethod index-offset ((index index)
 			 (index1 integer))
