@@ -47,8 +47,8 @@ sources or sinks.")
 	     "Stores the endpoint that is connected to a bag
 channel."))
   (:default-initargs
-   :bag      (required-argument :bag)
-   :endpoint (required-argument :endpoint))
+   :bag      (missing-required-initarg 'channel-connection :bag)
+   :endpoint (missing-required-initarg 'channel-connection :endpoint))
   (:documentation
    "Instances of this class represent the connections being
 established when individual channels of bags are used as data sources
@@ -103,7 +103,7 @@ timestamp.")
 	      :documentation
 	      "Stores a channel allocation/selection strategy."))
   (:default-initargs
-   :strategy (required-argument :strategy))
+   :strategy (missing-required-initarg 'recording-channel-connection :strategy))
   (:documentation
    "Instances of this represent class represent connections being
 established between RSB listeners and bag channels when RSB events are
