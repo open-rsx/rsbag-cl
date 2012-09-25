@@ -50,6 +50,20 @@ value the flushing decision should be made.")
    "This strategy causes a buffer to be flushed every time a specified
 property violates a given limit."))
 
+(defmethod shared-initialize :before ((instance   property-limit)
+                                      (slot-names t)
+                                      &key
+                                      property)
+  ;; Search methods on `buffer-property' for one that is specialized
+  ;; on PROPERTY.
+  (let+ (((&flet property? (specializer)
+            (and (typep specializer 'eql-specializer)
+                 (eq (eql-specializer-object specializer) property)))))
+    (unless (some (compose #'property? #'third #'method-specializers)
+                  (generic-function-methods #'buffer-property))
+      (error "~@<Specified property ~A is invalid.~@:>"
+             property))))
+
 (defmethod flush? ((strategy property-limit)
 		   (backend  t)
 		   (buffer   t))
@@ -59,7 +73,7 @@ property violates a given limit."))
 
 (defmethod print-object ((object property-limit) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~S @ ~:D"
+    (format stream "~S > ~:D"
 	    (flush-strategy-property object)
 	    (flush-strategy-limit    object))))
 

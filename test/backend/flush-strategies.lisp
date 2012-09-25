@@ -40,6 +40,11 @@
 			    (name    (eql :length/bytes)))
   (length/bytes buffer))
 
+(defmethod buffer-property ((backend t)
+			    (buffer  mock-buffer)
+			    (name    (eql :time-to-last-write)))
+  5)
+
 (deftestsuite flush-strategies-root (backend-root)
   ()
   (:function
@@ -88,14 +93,16 @@
 	     (ensure-same (flush? strategy t buffer) expected)))))))
 
 (define-basic-flush-strategy-suite (:property-limit)
-  ;; Missing required initargs
+  ;; Missing required initargs.
   '(() ()                                      :error)
-  ;; Missing :property initarg
+  ;; Missing :property initarg.
   '((:property :foo) ()                        :error)
-  ;; Missing :limit initarg
+  ;; Missing :limit initarg.
   '((:limit 10) ()                             :error)
+  ;; Specified property does not exist.
+  '((:property :foo :limit 10) ()              :error)
 
-  ;; These are OK
+  ;; These are OK.
   '((:property :length/entries :limit 10)
     (:length/entries 10 :length/bytes 999999)  nil)
   '((:property :length/entries :limit 10)
@@ -104,3 +111,57 @@
     (:length/entries 10 :length/bytes 999999)  nil)
   '((:property :length/bytes :limit 1000000)
     (:length/entries 11 :length/bytes 1000001) t))
+
+(define-basic-flush-strategy-suite (:or)
+  ;; No such subordinate strategy.
+  '(((:no-such-strategy)) ()                   :error)
+  ;; Invalid initargs for subordinate strategy.
+  '(((:property-limit :property :foo :limit 10))
+    ()                                         :error)
+
+  ;; These are OK
+  '(() ()                                      nil)
+  '(((:property-limit :property :length/entries     :limit 10))
+    (:length/entries 9 :length/bytes 1000)     nil)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 10 :length/bytes 1000)    t)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 11 :length/bytes 1000)    t))
+
+(define-basic-flush-strategy-suite (:and)
+  ;; No such subordinate strategy.
+  '(((:no-such-strategy)) ()                   :error)
+  ;; Invalid initargs for subordinate strategy.
+  '(((:property-limit :property :foo :limit 10))
+    ()                                         :error)
+
+  ;; These are OK
+  '(() ()                                      t)
+  '(((:property-limit :property :length/entries     :limit 10))
+    (:length/entries 9 :length/bytes 1000)     nil)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 10 :length/bytes 1000)    nil)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 11 :length/bytes 1000)    t))
+
+(define-basic-flush-strategy-suite (:not)
+  ;; No such subordinate strategy.
+  '(((:no-such-strategy)) ()                   :error)
+  ;; Invalid initargs for subordinate strategy.
+  '(((:property-limit :property :foo :limit 10))
+    ()                                         :error)
+
+  ;; These are OK
+  '(() ()                                      t)
+  '(((:property-limit :property :length/entries     :limit 10))
+    (:length/entries 9 :length/bytes 1000)     t)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 10 :length/bytes 1000)    nil)
+  '(((:property-limit :property :length/entries     :limit 10)
+     (:property-limit :property :time-to-last-write :limit 2))
+    (:length/entries 11 :length/bytes 1000)    nil))

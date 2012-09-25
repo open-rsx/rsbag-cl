@@ -31,6 +31,12 @@
 
    :rsbag)
 
+  (:import-from :closer-mop
+   :generic-function-methods
+   :method-specializers
+   :eql-specializer
+   :eql-specializer-object)
+
   ;; Conditions
   (:export
    :log-file-error
