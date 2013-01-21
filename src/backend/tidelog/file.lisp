@@ -1,6 +1,6 @@
-;;; file.lisp ---
+;;; file.lisp --- The file class represents a TIDE log file.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -217,7 +217,17 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   ;; the number of entries. Correct this before writing the chunk.
   (unless (zerop (chnk-count buffer))
     (setf (chnk-count buffer) (length (chnk-entries buffer)))
-    (pack buffer (backend-stream file))))
+    (pack buffer (backend-stream file))
+
+    ;; For the sake of conservative garbage collectors, we deference
+    ;; as much as possible here. On SBCL we even garbage collect
+    ;; explicitly.
+    (map-into (chnk-entries buffer)
+              (lambda (entry)
+                (setf (chunk-entry-entry entry) (nibbles:octet-vector))
+                nil)
+              (chnk-entries buffer))
+    #+sbcl (sb-ext:gc)))
 
 (defmethod buffer-property ((backend file)
 			    (buffer  chnk)
