@@ -1,6 +1,6 @@
 ;;; io.lisp --- Input and output of TIDE log structures.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -82,7 +82,7 @@
 	(file-position source (+ (file-position source) length)))))))
 
 
-;;;
+;;; Unpacking
 ;;
 
 (define-condition-translating-method unpack ((source t) (object t)
@@ -107,6 +107,7 @@
   (declare (ignore start))
 
   (let ((header (read-chunk-of-length 12 source)))
+    (declare (dynamic-extent header))
     (values (sb-ext:octets-to-string header
 				     :external-format :ascii
 				     :start           0
@@ -123,28 +124,7 @@
     (unpack (read-chunk-of-length (if (eq name 'tide) 10 length) source)  ;;; TODO(jmoringe): hack
 	    (allocate-instance class))))
 
-
 ;;; Packing
-;;
-
-(defmethod pack ((object standard-object) (source stream)
-		 &optional start)
-  (declare (ignore start))
-
-  (let* ((name   (string (class-name (class-of object))))
-	 (length (size object))
-	 (buffer (nibbles:make-octet-vector length)))
-    (pack (cons name length) source)
-    (pack object buffer)
-    (write-sequence buffer source)))
-
-(defmethod pack ((object cons) (source stream)
-		 &optional start)
-  (declare (ignore start))
-
-  (let+ (((kind . length) object)
-	 (header (nibbles:make-octet-vector 12)))
-    (declare (type (string 4) kind))
-    (replace header (sb-ext:string-to-octets kind :external-format :ascii)) ;;; TODO(jmoringe, 2012-04-13): check length
-    (setf (nibbles:ub64ref/le header 4) length)
-    (write-sequence header source)))
+;;;
+;;; Nothing to do since everything is handled by the methods generated
+;;; in spec.lisp

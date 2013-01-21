@@ -1,6 +1,6 @@
 ;;; spec.lisp --- Based on TIDE log file format specification.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -37,6 +37,7 @@
   (num-chunks    (unsigned-byte 32)
 		 :documentation
 		 "Number of chunk blocks that are in the file.")
+  (:toplevel? t)
   (:documentation
    "Header block of TIDELog file. Implementations are required to
 support any TIDE file with the same major version as the
@@ -68,7 +69,8 @@ data.")
 		 :documentation
 		 "Raw data describing the format of the channel's
 data.")
-(:documentation
+  (:toplevel? t)
+  (:documentation
  "The CHAN block stores the meta-data for one channel of data.
 
 A channel stores a set of data entries of a single type, indexed by
@@ -112,6 +114,7 @@ description in this field."))
 	      :documentation
 	      "Number of indices in this block.")
   (entries    (:repeated count index-entry))
+  (:toplevel? t)
   (:documentation
    "The INDX block provides an index for random-access in time to the
 data of one channel stored in the file. It links timestamps with the
@@ -159,6 +162,7 @@ The value must be one of the following values:
 1: gzip compression.
 2: bzip2 compression.")
   (entries     (:repeated count chunk-entry))
+  (:toplevel? t)
   (:documentation
    "Each CHNK block stores a collection of recorded data items.
 
