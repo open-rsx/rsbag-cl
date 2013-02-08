@@ -1,6 +1,6 @@
 ;;; timestamp-adjustment-mixin.lisp --- Unit tests for the timestamp-adjustment-mixin class.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -45,12 +45,14 @@ class."))
 	((:adjustments ((:send   (:copy :create))))                t)
 
 	;; invalid syntax
-	((:adjustments :foo)                                       :error)
-	((:adjustments (:foo))                                     :error)
-	((:adjustments ((:foo)))                                   :error)
-	((:adjustments ((:create (:copy))))                        :error))
+	((:adjustments :foo)                                       error)
+	((:adjustments (:foo))                                     error)
+	((:adjustments ((:foo)))                                   error)
+	((:adjustments ((:create (:copy))))                        error))
 
-    (if (eq expected :error)
-	(ensure-condition 'error
-	  (apply #'make-instance 'timestamp-adjustment-mixin args))
-	(apply #'make-instance 'timestamp-adjustment-mixin args))))
+  (case expected
+    (error
+     (ensure-condition 'error
+       (apply #'make-instance 'timestamp-adjustment-mixin args)))
+    (t
+     (apply #'make-instance 'timestamp-adjustment-mixin args)))))
