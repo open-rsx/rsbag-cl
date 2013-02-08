@@ -1,6 +1,6 @@
 ;;; cl-rsbag.asd ---
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -392,9 +392,10 @@ See `version/list' for details on keyword parameters."
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Elan file format backend for cl-rsbag."
-  :depends-on  (:cxml-location
+  :depends-on  ((:version :xml.location                "0.2.0")
+		(:version :xml.location-and-local-time "0.2.0")
 
-		(:version :cl-rsbag #.(version/string)))
+		(:version :cl-rsbag                    #.(version/string)))
   :components  ((:module     "elan"
 		 :pathname   "src/backend/elan"
 		 :components ((:file       "package")
