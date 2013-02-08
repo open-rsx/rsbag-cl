@@ -79,9 +79,8 @@
      (destructuring-ecase type-spec
        ((:repeated count-slot sub-type)
 	(declare (ignore count-slot))
-	`(+ ,(type-spec->size '(unsigned-byte 32) :unused)
-	    (iter (for val each ,value)
-		  (summing ,(type-spec->size sub-type 'val)))))
+	`(iter (for val each ,value)
+              (summing ,(type-spec->size sub-type 'val))))
        ((:blob length-slot)
 	(declare (ignore length-slot))
 	`(length ,value))
