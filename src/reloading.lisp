@@ -1,6 +1,6 @@
-;;; package.lisp --- Package definition for unit tests of the backend module.
+;;; reloading.lisp --- Support for image dumping and reloading.
 ;;
-;; Copyright (C) 2012, 2013 Jan Moringen
+;; Copyright (C) 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -22,26 +22,12 @@
 ;;   CoR-Lab, Research Institute for Cognition and Robotics
 ;;     Bielefeld University
 
-(cl:defpackage :rsbag.backend.test
-  (:use
-   :cl
-   :alexandria
-   :let-plus
-   :lift
+(cl:in-package :rsbag)
 
-   :rsbag.backend
-
-   :rsbag.test)
-
-  (:export
-   :backend-root)
-
-  (:documentation
-   "This package contains unit tests for the backend module"))
-
-(cl:in-package :rsbag.backend.test)
-
-(deftestsuite backend-root (root)
-  ()
-  (:documentation
-   "Root unit test suite for the backend module."))
+(defun enable-restart-threadpool ()
+  "Make sure that the rsbag threadpool is shutdown when saving a core
+and restarted when loading a core."
+  #+sbcl (progn
+	   (push 'stop-threadpool  sb-ext:*save-hooks*)
+	   (push 'start-threadpool sb-ext:*init-hooks*))
+  #-sbcl (error "Restarting the rsbag threadpool is not supported in this Lisp."))

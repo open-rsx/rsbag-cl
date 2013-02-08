@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for backend module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -91,6 +91,10 @@
    :flush
 
    :backend-flush-strategy)
+
+  ;; `async-double-buffered-writer-mixin'
+  (:export
+   :async-double-buffered-writer-mixin)
 
   ;; `last-write-time-mixin'
   (:export

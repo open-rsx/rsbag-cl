@@ -29,6 +29,7 @@
 
 (defclass file (stream-mixin
 		direction-mixin
+		async-double-buffered-writer-mixin
 		buffering-writer-mixin
 		last-write-time-mixin)
   ((channels        :type     list

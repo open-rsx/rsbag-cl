@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the cl-rsbag system.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -133,6 +133,14 @@
    :with-renamed-package
    :with-renamed-packages
    :with-versioned-packages)
+
+  ;; Threadpool
+  (:export
+   :start-threadpool
+   :stop-threadpool
+   :enable-restart-threadpool
+
+   :with-threadpool)
 
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.

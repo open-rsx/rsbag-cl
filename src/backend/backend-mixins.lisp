@@ -1,6 +1,6 @@
 ;;; backend-mixins.lisp --- Mixin classes for backend classes
 ;;
-;; Copyright (C) 2012 Jan Moringen
+;; Copyright (C) 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -150,6 +150,83 @@ byte~:P~]~@[, ~,2F sec~:P~])"
 	    (buffer-property backend buffer :length/entries)
 	    (buffer-property backend buffer :length/bytes)
 	    (buffer-property backend buffer :time-to-last-write)))
+
+
+;;; `async-double-buffered-writer-mixin' mixin class
+;;
+
+(declaim (special *async?*))
+
+(defvar *async?* t
+  "Indicates whether an async operation should be performed and
+especially to disallow async operations under certain conditions.")
+
+(defclass async-double-buffered-writer-mixin ()
+  ((back-buffer   :accessor back-buffer
+		  :initform nil
+		  :documentation
+		  "Stores a buffer which can be used by the backend
+while an associated buffer is being written back. The value changes
+when the buffers swap roles.")
+   (writer        :accessor %writer
+		  :initform nil
+		  :documentation
+		  "When non-nil, stores a future object which
+eventually return the result of async write-back operation."))
+  (:documentation
+   "This class transparently adds to buffer-based backend classes the
+ability to write buffers asynchronously to other operations performed
+by the backend."))
+
+(defmethod shared-initialize :after ((instance   async-double-buffered-writer-mixin)
+                                     (slot-names t)
+                                     &key)
+  ;; Ask the backend to provide an additional buffer for async
+  ;; operations.
+  (setf (back-buffer instance) (make-buffer instance nil)))
+
+(defmethod close :around ((backend async-double-buffered-writer-mixin)
+			  &key abort)
+  (declare (ignore abort))
+
+  (with-threadpool
+    ;; Force any unfinished write operation to finish.
+    (when (%writer backend)
+      (lparallel:force (%writer backend)))
+
+    ;; Continue with the default closing behavior but disallow async
+    ;; operation.
+    (let ((*async?* nil))
+      (call-next-method))))
+
+(defmethod write-buffer :around ((backend async-double-buffered-writer-mixin)
+				 (buffer  t))
+  (with-threadpool
+    ;; When async operation is disallowed, just call the next method.
+    (unless *async?*
+      (return-from write-buffer (call-next-method)))
+
+    ;; Force any unfinished write operation to finish and retrieve the
+    ;; buffer it used.
+    (when (%writer backend)
+      (setf (back-buffer backend) (lparallel:force (%writer backend))))
+
+    ;; Start a new async write operation on BUFFER. The result will be
+    ;; collected by the next write or close operation.
+    (setf (%writer backend)
+	  (lparallel:future
+	    (let ((*async?* nil))
+	      (rsb:log1 :info backend "Starting to flush buffer ~A" buffer)
+	      (write-buffer backend buffer)
+	      (rsb:log1 :info backend "Finished flushing buffer ~A" buffer)
+	      buffer)))))
+
+(defmethod make-buffer :around ((backend async-double-buffered-writer-mixin)
+				(buffer  t))
+  ;; Ask for more buffers until we have a "front" and a "back" buffer.
+  (if (or (null buffer) (null (back-buffer backend)))
+      (call-next-method)
+      (call-next-method backend (back-buffer backend))))
 
 
 ;;; `last-write-time-mixin' mixin class

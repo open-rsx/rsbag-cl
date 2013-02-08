@@ -103,6 +103,7 @@ See `version/list' for details on keyword parameters."
 		:more-conditions
 
 		:bordeaux-threads
+		:lparallel
 		:local-time
 		:nibbles
 
@@ -116,7 +117,11 @@ See `version/list' for details on keyword parameters."
 			      (:file       "conditions"
 			       :depends-on ("package"))
 			      (:file       "versioned-packages"
-			       :depends-on ("package"))))
+			       :depends-on ("package"))
+			      (:file       "threadpool"
+			       :depends-on ("package"))
+			      (:file       "reloading"
+			       :depends-on ("package" "threadpool"))))
 
 		(:module     "backend"
 		 :pathname   "src/backend"
@@ -309,10 +314,12 @@ See `version/list' for details on keyword parameters."
 			       :depends-on ("package"))))
 
 		(:module     "backend"
-	         :pathname   "test/backend"
+		 :pathname   "test/backend"
 		 :depends-on ("test")
 		 :components ((:file       "package")
 			      (:file       "flush-strategies"
+			       :depends-on ("package"))
+			      (:file       "mixins"
 			       :depends-on ("package"))))
 
 		#+sbcl
