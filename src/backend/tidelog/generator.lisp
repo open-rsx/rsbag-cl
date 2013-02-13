@@ -215,12 +215,12 @@
 	   (length ,value)))
 
        ((:string length-type)
-	`(let ((offset* ,offset))
+	`(let ((offset* ,offset)
+               (octets  (sb-ext:string-to-octets ,value)))
 	   (incf offset* ,(type-spec->serializer/buffer
-			   length-type `(length ,value) source 'offset*))
-	   (let ((octets (sb-ext:string-to-octets ,value)))
-	     (replace ,source octets :start1 offset*)
-	     (incf offset* (length octets)))
+			   length-type '(length octets) source 'offset*))
+	   (replace ,source octets :start1 offset*)
+           (incf offset* (length octets))
 	   (- offset* ,offset)))))
 
     ((cons (eql unsigned-byte) list)
@@ -252,12 +252,12 @@
 	   (length ,value)))
 
        ((:string length-type)
-	`(let ((offset* ,offset))
+	`(let ((offset* ,offset)
+               (octets  (sb-ext:string-to-octets ,value)))
 	   (incf offset* ,(type-spec->serializer/stream
-			   length-type `(length ,value) source 'offset*))
-	   (let ((octets (sb-ext:string-to-octets ,value)))
-	     (write-sequence octets ,source)
-	     (incf offset* (length octets)))
+			   length-type '(length octets) source 'offset*))
+	   (write-sequence octets ,source)
+           (incf offset* (length octets))
 	   (- offset* ,offset)))))
 
     ((cons (eql unsigned-byte) list)
