@@ -102,7 +102,7 @@
   `(defmethod unpack ((source simple-array) (object ,class-name)
 		      &optional
 		      (start 0))
-     (check-type source nibbles:octet-vector)
+     (check-type source nibbles:simple-octet-vector)
 
      (let ((offset start))
        ,@(mapcar (rcurry #'spec->deserializer

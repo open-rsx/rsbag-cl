@@ -1,6 +1,6 @@
 ;;; util.lisp --- Utility functions for the TIDELog backend.
 ;;
-;; Copyright (C) 2012 Jan Moringen
+;; Copyright (C) 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -31,8 +31,8 @@
 (defun read-chunk-of-length (length stream
 			     &optional
 			     (buffer (nibbles:make-octet-vector length)))
-  "Create an octet-vector (unless BUFFER is supplied) of length LENGTH
-and read LENGTH from STREAM into it. Return the octet-vector."
+  "Create a `simple-octet-vector' (unless BUFFER is supplied) of
+length LENGTH and read LENGTH from STREAM into it. Return the buffer."
   (let ((read (read-sequence buffer stream)))
     (unless (= read length)
       (error "~@<Could only read ~:D byte~:P when trying to read a ~

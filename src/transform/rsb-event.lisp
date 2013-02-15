@@ -1,6 +1,6 @@
 ;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -149,7 +149,7 @@ serialization; not inner payload serialization.~@:>"
 		 (keyword->bytes
 		  (rsb:event-method domain-object))
 		 (load-time-value
-		  (nibbles:make-octet-vector 0)))
+		  (make-octet-vector 0)))
      :data   (rsb:event-data domain-object))
     (pb:pack* holder)))
 
@@ -244,23 +244,23 @@ integer which counts the number of microseconds since UNIX epoch."
 (declaim (inline string->bytes bytes->string))
 
 (defun string->bytes (string)
-  "Converter STRING into an octet-vector."
+  "Converter STRING into a `simple-octet-vector'."
   (sb-ext:string-to-octets string :external-format :ascii))
 
 (defun bytes->string (bytes)
   "Convert BYTES into a string."
   (sb-ext:octets-to-string bytes :external-format :ascii))
 
-(declaim (ftype (function (keyword) nibbles:octet-vector) keyword->bytes))
+(declaim (ftype (function (keyword) simple-octet-vector) keyword->bytes))
 
 (defun keyword->bytes (keyword)
-  "Convert the name of KEYWORD into an octet-vector."
+  "Convert the name of KEYWORD into a `simple-octet-vector'."
   (if (find #\: (symbol-name keyword))
       (string->bytes (symbol-name keyword))
       (let ((*readtable* *keyword-readtable*))
 	(string->bytes (princ-to-string keyword)))))
 
-(declaim (ftype (function (nibbles:octet-vector) keyword) bytes->keyword))
+(declaim (ftype (function (simple-octet-vector) keyword) bytes->keyword))
 
 (defun bytes->keyword (bytes)
   "Converter BYTES into a keyword."

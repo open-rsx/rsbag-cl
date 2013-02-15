@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the transform module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -28,7 +28,9 @@
    :alexandria
    :let-plus
    :iterate
-   :more-conditions)
+   :more-conditions
+
+   :nibbles)
 
   (:import-from :rsbag
    :make-versioned-name
