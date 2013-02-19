@@ -1,6 +1,6 @@
 ;;; interactive.lisp --- A strategy for interactive replay control.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -28,7 +28,8 @@
   (find-class 'interactive))
 
 (defclass interactive (error-policy-mixin
-		       external-driver-mixin)
+		       external-driver-mixin
+		       timestamp-adjustment-mixin)
   ((stream           :initarg  :stream
 		     :type     stream
 		     :accessor strategy-stream

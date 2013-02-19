@@ -290,10 +290,12 @@ See `version/list' for details on keyword parameters."
 					    "timestamp-adjustment-mixin"))
 			      (:file       "interactive"
 			       :depends-on ("package" "external-driver-mixin"
-					    "error-policy-mixin"))
+					    "error-policy-mixin"
+					    "timestamp-adjustment-mixin"))
 			      (:file       "remote-controlled"
 			       :depends-on ("package" "external-driver-mixin"
-					    "error-policy-mixin")))))
+					    "error-policy-mixin"
+					    "timestamp-adjustment-mixin")))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))
 
