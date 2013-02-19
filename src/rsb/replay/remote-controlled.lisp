@@ -1,6 +1,6 @@
 ;;; remote-controlled.lisp --- Strategy for RPC-controlled replay.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -36,6 +36,7 @@
 
 (defclass remote-controlled (error-policy-mixin
 			     external-driver-mixin
+			     timestamp-adjustment-mixin
 			     uri-mixin)
   ((rsb::uri :accessor strategy-control-uri)
    (server   :accessor %strategy-server
