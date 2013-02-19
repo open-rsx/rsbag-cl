@@ -69,7 +69,7 @@
      (+ ,@(mapcar (rcurry #'spec->size class-name 'object) specs))))
 
 (defun spec->size (spec class-name object)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     (type-spec->size type `(,accessor-name ,object))))
 
@@ -111,7 +111,7 @@
        (values object (- offset start)))))
 
 (defun spec->deserializer (spec class-name source object offset)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     `(let+ (((&values value length)
 	     ,(type-spec->deserializer type source offset)))
@@ -189,7 +189,7 @@
 	      (call-next-method)))))))
 
 (defun spec->serializer (spec class-name medium source object offset)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name))
 	 (next-function (symbolicate '#:type-spec->serializer/ medium)))
     `(let ((value (,accessor-name ,object)))

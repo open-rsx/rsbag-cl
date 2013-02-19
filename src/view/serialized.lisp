@@ -1,6 +1,6 @@
 ;;; serialized.lisp --- Serialized view on data from multiple channels.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -187,7 +187,7 @@ are serialized views on multiple sequences."))
 (defmethod sequence:iterator-element ((sequence serialized)
 				      (iterator serialized-iterator))
   (let+ (((&accessors-r/o
-	   ((nil sequence* iterator* &rest nil) %iterator-current)) iterator))
+	   ((&ign sequence* iterator* &rest &ign) %iterator-current)) iterator))
     (sequence:iterator-element sequence* iterator*)))
 
 
@@ -197,7 +197,7 @@ are serialized views on multiple sequences."))
 (declaim (inline %iterator-step)
 	 (ftype (function (list function boolean) list) %iterator-step))
 
-(defun+ %iterator-step ((&whole state nil sequence iterator nil from-end*) key from-end)
+(defun+ %iterator-step ((&whole state &ign sequence iterator &ign from-end*) key from-end)
   "Destructively perform a step with iterator STATE and update its
 sorting key using KEY.
 Return the modified STATE."

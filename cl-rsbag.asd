@@ -97,7 +97,7 @@ See `version/list' for details on keyword parameters."
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
 		:split-sequence
-		:let-plus
+		(:version :let-plus "0.2")
 		:iterate
 		:cl-dynamic-classes
 		:more-conditions
