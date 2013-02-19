@@ -94,6 +94,7 @@ and executes them until termination is requested."))
 (defmethod make-commands ((strategy external-driver-mixin)
 			  (sequence sequence)
 			  &key
+			  (length    (missing-required-argument :length))
 			  (step      (missing-required-argument :step))
 			  (index     (missing-required-argument :index))
 			  (element   (missing-required-argument :element))
@@ -101,40 +102,44 @@ and executes them until termination is requested."))
 			  (terminate (missing-required-argument :terminate)))
   "Return a default alist of commands."
   `(;; Queries
-    (:length      . ,(lambda ()
-		       (length sequence)))
-    (:index       . ,(lambda ()
-		       (funcall index)))
-    (:time        . ,(lambda ()
-		       (princ-to-string (first (funcall element)))))
+    (:length         . ,(lambda ()
+			  (funcall length)))
+    (:relativelength . ,(lambda ()
+			  (funcall length t)))
+    (:index          . ,(lambda ()
+			  (funcall index)))
+    (:relativeindex  . ,(lambda ()
+			  (funcall index t)))
+    (:time           . ,(lambda ()
+			  (princ-to-string (first (funcall element)))))
     ;; Position
-    (:next        . ,(lambda ()
-		       (funcall step nil)
-		       (funcall index)))
-    (:previous    . ,(lambda ()
-		       (funcall step t)
-		       (funcall index)))
-    (:seek        . ,(lambda (position)
-		       (let ((diff (- position (funcall index))))
-			 (iter (repeat (abs diff))
-			       (funcall step (minusp diff))))
-		       (values)))
+    (:next           . ,(lambda ()
+			  (funcall step nil)
+			  (funcall index)))
+    (:previous       . ,(lambda ()
+			  (funcall step t)
+			  (funcall index)))
+    (:seek           . ,(lambda (position)
+			  (let ((diff (- position (funcall index))))
+			    (iter (repeat (abs diff))
+				  (funcall step (minusp diff))))
+			  (values)))
     ;; Emission
-    (:emit        . ,(lambda ()
-		       (funcall emit)
-		       (values)))
-    (:emitandnext . ,(lambda ()
-		       (funcall emit)
-		       (funcall step nil)
-		       (funcall index)))
+    (:emit           . ,(lambda ()
+			  (funcall emit)
+			  (values)))
+    (:emitandnext    . ,(lambda ()
+			  (funcall emit)
+			  (funcall step nil)
+			  (funcall index)))
 
-    (:get         . ,(lambda ()
-		       (event-data (second (funcall element)))))
+    (:get            . ,(lambda ()
+			  (event-data (second (funcall element)))))
 
     ;; Session
-    (:quit        . ,(lambda ()
-		       (funcall terminate)
-		       (values)))))
+    (:quit           . ,(lambda ()
+			  (funcall terminate)
+			  (values)))))
 
 (defmethod execute-command ((strategy external-driver-mixin)
 			    (command  function))
@@ -155,6 +160,10 @@ and executes them until termination is requested."))
 	   sequence :start start-index :end end-index))
 	 (previous-timestamp)
 	 ;; Primitive state query and manipulation functions.
+         ((&labels length* (&optional relative-to-bounds?)
+	    (if relative-to-bounds?
+		(- (or end-index (length*)) start-index)
+		(length sequence))))
 	 ((&flet end? (back?)
 	   (sequence:iterator-endp
             sequence current
@@ -169,8 +178,10 @@ and executes them until termination is requested."))
 sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
 		     back? (sequence:iterator-index sequence current)
 		     start-index end-index))))
-	 ((&flet index ()
-	    (sequence:iterator-index sequence current)))
+	 ((&labels index (&optional relative-to-bounds?)
+	    (if relative-to-bounds?
+		(- (index) start-index)
+		(sequence:iterator-index sequence current))))
 	 ((&flet element ()
 	    (sequence:iterator-element sequence current)))
 	 ((&flet emit ()
@@ -184,6 +195,7 @@ sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
 
     (setf (%strategy-commands strategy)
 	  (make-commands strategy sequence
+			 :length    #'length*
 			 :step      #'step*
 			 :index     #'index
 			 :element   #'element
