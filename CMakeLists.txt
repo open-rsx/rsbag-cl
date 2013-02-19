@@ -127,8 +127,6 @@ ENABLE_TESTING()
 
 CONFIGURE_LISP_REDIRECT("test"
                         "--eval \"(proclaim (quote (optimize (debug 3) (safety 3) (speed 0))))\"
-                         --eval \"(asdf:load-system :${SYSTEM_NAME})\"
-                         --eval \"(asdf:load-system :${SYSTEM_NAME}-tidelog)\"
                          --eval \"(asdf:test-system :${SYSTEM_NAME})\"")
 ADD_TEST(NAME    "${SYSTEM_NAME}"
          COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/sbcl.test.cmake")

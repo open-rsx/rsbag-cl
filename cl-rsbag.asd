@@ -305,9 +305,11 @@ See `version/list' for details on keyword parameters."
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
-  :depends-on  ((:version :cl-rsbag #.(version/string))
+  :depends-on  ((:version :cl-rsbag         #.(version/string))
+		;; TODO temp until we split this into multiple systems
+		(:version :cl-rsbag-tidelog #.(version/string))
 
-		(:version :lift     "1.7.1"))
+		(:version :lift             "1.7.1"))
   :components  ((:module     "test"
 		 :components ((:file       "package")
 			      (:file       "protocol"
