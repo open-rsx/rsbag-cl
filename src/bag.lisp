@@ -1,6 +1,6 @@
 ;;; bag.lisp --- The bag class represent data channels stored in a file.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -38,7 +38,7 @@ stream associated to this bag.")
    (transform :initarg  :transform
 	      :type     transform-spec
 	      :reader   bag-transform
-	      :initform '&from-source
+	      :initform '(&from-source)
 	      :documentation
 	      "Stores a specification for transformations that should
 be associated with channels of the bag. See type `transform-spec'.")
@@ -141,7 +141,7 @@ method. "))
 					     (pathname-type location)))
 			   (t        location))))
     (print-unreadable-object (object stream :type t :identity t)
-      (format stream "~S ~:[-~;r~]~:[-~;w~] (~D)"
+      (format stream "~:[N/A~;~:*~S~] ~:[-~;r~]~:[-~;w~] (~D)"
 	      location/short
 	      (member direction '(:input :io))
 	      (member direction '(:output :io))
