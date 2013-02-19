@@ -1,6 +1,6 @@
 ;;; external-driver-mixin.lisp --- Mixin class for externally controlled replay.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -89,47 +89,47 @@ and executes them until termination is requested."))
 (defmethod make-commands ((strategy external-driver-mixin)
 			  (sequence sequence)
 			  &key
-			  step
-			  index
-			  element
-			  emit
-			  terminate)
+			  (step      (missing-required-argument :step))
+			  (index     (missing-required-argument :index))
+			  (element   (missing-required-argument :element))
+			  (emit      (missing-required-argument :emit))
+			  (terminate (missing-required-argument :terminate)))
   "Return a default alist of commands."
   `(;; Queries
-    (:length      . ,#'(lambda ()
-			 (length sequence)))
-    (:index       . ,#'(lambda ()
-			 (funcall index)))
-    (:time        . ,#'(lambda ()
-			 (princ-to-string (first (funcall element)))))
+    (:length      . ,(lambda ()
+		       (length sequence)))
+    (:index       . ,(lambda ()
+		       (funcall index)))
+    (:time        . ,(lambda ()
+		       (princ-to-string (first (funcall element)))))
     ;; Position
-    (:next        . ,#'(lambda ()
-			 (funcall step nil)
-			 (funcall index)))
-    (:previous    . ,#'(lambda ()
-			 (funcall step t)
-			 (funcall index)))
-    (:seek        . ,#'(lambda (position)
-			 (let ((diff (- position (funcall index))))
-			   (iter (repeat (abs diff))
-				 (funcall step (minusp diff))))
-			 (values)))
+    (:next        . ,(lambda ()
+		       (funcall step nil)
+		       (funcall index)))
+    (:previous    . ,(lambda ()
+		       (funcall step t)
+		       (funcall index)))
+    (:seek        . ,(lambda (position)
+		       (let ((diff (- position (funcall index))))
+			 (iter (repeat (abs diff))
+			       (funcall step (minusp diff))))
+		       (values)))
     ;; Emission
-    (:emit        . ,#'(lambda ()
-			 (funcall emit)
-			 (values)))
-    (:emitandnext . ,#'(lambda ()
-			 (funcall emit)
-			 (funcall step nil)
-			 (funcall index)))
+    (:emit        . ,(lambda ()
+		       (funcall emit)
+		       (values)))
+    (:emitandnext . ,(lambda ()
+		       (funcall emit)
+		       (funcall step nil)
+		       (funcall index)))
 
-    (:get         . ,#'(lambda ()
-			 (event-data (second (funcall element)))))
+    (:get         . ,(lambda ()
+		       (event-data (second (funcall element)))))
 
     ;; Session
-    (:quit        . ,#'(lambda ()
-			 (funcall terminate)
-			 (values)))))
+    (:quit        . ,(lambda ()
+		       (funcall terminate)
+		       (values)))))
 
 (defmethod execute-command ((strategy external-driver-mixin)
 			    (command  function))
@@ -144,24 +144,26 @@ and executes them until termination is requested."))
 	 (sequence        (make-view connection strategy))
 	 (update-progress (%make-progress-reporter sequence progress))
 	 terminate?
-	 ;; Iteration state
+	 ;; Iteration state.
 	 ((&values current limit from-end?)
 	  (sequence:make-simple-sequence-iterator
 	   sequence :start start-index :end end-index))
 	 (previous-timestamp)
-	 ;; Primitive state manipulation functions
+	 ;; Primitive state query and manipulation functions.
 	 ((&flet end? (back?)
-	   (sequence:iterator-endp sequence current limit (xor back? from-end?))))
+	   (sequence:iterator-endp
+            sequence current
+	    (if back? (1- start-index) limit) (xor back? from-end?))))
 	 ((&flet step* (back?)
 	    (setf current (sequence:iterator-step
 			   sequence current (xor back? from-end?)))
-	    (when (end? current)
+	    (when (end? back?)
 	      (setf current (sequence:iterator-step
 			     sequence current (xor (not back?) from-end?)))
-	      (error "~@<Attempt to step beyond end of ~
+	      (error "~@<Attempt to step beyond ~:[end~;beginning~] of ~
 sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
-		     (sequence:iterator-index sequence current)
-		     0 (length sequence)))))
+		     back? (sequence:iterator-index sequence current)
+		     start-index end-index))))
 	 ((&flet index ()
 	    (sequence:iterator-index sequence current)))
 	 ((&flet element ()
