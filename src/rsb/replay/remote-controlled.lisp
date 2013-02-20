@@ -61,23 +61,48 @@ methods to clients.")
 server. Clients invoke the methods to control the replay. At least the
 following commands are available:
 
-+ length      : void   -> uint64
-  Return the length of the replayed sequence.
-+ index       : void   -> uint64
+length(): uint64
+
+  Return the length of the sequence of all events.
+
+relativelength(): uint64
+
+  Return the length of the replayed (sub-)sequence of all events.
+
+index(): uint64
+
   Return the current position in the replayed sequence.
-+ next        : void   -> uint64
+
+relativeindex(): uint64
+
+  Return the current position relative to the start of the replayed (sub-)sequence.
+
+next(): uint64
+
   Move the replay cursor to the next entry, return new index.
-+ previous    : void   -> uint64
+
+previous(): uint64
+
   Move the replay cursor to the previous entry, return new index.
-+ seek        : uint64 -> void
+
+seek(new-position: uint64): void
+
   Position the replay cursor at the supplied entry index.
-+ emit        : void   -> void
+
+emit(): void
+
   Publish the entry at which the replay cursor is currently positioned.
-+ emitandnext : void   -> uint64
+
+emitandnext(): uint64
+
   Publish the entry at which the replay cursor is currently positioned, advance to the next entry, return new index.
-+ get         : void   -> bytes
+
+get(): bytes
+
   Return the entry at which the replay cursor is currently positioned. Do not emit or change anything.
-+ quit        : void   -> void
+
+quit(): void
+
   Terminate the replay."))
 
 (defmethod (setf %strategy-commands) :after ((new-value list)
