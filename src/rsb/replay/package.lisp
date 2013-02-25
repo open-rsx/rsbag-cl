@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the rsb.replay module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -79,8 +79,6 @@
 
   ;; sequential processing protocol and mixin class
   (:export
-   :process-event
-
    :sequential-mixin)
 
   ;; speed adjustment protocol and mixin class

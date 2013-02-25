@@ -59,22 +59,6 @@ and processes all elements of the sequence by sequential calls to
 	  (do-it end-index)
 	  (do-it)))))
 
-(defmethod process-event :around ((connection         replay-bag-connection)
-				  (strategy           sequential-mixin)
-				  (timestamp          t)
-				  (previous-timestamp t)
-				  (event              t)
-				  (informer           t))
-  "Install a continue restart around processing."
-  (restart-case
-      (call-next-method)
-    (continue ()
-      :report (lambda (stream)
-		(format stream "~@<Ignore the failed event and ~
-continue with the next event.~@:>")
-		nil)
-      (values))))
-
 (defmethod process-event ((connection         replay-bag-connection)
 			  (strategy           sequential-mixin)
 			  (timestamp          t)

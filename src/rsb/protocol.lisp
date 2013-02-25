@@ -199,6 +199,22 @@ CONNECTION for replay according to STRATEGY."))
    "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT SINK),
 originating from CONNECTION, according to STRATEGY."))
 
+(defmethod process-event :around ((connection         t)
+				  (strategy           t)
+				  (timestamp          t)
+				  (previous-timestamp t)
+				  (event              t)
+				  (sink               t))
+  "Install a continue restart around processing."
+  (restart-case
+      (call-next-method)
+    (continue ()
+      :report (lambda (stream)
+		(format stream "~@<Ignore the failed event and ~
+continue with the next event.~@:>")
+		nil)
+      (values))))
+
 
 ;;; Timed replay protocol
 ;;
