@@ -1,6 +1,6 @@
 ;;; protocol.lisp --- Protocol functions used in the rsb module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -194,9 +194,9 @@ CONNECTION for replay according to STRATEGY."))
 
 (defgeneric process-event (connection strategy
 			   timestamp previous-timestamp
-			   event informer)
+			   event sink)
   (:documentation
-   "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT INFORMER),
+   "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT SINK),
 originating from CONNECTION, according to STRATEGY."))
 
 

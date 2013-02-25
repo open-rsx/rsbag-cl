@@ -1,6 +1,6 @@
 ;;; sequential-mixin.lisp ---
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -45,14 +45,14 @@ and processes all elements of the sequence by sequential calls to
 	 (update-progress (%make-progress-reporter sequence progress)))
     (macrolet
 	((do-it (&optional end-index)
-	   `(iter (for (timestamp event informer) each     sequence
+	   `(iter (for (timestamp event sink) each sequence
 		       :from start-index
 		       ,@(when end-index '(:to end-index)))
-		  (for previous-timestamp         previous timestamp)
+		  (for previous-timestamp previous timestamp)
 		  (for i :from start-index)
 		  (process-event connection strategy
 				 timestamp previous-timestamp
-				 event informer)
+				 event sink)
 		  (when update-progress
 		    (funcall update-progress i timestamp)))))
       (if end-index
@@ -80,7 +80,7 @@ continue with the next event.~@:>")
 			  (timestamp          t)
 			  (previous-timestamp t)
 			  (event              (eql :skip))
-			  (informer           t))
+			  (sink               t))
   "Error recovery behaviors may inject the value :skip for EVENT. The
 default behavior is just ignoring the failed event. "
   (values))
@@ -90,9 +90,10 @@ default behavior is just ignoring the failed event. "
 			  (timestamp          t)
 			  (previous-timestamp t)
 			  (event              t)
-			  (informer           t))
-  "The default behavior consists in sending EVENT via INFORMER."
-  (send informer event :unchecked? t))
+			  (sink               t))
+  "The default behavior consists in sending EVENT via SINK which is
+assumed to be an `rsb:informer'."
+  (send sink event :unchecked? t))
 
 (defmethod process-event ((connection         replay-bag-connection)
 			  (strategy           sequential-mixin)

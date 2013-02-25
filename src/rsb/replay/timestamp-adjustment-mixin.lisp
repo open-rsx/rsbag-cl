@@ -1,6 +1,6 @@
 ;;; timestamp-adjustment-mixin.lisp --- Adjust event timestamp during replay.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -58,7 +58,7 @@ during replay."))
 				  (timestamp          t)
 				  (previous-timestamp t)
 				  (event              event)
-				  (informer           t))
+				  (sink               t))
   "The default behavior consists in sending EVENT via INFORMER."
   (iter (for (key value) in (strategy-adjustments strategy))
 	(setf (timestamp event key)

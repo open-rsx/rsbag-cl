@@ -185,10 +185,10 @@ sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
 	 ((&flet element ()
 	    (sequence:iterator-element sequence current)))
 	 ((&flet emit ()
-	    (let+ (((timestamp event informer) (element)))
+	    (let+ (((timestamp event sink) (element)))
 	      (process-event connection strategy
 			     timestamp previous-timestamp
-			     event informer)
+			     event sink)
 	      (setf previous-timestamp timestamp))))
 	 ((&flet terminate ()
 	    (setf terminate? t))))

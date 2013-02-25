@@ -1,6 +1,6 @@
 ;;; timed-replay-mixin.lisp ---
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -35,7 +35,7 @@ classes perform time-based scheduling of replayed events."))
 				  (timestamp          local-time:timestamp)
 				  (previous-timestamp local-time:timestamp)
 				  (event              t)
-				  (informer           t))
+				  (sink               t))
   "Delay the publishing of EVENT for the amount of time computed by
 `schedule-event'."
   (let ((amount (schedule-event strategy event previous-timestamp timestamp)))
