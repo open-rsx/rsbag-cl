@@ -84,7 +84,7 @@
                   specs))))
 
 (defun spec->size (spec class-name object)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
          (accessor-name (symbolicate class-name "-" name)))
     (type-spec->size type `(,accessor-name ,object))))
 
@@ -168,7 +168,7 @@
 
        ;; Process data block.
        ,@(when-let ((data (find '&data specs :key #'first)))
-           (let+ (((nil type &key &allow-other-keys) data)
+           (let+ (((&ign type &key &allow-other-keys) data)
                   (accessor-name (symbolicate class-name '#:-data)))
              `((let+ ((data-length
                       ,(type-spec->deserializer '(unsigned-byte 32) 'source 'offset))
@@ -279,7 +279,7 @@
        (- offset start))))
 
 (defun spec->serializer (spec class-name source object offset)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
          (accessor-name (symbolicate class-name "-" name)))
         `(let ((value (,accessor-name ,object)))
            (declare (type ,(type-spec->lisp-type type) value))
