@@ -1,6 +1,6 @@
 ;;; fixed-rate.lisp --- Unit tests for the fixed-rate class.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -42,3 +42,7 @@
 
     (ensure-condition 'error
       (apply #'make-instance 'fixed-rate args))))
+
+(define-replay-strategy-smoke-test (fixed-rate)
+  '(:rate  1000)
+  '(:delay 1/1000))

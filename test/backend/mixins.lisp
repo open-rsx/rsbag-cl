@@ -25,23 +25,23 @@
 (cl:in-package :rsbag.backend.test)
 
 
-;;; `mock-backend' class
+;;; `mock-buffering-backend' class
 ;;
 
 (define-condition mock-write-back-error (error)
   ())
 
-(defclass mock-backend ()
+(defclass mock-buffering-backend ()
   ((written :initarg  :written
 	    :type     list
 	    :accessor backend-written
 	    :initform nil)))
 
-(defmethod make-buffer ((backend mock-backend)
+(defmethod make-buffer ((backend mock-buffering-backend)
 			(buffer  t))
   (list (if buffer (first buffer) (gensym)) nil))
 
-(defmethod write-buffer ((backend mock-backend)
+(defmethod write-buffer ((backend mock-buffering-backend)
 			 (buffer  t))
   ;; Sleep a little while to simulate slow write-back. This is helpful
   ;; for tests which try to detect failure to write-back data.
@@ -51,7 +51,7 @@
     (t     (appendf (backend-written backend) (list buffer))))
   (values))
 
-(defmethod close ((backend mock-backend)
+(defmethod close ((backend mock-buffering-backend)
 		  &key abort)
   (declare (ignore abort)))
 
@@ -59,7 +59,7 @@
 ;;;
 ;;
 
-(defclass async-double-buffered-writer-mock-backend (mock-backend
+(defclass async-double-buffered-writer-mock-backend (mock-buffering-backend
 						     async-double-buffered-writer-mixin)
   ())
 

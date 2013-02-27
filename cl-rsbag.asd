@@ -315,6 +315,8 @@ See `version/list' for details on keyword parameters."
 			      (:file       "protocol"
 			       :depends-on ("package"))
 			      (:file       "bag"
+			       :depends-on ("package"))
+			      (:file       "mock-backend"
 			       :depends-on ("package"))))
 
 		(:module     "backend"
@@ -339,6 +341,8 @@ See `version/list' for details on keyword parameters."
 		 :pathname   "test/rsb"
 		 :depends-on ("test")
 		 :components ((:file       "package")
+			      (:file       "protocol"
+			       :depends-on ("package"))
 			      (:file       "fixed-rate"
 			       :depends-on ("package"))
 			      (:file       "timestamp-adjustment-mixin"

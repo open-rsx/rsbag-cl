@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for unit tests of the cl-rsbag system.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -33,6 +33,15 @@
 
   (:export
    :root)
+
+  ;; Test utilities
+  (:export
+   :mock-backend
+
+   :with-mock-backend
+   :with-mock-bag
+
+   :simple-bag)
 
   (:documentation
    "This package contains unit tests for the cl-rsbag system"))
