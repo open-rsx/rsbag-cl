@@ -128,20 +128,20 @@
     (values value (- length 4))))
 
 (define-record (connection :opcode #x07)
-  (connection (unsigned-byte 32)
-              :id "conn"
-              :documentation
-              "Unique connection ID.")
-  (topic      string
-              :documentation
-              "Topic on which the messages are stored.")
-  (&data      connection-header
-              :documentation
-              "The data consists of a string containing the connection
-               header in the same format as a bag record header. The
-               following fields must appear in the connection header:
-               topic, type, md5sum, message_definition. Optional
-               fields include: callerid, latching.")
+  (id    (unsigned-byte 32)
+         :id "conn"
+         :documentation
+         "Unique connection ID.")
+  (topic string
+         :documentation
+         "Topic on which the messages are stored.")
+  (&data connection-header
+         :documentation
+         "The data consists of a string containing the connection
+          header in the same format as a bag record header. The
+          following fields must appear in the connection header:
+          topic, type, md5sum, message_definition. Optional fields
+          include: callerid, latching.")
   (:documentation
    "Stores the header of a ROS connection, including topic name and
     full text of the message definition.
@@ -161,10 +161,10 @@
   (&data       :blob
                :documentation
                "The data in these records is the serialized message
-data in the ROS serialization format.")
+                data in the ROS serialization format.")
   (:documentation
    "Stores the serialized message data (which can be zero-length) with
-the ID of the connection."))
+    the ID of the connection."))
 
 (define-record (index-data :opcode #x04)
   (version    (unsigned-byte 32)
@@ -201,10 +201,10 @@ the ID of the connection."))
                 :documentation
                 "Offset of message data record in uncompressed chunk
                  data.")
-    (:documentation
-     "The current version is version 1, which consists of count
-      repeating occurrences of timestamps, chunk record offsets and
-      message offsets:"))
+  (:documentation
+   "The current version is version 1, which consists of count
+    repeating occurrences of timestamps, chunk record offsets and
+    message offsets:"))
 
 (define-record (chunk-info :opcode #x06)
   (version      (unsigned-byte 32)

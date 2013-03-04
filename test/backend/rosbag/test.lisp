@@ -44,7 +44,7 @@
 
 (defun make-file ()
  (with-input-from-file (stream (asdf:system-relative-pathname
-                                :cl-rsbag "material/bags/BagFiles_ist_TuGraz/DeviceShutDownExperiment_IstTuGraz.bag")
+                                :cl-rsbag "material/bags/BagFiles_ist_TuGraz/DeviceShutDownExperiment_IstTuGraz.rosbag")
                                :element-type '(unsigned-byte 8))
    (let ((*standard-output* (make-broadcast-stream)))
      (make-instance 'rsbag.backend.rosbag::file

@@ -20,7 +20,9 @@
                     "Stores information of the channels present in the
                      file. Entries are of the form
 
-                       (ID NAME META-DATA).")
+                       (ID NAME META-DATA ENTRIES CONNECTION-IDS)
+
+                     .")
    (indices         :type     hash-table
                     :reader   %file-indices
                     :initform (make-hash-table :test #'eq)
@@ -59,16 +61,37 @@
 
   (scan (backend-stream instance) :rosbag)
   (let+ ((records (loop while (listen (backend-stream instance)) collect (unpack (backend-stream instance) :record)))
+         (connections  (remove-if-not (of-type 'connection) records))
          (chunks  (remove-if-not (of-type 'chunk) records))
-         ((&flet ensure-channel (id)
-            (or (find id (%file-channels instance) :key #'first)
-                (let ((c (list id (princ-to-string id) nil nil)))
+         ((&flet ensure-channel (topic)
+            (or (find topic (%file-channels instance) :key #'second :test #'string=)
+                (let* ((id (length (%file-channels instance)))
+                       (c  (list id topic '() '() '())))
                   (push c (%file-channels instance))
-                  c)))))
+                  c))))
+
+         ((&flet channel-for (id)
+            (or (find id (%file-channels instance) :test (rcurry #'member :test #'=) :key #'fifth)
+                (error "~@<No such channel ~:D.~@:>" id)))))
+
+    (iter (for connection each connections)
+          (let ((header  (connection-data connection))
+                (channel (ensure-channel (connection-topic connection))))
+            (push (connection-id connection) (fifth channel))
+            (setf #+later (getf (third channel) :source-name) #+later (connection-header-caller-id header)
+                  (getf (third channel) :type)        (list :ros-msg (make-keyword (connection-header-type header)))
+                  (getf (third channel) :format)      (unless (emptyp (connection-header-message-definition header))
+                                                        (connection-header-message-definition header)))))
+
     (iter (for chunk each chunks)
           (iter (for message-data each (remove-if-not (of-type 'message-data) (chunk-data chunk)))
-                (push (cons (message-data-time message-data) (message-data-data message-data))
-                      (fourth (ensure-channel (message-data-connection message-data)))))))
+                (push (cons (let ((l (message-data-time message-data)))
+                              (logior (ldb (byte 32 32) l) (ash (ldb (byte 32 0) l) 32)))
+                            (message-data-data message-data))
+                      (fourth (channel-for (message-data-connection message-data))))))
+
+    (iter (for channel in (%file-channels instance))
+          (setf (fourth channel) (nreverse (fourth channel)))))
 
   ;; TODO Scan through the Rosbag file collecting records?
   #+no (let+ (((&accessors (stream backend-stream)) instance)
@@ -131,11 +154,15 @@
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))
-  #+todo
+  #+later
   (make-instance 'timestamps
                  :entries (index-entries
                            (gethash channel (%file-indices file))))
-  (error "Not implemented."))
+  (mapcar (compose (lambda (l)
+                     (local-time:unix-to-timestamp
+                      (ldb (byte 32 32) l) :nsec (ldb (byte 32 0) l)))
+                   #'car)
+          (fourth (find channel (%file-channels file) :key #'first))))
 
 (defmethod put-entry ((file      file)
                       (channel   integer)
@@ -166,7 +193,7 @@
 (defmethod get-entry ((file    file)
                       (channel integer)
                       (index   integer))
-  (nth index (fourth (find channel (%file-channels file) :key #'first)))
+  (cdr (nth index (fourth (find channel (%file-channels file) :key #'first))))
   #+later (let+ (((&accessors (stream backend-stream)) file)
          (index1 (gethash channel (%file-indices file))) ; TODO(jmoringe): make a method?
          (offset (index-offset index1 index))

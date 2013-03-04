@@ -16,7 +16,7 @@
   (check-type args (cons keyword list)
               "a wire-schema keyword, optionally followed by keyword arguments")
 
-  (let+ (((wire-schema &rest rest &key converter) args))
+  (let+ (((wire-schema &rest rest &key converter &allow-other-keys) args))
     (apply #'make-instance
            (if converter 'rsb-event/payload-conversion 'rsb-event)
            :wire-schema wire-schema

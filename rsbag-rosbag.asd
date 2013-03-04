@@ -21,8 +21,16 @@
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Rosbag file format backend for cl-rsbag."
-  :depends-on  ((:version :cl-rsbag #.(cl-rsbag-system:version/string)))
-  :components  ((:module     "rosbag"
+  :depends-on  ((:version :cl-rsbag    #.(cl-rsbag-system:version/string))
+
+                (:version :rosetta-ros "0.2.0"))
+  :components  ((:module     "transform-ros-msg"
+                 :pathname   "src/transform"
+                 :depends-on ("backend-rosbag") ; TODO temp
+                 :serial     t
+                 :components ((:file       "ros-msg")))
+
+                (:module     "backend-rosbag"
                  :pathname   "src/backend/rosbag"
                  :serial     t
                  :components ((:file       "package")

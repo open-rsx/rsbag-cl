@@ -206,7 +206,7 @@ SPEC can be of the following types:
         :bag     bag
         :channel name))
     (restart-case
-        (let+ (((&plist-r/o (type :type)) meta-data)
+        (let+ (((&plist-r/o (type :type) (format :format)) meta-data)
                ((&flet parse-type ()
                   (typecase type
                     (null (list nil))
@@ -216,12 +216,15 @@ SPEC can be of the following types:
                 (etypecase spec
                   ;; No spec - derive everything from TYPE.
                   (transform-spec/default
-                   (parse-type))
+                   (append (parse-type)
+                           (when format (list :format format))))
 
                   ;; Spec with &FROM-SOURCE - append rest of SPEC to
                   ;; information derived from TYPE.
                   (transform-spec/augment
-                   (append (parse-type) (rest spec)))
+                   (append (parse-type)
+                           (when format (list :format format))
+                           (rest spec)))
 
                   ;; Spec without &FROM-SOURCE - ignore TYPE and use
                   ;; supplied SPEC unmodified.
