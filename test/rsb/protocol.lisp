@@ -97,3 +97,24 @@
 	 (ensure-same
 	  (length (do-it))
 	  (reduce #'+ (bag-channels (simple-bag)) :key #'length)))))))
+
+(addtest (bag->events-root
+          :documentation
+	  "Ensure that events replayed via RSB by `bag->events' get
+the configured prefix scope.")
+  prefix-scope
+
+  (ensure-cases (prefix)
+      '("/" "/prefix")
+
+    (rsb:with-reader (reader "inprocess:")
+      ;; Send the events stored in the mock bag.
+      (with-open-connection
+	  (connection (bag->events
+                       (simple-bag) (format nil "inprocess:~A" prefix)
+                       :replay-strategy :as-fast-as-possible))
+	(replay connection (connection-strategy connection)))
+      ;; Receive the events.
+      (iter (repeat (reduce #'+ (bag-channels (simple-bag)) :key #'length))
+	    (let ((scope (rsb:event-scope (rsb:receive reader))))
+	      (ensure (rsb:sub-scope? scope prefix)))))))

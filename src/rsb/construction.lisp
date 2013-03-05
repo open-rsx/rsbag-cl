@@ -164,15 +164,19 @@
 		(if (starts-with #\/ (channel-name source))
 		    (subseq (channel-name source) 1)
 		    (channel-name source))))
-	 (uri  (%make-playback-uri name dest))
+	 ((&values uri prefix-scope) (%make-playback-uri name dest))
 	 ((&plist-r/o (type :type)) (channel-meta-data source))
-	 (converter   (make-instance
-		       'rsb.converter:force-wire-schema
-		       :wire-schema (if (consp type)
-					(second type)
-					:bytes)))
-	 (participant (make-informer
-		       uri t :converters `((t . ,converter)))))
+	 (converter
+	  (make-instance 'rsb.converter:force-wire-schema
+			 :wire-schema (if (consp type)
+					  (second type)
+					  :bytes)))
+	 (participant
+	  (apply #'make-informer
+		 uri t :converters `((t . ,converter))
+		 (when-let ((transform
+			     (%make-scope-transform prefix-scope type)))
+		   (list :transform (list transform))))))
     (make-instance 'participant-channel-connection
 		   :bag      (channel-bag source)
 		   :channels (list source)
@@ -199,9 +203,15 @@
 	       name)))
 
 (defun %make-playback-uri (channel-name base-uri)
-  "Return a URI that is the result of merging CHANNEL-NAME and
-BASE-URI. Normalize the path component of BASE-URI and preserve query
-component of BASE-URI, if present."
+  "Return two values:
+
+1. An URI that is the result of merging CHANNEL-NAME and BASE-URI. In
+   the returned URI, normalize the path component of BASE-URI and
+   preserve query component of BASE-URI, if present.
+
+2. A `scope' or `nil' that is the prefix-`scope' implied by
+   BASE-URI. `nil' is returned when BASE-URI does not imply prefix
+   scope."
   (let ((base-uri (puri:copy-uri base-uri)))
     ;; If BASE-URI has a path, ensure it ends with "/" to prevent
     ;; `puri:merge-uri' from acting differently depending on whether
@@ -209,9 +219,26 @@ component of BASE-URI, if present."
     (unless (ends-with #\/ (puri:uri-path base-uri))
       (setf (puri:uri-path base-uri)
 	    (concatenate 'string (puri:uri-path base-uri) "/")))
-    (let ((result (puri:merge-uris channel-name base-uri)))
+    (let ((result (puri:merge-uris channel-name base-uri))
+	  (prefix (unless (string= (puri:uri-path base-uri) "/")
+		    (rsb:make-scope (puri:uri-path base-uri) :intern? t))))
       ;; Merging stomps on the query part, if any, of
       ;; BASE-URI. Restore it afterward.
       (when (puri:uri-query base-uri)
 	(setf (puri:uri-query result) (puri:uri-query base-uri)))
-      result)))
+      (values result prefix))))
+
+(defun %make-scope-transform (scope type)
+  "Return a transform object which adds SCOPE as a prefix scope to the
+scopes of transformed events if TYPE is of the form
+
+  (RSB-EVENT* WIRE-SCHEMA)
+
+."
+  (when (and scope
+	     (typep type '(cons (eql keyword)))
+	     (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))
+    (lambda (event)
+      (setf (event-scope event)
+	    (rsb:merge-scopes (event-scope event) scope))
+      event)))
