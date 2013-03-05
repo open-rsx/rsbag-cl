@@ -1,6 +1,6 @@
 ;;; bag.lisp --- Unit tests for the bag class.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -35,8 +35,7 @@
   smoke
 
   (let* ((pathname (asdf:system-relative-pathname
-		    (asdf:find-system :cl-rsbag-test)
-		    "test/data/minimal.tide"))
+		    :cl-rsbag-test "test/data/minimal.tide"))
 	 (bag      (handler-bind
 		       ((open-error #'continue))
 		     (open-bag pathname :direction :input))))

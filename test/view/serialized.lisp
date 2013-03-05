@@ -1,6 +1,6 @@
 ;;; serialized.lisp --- Unit tests for the serialized view class.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -26,7 +26,7 @@
 
 (deftestsuite serialized-root (view-root)
   ((one-sequence  '(((0 :a) (1 :b) (2 :c))))
-   (two-sequences `(((0 :a)        (2 :c))
+   (two-sequences '(((0 :a)        (2 :c))
 		    (       (1 :b)        (3 :d)))))
   (:documentation
    "Test suite for the `serialized' view class."))
@@ -41,6 +41,7 @@
 	(,one-sequence  0 0 3 ((0 :a) (1 :b) (2 :c)))
 	(,one-sequence  1 0 3 (       (1 :b) (2 :c)))
 	(,two-sequences 0 0 4 ((0 :a) (1 :b) (2 :c) (3 :d))))
+
     (let ((sequence (make-instance
 		     'serialized
 		     :sequences sequences
@@ -52,14 +53,10 @@
 	    (for (e-timestamp e-value) each  expected-items)
 	    (for i                     :from start)
 	    (for (timestamp*  value*)  next  (elt sequence i))
-	    (ensure-same timestamp e-timestamp
-			 :test #'=)
-	    (ensure-same timestamp* e-timestamp
-			 :test #'=)
-	    (ensure-same value e-value
-			 :test #'eq)
-	    (ensure-same value* e-value
-			 :test #'eq)))))
+	    (ensure-same timestamp  e-timestamp :test #'=)
+	    (ensure-same timestamp* e-timestamp :test #'=)
+	    (ensure-same value      e-value     :test #'eq)
+	    (ensure-same value*     e-value     :test #'eq)))))
 
 (addtest (serialized-root
           :documentation
@@ -82,12 +79,12 @@
 multiple random sequences.")
   iterator
 
-  (let+ (((&labels make-random-sequence ()
+  (let+ (((&flet make-random-sequence ()
 	    (let ((raw (map-into (make-list (random 100)) (curry #'random 100))))
 	     (sort (remove-duplicates raw) #'<))))
-	 ((&labels make-random-sequences ()
+	 ((&flet make-random-sequences ()
 	    (let ((count (random 10)))
-	      (map-into (make-list count) #'make-random-sequence )))))
+	      (map-into (make-list count) #'make-random-sequence)))))
     (ensure-cases (sequences)
 	(map-into (make-list 100) #'make-random-sequences)
 
