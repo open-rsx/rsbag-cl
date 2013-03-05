@@ -47,7 +47,7 @@ and processes all elements of the sequence by sequential calls to
 	((do-it (&optional end-index)
 	   `(iter (for (timestamp event sink) each sequence
 		       :from start-index
-		       ,@(when end-index '(:to end-index)))
+		       ,@(when end-index '(:below end-index)))
 		  (for previous-timestamp previous timestamp)
 		  (for i :from start-index)
 		  (process-event connection strategy
