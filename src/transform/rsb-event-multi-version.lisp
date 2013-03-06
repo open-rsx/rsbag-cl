@@ -1,6 +1,6 @@
 ;;; multi-version.lisp --- Load multiple versions of packages.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -67,6 +67,39 @@
 			 (domain-object t))
 	(,(versioned-symbol "ENCODE" :rsbag.transform)
 	  transform domain-object)))))
+
+
+;;; 0.8 Version
+;;
+
+(eval-when (:compile-toplevel :load-toplevel)
+  (with-versioned-packages ("0.8"
+			    :rsb.protocol
+			    :rsbag.transform)
+    (with-compilation-unit ()
+      (let* ((path                  (asdf:system-relative-pathname
+				     :cl-rsbag "compat/0.8/"))
+	     (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
+					  pbf:*proto-load-path*)))
+	;; Load relevant protocol buffer types.
+	(iter (for file in '("data/rsb/protocol/EventId.proto"
+			     "data/rsb/protocol/EventMetaData.proto"
+			     "data/rsb/protocol/Notification.proto"))
+	      (map nil (curry #'pbb:emit (pbf:load/text (merge-pathnames file path)))
+		   '(:class :packed-size :serializer :deserializer)))
+	;; Load implementation.
+	(map nil (compose #'load (rcurry #'merge-pathnames path))
+	     '("src/transform/package.lisp"
+	       "src/transform/protocol.lisp"
+	       "src/transform/conditions.lisp"
+	       "src/transform/rsb-event.lisp"))
+	;; Inject the version of rsb-event that supports payload
+	;; conversion.
+	(load (asdf:component-pathname
+	       (asdf:find-component
+		:cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+
+(define-serialization-version "0.8" :versioned? t)
 
 
 ;;; 0.7 Version
