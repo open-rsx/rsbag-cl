@@ -1,6 +1,6 @@
 ;;; generator.lisp --- Generate data-holders and (de)serializers for TIDE log.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -60,7 +60,7 @@
 	       specs))))
 
 (defun spec->size (spec class-name object)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     (type-spec->size type `(,accessor-name ,object))))
 
@@ -103,7 +103,7 @@
        (values object (- offset start)))))
 
 (defun spec->deserializer (spec class-name source object offset)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     `(let+ (((&values value length)
 	     ,(type-spec->deserializer type source offset)))
@@ -164,7 +164,7 @@
        (- offset start))))
 
 (defun spec->serializer (spec class-name source object offset)
-  (let+ (((name type &rest nil) spec)
+  (let+ (((name type &rest &ign) spec)
 	 (accessor-name (symbolicate class-name "-" name)))
     `(let ((value (,accessor-name ,object)))
        (declare (type ,(type-spec->lisp-type type) value))
