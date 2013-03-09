@@ -131,7 +131,7 @@ quit(): void
 	  ;; over variables NAME and LAMBDA would change due during
 	  ;; iteration.
 	  (let+ (((name . lambda) name-and-lambda)
-		 (name (format nil "~(~A~)" name)))
+		 (name (string-downcase name)))
 	    (setf (server-method server name)
 		  #'(lambda (&rest request)
 		      (let ((future (make-instance 'rsb.patterns:future)))

@@ -58,7 +58,7 @@ events.")
 		"Stores a data-holder instance that is reused
 during (de)serialization for efficiency reasons."))
   (:default-initargs
-   :wire-schema (required-argument :wire-schema))
+   :wire-schema (missing-required-initarg 'rsb-event :wire-schema))
   (:documentation
    "Instances of this transform class (de)serialize RSB events from/to
 octet vectors without (de)serializing payloads."))

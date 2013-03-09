@@ -1,6 +1,6 @@
 ;;; bag-connection.lisp --- A class for bag <-> RSB connections.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -91,7 +91,7 @@ RSB participants. "))
 	     "Stores the strategy that is used for replaying events
 from the associated bag of the connection."))
   (:default-initargs
-   :strategy (required-argument :strategy))
+   :strategy (missing-required-initarg 'replay-bag-connection :strategy))
   (:documentation
    "Instances of this class associated an event replay strategy, a
 source bag and `rsb:informer' instances to collaboratively replay the

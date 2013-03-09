@@ -1,6 +1,6 @@
 ;;; rsb-event-version-detection.lisp --- Try multiple serialization versions.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -88,7 +88,8 @@ serialization versions. Elements are of the form
 
 where ACTION is one of the keywords :INSTANTIATE and :USE."))
   (:default-initargs
-   :candidates (required-argument :candidates))
+   :candidates (missing-required-initarg
+                'rsb-event/version-detection :candidates))
   (:documentation
    "Instances of this transform class try to encode and decode events
 by dispatching the encoding or decoding task to a sequence of

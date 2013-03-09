@@ -1,6 +1,6 @@
 ;;; channel-connection.lisp --- A class for bag channel <-> RSB connections.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -37,10 +37,10 @@ or sinks.")
    (channels :initarg  :channels
 	     :type     list
 	     :accessor connection-channels
-	     :initform nil
+	     :initform '()
 	     :documentation
 	     "Stores the bag channels that are connected to event
-sources or sinks.")
+sources or sinks by the connection.")
    (endpoint :initarg  :endpoint
 	     :reader   connection-endpoint
 	     :documentation

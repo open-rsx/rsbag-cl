@@ -1,6 +1,6 @@
 ;;; rsb-event-payload-conversion.lisp --- (De)serialization of RSB events.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -31,7 +31,8 @@
 	      "Stores the converter that should be used
 to (de)serialize payloads when (de)serializing events."))
   (:default-initargs
-   :converter (required-argument :converter))
+   :converter (missing-required-initarg
+               'rsb-event/payload-conversion :converter))
   (:documentation
    "Instances of this transform class (de)serialize RSB events from/to
 octet vectors like `rsb-event' but additionally (de)serialize

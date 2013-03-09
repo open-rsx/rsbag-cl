@@ -1,6 +1,6 @@
 ;;; construction.lisp --- Construction of channel <-> events connections.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -38,7 +38,6 @@
   (make-instance
    'recording-channel-connection
    :bag       dest
-   :channels  nil
    :endpoint  source
    :timestamp timestamp
    :strategy  (apply #'make-channel-strategy
@@ -169,7 +168,7 @@
 	 ((&plist-r/o (type :type)) (channel-meta-data source))
 	 (converter   (make-instance
 		       'rsb.converter:force-wire-schema
-		       :wire-schema (if (listp type)
+		       :wire-schema (if (consp type)
 					(second type)
 					:bytes)))
 	 (participant (make-informer

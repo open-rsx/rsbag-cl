@@ -49,8 +49,8 @@ be associated with channels of the bag. See type `transform-spec'.")
 	      "Stores a mapping of channel names to `channel'
 instances."))
   (:default-initargs
-   :direction (required-argument :direction)
-   :backend   (required-argument :backend))
+   :direction (missing-required-initarg 'bag :direction)
+   :backend   (missing-required-initarg 'bag :backend))
   (:documentation
    "Instances of this class represent a log file. A log file consists
 of named channels which can be retrieved using the `bag-channels' and
