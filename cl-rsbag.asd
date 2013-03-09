@@ -248,13 +248,16 @@ See `version/list' for details on keyword parameters."
 			       :depends-on ("package"))
 			      (:file       "util"
 			       :depends-on ("package"))
+			      (:file       "protocol"
+			       :depends-on ("package"))
 
 			      (:file       "replay-restart-mixin"
 			       :depends-on ("package"))
 			      (:file       "error-policy-mixin"
 			       :depends-on ("package"))
 			      (:file       "bounds-mixin"
-			       :depends-on ("package"))
+			       :depends-on ("package"
+					    "protocol"))
 			      (:file       "view-creation-mixin"
 			       :depends-on ("package" "util"))
 			      (:file       "sequential-mixin"
@@ -280,7 +283,8 @@ See `version/list' for details on keyword parameters."
 					    "delay-correcting-mixin"
 					    "timestamp-adjustment-mixin"))
 			      (:file       "fixed-rate"
-			       :depends-on ("package" "timed-replay-mixin"
+			       :depends-on ("package" "protocol"
+					    "timed-replay-mixin"
 					    "error-policy-mixin"
 					    "delay-correcting-mixin"
 					    "timestamp-adjustment-mixin"))

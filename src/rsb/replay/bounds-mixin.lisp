@@ -1,6 +1,6 @@
 ;;; bounds-mixin.lisp --- Add index/temporal bounds to a strategy class.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -32,7 +32,7 @@
   ((start-index :initarg  :start-index
 		:type     (or null non-negative-integer)
 		:accessor %strategy-start-index
-		:accessor strategy-start-index
+		:writer   (setf strategy-start-index) ; reader is defined below
 		:initform nil
 		:documentation
 		"Stores the index of the event at which the replay
