@@ -1,6 +1,6 @@
 ;;; channel-strategies.lisp --- Strategy classes for allocating channels.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2013 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -37,7 +37,10 @@
    "This strategy allocates a separate channel for each combination of
 RSB scope and wire-schema. The channel allocation for a given
 combination is performed when the first event exhibiting that
-combination is processed.
+combination is processed. Channel names are of the form SCOPE:TYPE
+where SCOPE is the scope string of the received event (including the
+final \"/\") and TYPE is the wire-schema string of the payload of the
+event.
 
 As an example, an event on scope /foo/bar/ with wire-schema
 \".rst.vision.Image\" would be stored in a channel called
