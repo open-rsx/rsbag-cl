@@ -48,10 +48,9 @@
 	     :documentation
 	     "Stores the server that exposes the replay control
 methods to clients.")
-   (queue    :type     sb-concurrency:mailbox
-	     :reader   %strategy-queue
-	     :initform (sb-concurrency:make-mailbox
-			:name "Commands")
+   (queue    :type     lparallel.queue:queue
+	     :reader   strategy-%queue
+	     :initform (lparallel.queue:make-queue)
 	     :documentation
 	     "Stores a queue of replay control commands."))
   (:default-initargs
@@ -143,10 +142,10 @@ quit(): void
 
 (defmethod enqueue ((strategy remote-controlled)
 		    (command  t))
-  (sb-concurrency:send-message (%strategy-queue strategy) command))
+  (lparallel.queue:push-queue command (strategy-%queue strategy)))
 
 (defmethod next-command ((strategy remote-controlled))
-  (sb-concurrency:receive-message (%strategy-queue strategy)))
+  (lparallel.queue:pop-queue (strategy-%queue strategy)))
 
 (defmethod replay ((connection replay-bag-connection)
 		   (strategy   remote-controlled)
