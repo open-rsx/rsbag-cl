@@ -117,4 +117,5 @@ the configured prefix scope.")
       ;; Receive the events.
       (iter (repeat (reduce #'+ (bag-channels (simple-bag)) :key #'length))
 	    (let ((scope (rsb:event-scope (rsb:receive reader))))
+	      (ensure (not (rsb:scope= scope prefix)))
 	      (ensure (rsb:sub-scope? scope prefix)))))))

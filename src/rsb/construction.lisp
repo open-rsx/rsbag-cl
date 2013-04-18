@@ -236,7 +236,7 @@ scopes of transformed events if TYPE is of the form
 
 ."
   (when (and scope
-	     (typep type '(cons (eql keyword)))
+	     (typep type '(cons keyword))
 	     (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))
     (lambda (event)
       (setf (event-scope event)
