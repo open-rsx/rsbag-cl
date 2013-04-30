@@ -137,7 +137,18 @@
 			&rest args
 			&key
 			(replay-strategy :recorded-timing)
-			(channels        t))
+			(channels        t)
+			(backend   nil backend-supplied?)
+			(transform nil transform-supplied?)
+			(bag-class nil bag-class-supplied?))
+  (let+ (((&flet check-arg (name value supplied?)
+	   (when supplied?
+	     (more-conditions:incompatible-arguments
+	      'source source name value)))))
+    (check-arg :backend   backend   backend-supplied?)
+    (check-arg :transform transform transform-supplied?)
+    (check-arg :bag-class bag-class bag-class-supplied?))
+
   (let+ ((predicate  (if (eq channels t) (constantly t) channels))
 	 (channels   (remove-if-not predicate (bag-channels source)))
 	 (other-args (remove-from-plist args :replay-strategy :channels))

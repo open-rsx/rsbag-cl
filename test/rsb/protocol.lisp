@@ -80,6 +80,12 @@
 	((:replay-strategy :no-such-strategy)
 	 no-such-replay-strategy-class)
 
+	;; Cannot supply and arguments which would have applied to
+	;; opening the bag => error
+	((:backend   :does-not-matter) incompatible-arguments)
+	((:transform :does-not-matter) incompatible-arguments)
+	((:bag-class :does-not-matter) incompatible-arguments)
+
 	;; These are valid.
 	((:replay-strategy :as-fast-as-possible)))
 
@@ -93,6 +99,8 @@
       (case expected
 	(no-such-replay-strategy-class
 	 (ensure-condition 'no-such-replay-strategy-class (do-it)))
+	(incompatible-arguments
+	 (ensure-condition 'incompatible-arguments (do-it)))
 	(t
 	 (ensure-same
 	  (length (do-it))
