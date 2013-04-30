@@ -31,7 +31,7 @@
 (defmethod events->bag ((source listener)
 			(dest   bag)
 			&key
-			(timestamp        :create)
+			(timestamp        :send)
 			(channel-strategy :scope-and-type)
 			(start?           t)
 			&allow-other-keys)
