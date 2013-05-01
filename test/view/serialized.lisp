@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.view.test)
+(cl:in-package #:rsbag.view.test)
 
 (deftestsuite serialized-root (view-root)
   ((one-sequence  '(((0 :a) (1 :b) (2 :c))))

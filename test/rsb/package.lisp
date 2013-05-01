@@ -4,27 +4,27 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.rsb.test
+(cl:defpackage #:rsbag.rsb.test
   (:use
-   :cl
-   :alexandria
-   :let-plus
-   :iterate
-   :more-conditions
-   :lift
+   #:cl
+   #:alexandria
+   #:let-plus
+   #:iterate
+   #:more-conditions
+   #:lift
 
-   :nibbles
+   #:nibbles
 
-   :rsbag
-   :rsbag.rsb
-   :rsbag.rsb.replay
+   #:rsbag
+   #:rsbag.rsb
+   #:rsbag.rsb.replay
 
-   :rsbag.test)
+   #:rsbag.test)
 
   (:documentation
    "This package contains unit tests for the rsb module."))
 
-(cl:in-package :rsbag.rsb.test)
+(cl:in-package #:rsbag.rsb.test)
 
 (deftestsuite rsb-root (root)
   ()

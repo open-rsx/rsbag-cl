@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.tidelog)
+(cl:in-package #:rsbag.backend.tidelog)
 
 (defconstant +format-version-major+ 0
   "Major version of the TIDE log file format supported by this

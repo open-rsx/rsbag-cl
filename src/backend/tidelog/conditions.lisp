@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.tidelog)
+(cl:in-package #:rsbag.backend.tidelog)
 
 (define-condition tidelog-condition (condition)
   ()

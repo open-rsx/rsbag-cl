@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.transform)
+(cl:in-package #:rsbag.transform)
 
 (defclass rsb-event/payload-conversion (rsb-event)
   ((converter :initarg  :converter

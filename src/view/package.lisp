@@ -4,27 +4,27 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.view
+(cl:defpackage #:rsbag.view
   (:use
-   :cl
-   :alexandria
-   :iterate
-   :let-plus
-   :more-conditions
+   #:cl
+   #:alexandria
+   #:iterate
+   #:let-plus
+   #:more-conditions
 
-   :rsbag)
+   #:rsbag)
 
   ;; `multi-sequence-view-mixin'
   (:export
-   :view-sequences)
+   #:view-sequences)
 
   ;; `serialized' view class and construction function
   (:export
-   :serialized
+   #:serialized
 
-   :make-serialized-view
+   #:make-serialized-view
 
-   :%make-key-function)
+   #:%make-key-function)
 
   (:documentation
    "This module contains functions and classes that implement

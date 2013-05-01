@@ -4,25 +4,25 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.backend.tidelog
+(cl:defpackage #:rsbag.backend.tidelog
   (:use
-   :cl
-   :alexandria
-   :split-sequence
-   :let-plus
-   :iterate
-   :more-conditions
+   #:cl
+   #:alexandria
+   #:split-sequence
+   #:let-plus
+   #:iterate
+   #:more-conditions
 
-   :rsbag
-   :rsbag.backend)
+   #:rsbag
+   #:rsbag.backend)
 
   ;; Conditions
   (:export
-   :tidelog-condition
+   #:tidelog-condition
 
-   :tidelog-file-error
+   #:tidelog-file-error
 
-   :invalid-tidelog-structure)
+   #:invalid-tidelog-structure)
 
   (:documentation
    "This package contains a backend for the TIDE log file format as

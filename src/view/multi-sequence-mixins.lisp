@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.view)
+(cl:in-package #:rsbag.view)
 
 ;;; `multi-sequence-view-mixin' class
 

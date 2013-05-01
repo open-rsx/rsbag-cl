@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.test)
+(cl:in-package #:rsbag.backend.test)
 
 (defclass mock-buffer ()
   ((length/entries :initarg  :length/entries

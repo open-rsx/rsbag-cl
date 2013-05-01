@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.transform)
+(cl:in-package #:rsbag.transform)
 
 (defconstant +rsb-schema-name+
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
@@ -245,7 +245,7 @@ integer which counts the number of microseconds since UNIX epoch."
 (defun bytes->keyword (bytes)
   "Converter BYTES into a keyword."
   (if (find (char-code #\:) bytes)
-      (intern (bytes->string bytes) #.(find-package :keyword))
-      (let ((*package*   #.(find-package :keyword))
+      (intern (bytes->string bytes) #.(find-package '#:keyword))
+      (let ((*package*   #.(find-package '#:keyword))
             (*readtable* *keyword-readtable*))
         (read-from-string (bytes->string bytes)))))

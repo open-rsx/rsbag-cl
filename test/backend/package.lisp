@@ -4,24 +4,24 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.backend.test
+(cl:defpackage #:rsbag.backend.test
   (:use
-   :cl
-   :alexandria
-   :let-plus
-   :lift
+   #:cl
+   #:alexandria
+   #:let-plus
+   #:lift
 
-   :rsbag.backend
+   #:rsbag.backend
 
-   :rsbag.test)
+   #:rsbag.test)
 
   (:export
-   :backend-root)
+   #:backend-root)
 
   (:documentation
    "This package contains unit tests for the backend module"))
 
-(cl:in-package :rsbag.backend.test)
+(cl:in-package #:rsbag.backend.test)
 
 (deftestsuite backend-root (root)
   ()

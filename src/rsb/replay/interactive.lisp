@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.rsb.replay)
+(cl:in-package #:rsbag.rsb.replay)
 
 (defmethod find-replay-strategy-class ((spec (eql :interactive)))
   (find-class 'interactive))

@@ -4,125 +4,125 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag
+(cl:defpackage #:rsbag
   (:use
-   :cl
-   :alexandria
-   :iterate
-   :let-plus
-   :more-conditions)
+   #:cl
+   #:alexandria
+   #:iterate
+   #:let-plus
+   #:more-conditions)
 
   ;; Symbols
   (:export
-   :&from-source)
+   #:&from-source)
 
   ;; Types
   (:export
-   :direction
+   #:direction
 
-   :if-does-not-exist-policy
-   :if-exists-policy
+   #:if-does-not-exist-policy
+   #:if-exists-policy
 
-   :transform-spec/default
-   :transform-spec/augment
-   :transform-spec/full
-   :transform-spec)
+   #:transform-spec/default
+   #:transform-spec/augment
+   #:transform-spec/full
+   #:transform-spec)
 
   ;; Conditions
   (:export
-   :rsbag-error
+   #:rsbag-error
 
-   :open-error
-   :open-error-source
+   #:open-error
+   #:open-error-source
 
-   :bag-error
-   :bag-error-bag
+   #:bag-error
+   #:bag-error-bag
 
-   :no-such-channel
-   :no-such-channel-name
+   #:no-such-channel
+   #:no-such-channel-name
 
-   :read-only-bag
+   #:read-only-bag
 
-   :channel-error
-   :channel-error-channel
+   #:channel-error
+   #:channel-error-channel
 
-   :channel-open-error
+   #:channel-open-error
 
-   :channel-exists
+   #:channel-exists
 
-   :no-such-entry
-   :no-such-entry-key)
+   #:no-such-entry
+   #:no-such-entry-key)
 
   ;; meta-data protocol
   (:export
-   :meta-data
-   :meta-data-count
-   :meta-data-keys
-   :meta-data-values
-   :meta-data-plist
-   :meta-data-alist)
+   #:meta-data
+   #:meta-data-count
+   #:meta-data-keys
+   #:meta-data-values
+   #:meta-data-plist
+   #:meta-data-alist)
 
   ;; `bag' class and file protocol
   (:export
-   :bag
+   #:bag
 
-   :bag-location
-   :bag-direction
-   :bag-transform
-   :bag-channels
-   :bag-channel
+   #:bag-location
+   #:bag-direction
+   #:bag-transform
+   #:bag-channels
+   #:bag-channel
 
-   :open-bag)
+   #:open-bag)
 
   ;; `synchronized-channel' class
   (:export
-   :synchronized-channel)
+   #:synchronized-channel)
 
   ;; `synchronized-bag' class
   (:export
-   :synchronized-bag)
+   #:synchronized-bag)
 
   ;; `channel' class and channel protocol
   (:export
-   :channel
+   #:channel
 
-   :channel-bag
-   :channel-name
-   :channel-meta-data
-   :channel-transform
+   #:channel-bag
+   #:channel-name
+   #:channel-meta-data
+   #:channel-transform
 
-   :%channel-id
-   :%channel-backend
+   #:%channel-id
+   #:%channel-backend
 
-   :channel-timestamps
-   :channel-entries
-   :channel-items
+   #:channel-timestamps
+   #:channel-entries
+   #:channel-items
 
-   :entry)
+   #:entry)
 
   ;; Time range protocol
   (:export
-   :start
-   :end)
+   #:start
+   #:end)
 
   ;; Convenience macros
   (:export
-   :with-bag)
+   #:with-bag)
 
   ;; Package management macros
   (:export
-   :make-versioned-name
-   :with-renamed-package
-   :with-renamed-packages
-   :with-versioned-packages)
+   #:make-versioned-name
+   #:with-renamed-package
+   #:with-renamed-packages
+   #:with-versioned-packages)
 
   ;; Threadpool
   (:export
-   :start-threadpool
-   :stop-threadpool
-   :enable-restart-threadpool
+   #:start-threadpool
+   #:stop-threadpool
+   #:enable-restart-threadpool
 
-   :with-threadpool)
+   #:with-threadpool)
 
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.

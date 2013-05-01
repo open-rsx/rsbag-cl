@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.tidelog)
+(cl:in-package #:rsbag.backend.tidelog)
 
 (defmethod find-backend-class ((spec (eql :tide)))
   (find-class 'file))
@@ -256,7 +256,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
   "Encode the keyword or list TYPE as a channel type string."
   (etypecase type
     (null    "")
-    (list    (let ((*package*   (find-package :keyword))
+    (list    (let ((*package*   (find-package '#:keyword))
                    (*readtable* (copy-readtable)))
                (setf (readtable-case *readtable*) :invert)
                (format nil "~{~A~^:~}" type)))
@@ -270,7 +270,7 @@ type information."
      nil)
     ((find #\: type)
      (let+ (((class-name &rest arg-strings) (split-sequence #\: type))
-            (*package*   (find-package :keyword))
+            (*package*   (find-package '#:keyword))
             (*readtable* (copy-readtable))
             (class       (progn
                            (setf (readtable-case *readtable*) :invert)

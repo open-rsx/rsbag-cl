@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.rsb)
+(cl:in-package #:rsbag.rsb)
 
 ;;; `scope-and-type' channel allocation strategy class
 

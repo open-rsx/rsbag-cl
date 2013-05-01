@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.elan)
+(cl:in-package #:rsbag.backend.elan)
 
 (deftype timestamp/milliseconds ()
   "Time since reference timestamp in milliseconds."

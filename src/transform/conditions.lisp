@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.transform)
+(cl:in-package #:rsbag.transform)
 
 (define-condition transform-error (error)
   ((transform :initarg  :transform

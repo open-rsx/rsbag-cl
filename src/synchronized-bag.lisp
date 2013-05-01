@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag)
+(cl:in-package #:rsbag)
 
 (defclass synchronized-bag (bag)
   ((lock :reader   %bag-lock

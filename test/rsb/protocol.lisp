@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.rsb.test)
+(cl:in-package #:rsbag.rsb.test)
 
 (deftestsuite events->bag-root (rsb-root)
   ()

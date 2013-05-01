@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.rsb.replay)
+(cl:in-package #:rsbag.rsb.replay)
 
 (defclass informer-injector (channel-items)
   ((informer :initarg  :informer

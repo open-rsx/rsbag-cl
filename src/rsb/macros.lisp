@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.rsb)
+(cl:in-package #:rsbag.rsb)
 
 (defmacro with-open-connection ((var connection-form) &body body)
   "Execute BODY with VAR bound to the connection object that is the

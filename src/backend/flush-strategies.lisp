@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend)
+(cl:in-package #:rsbag.backend)
 
 ;;; `property-limit' strategy class
 

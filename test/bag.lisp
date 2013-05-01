@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.test)
+(cl:in-package #:rsbag.test)
 
 (deftestsuite bag-root (root)
   ()

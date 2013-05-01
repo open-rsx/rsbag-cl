@@ -4,31 +4,31 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.test
+(cl:defpackage #:rsbag.test
   (:use
-   :cl
-   :alexandria
-   :iterate
-   :lift
+   #:cl
+   #:alexandria
+   #:iterate
+   #:lift
 
-   :rsbag)
+   #:rsbag)
 
   (:export
-   :root)
+   #:root)
 
   ;; Test utilities
   (:export
-   :mock-backend
+   #:mock-backend
 
-   :with-mock-backend
-   :with-mock-bag
+   #:with-mock-backend
+   #:with-mock-bag
 
-   :simple-bag)
+   #:simple-bag)
 
   (:documentation
    "This package contains unit tests for the cl-rsbag system"))
 
-(cl:in-package :rsbag.test)
+(cl:in-package #:rsbag.test)
 
 (deftestsuite root ()
   ()

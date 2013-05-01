@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag)
+(cl:in-package #:rsbag)
 
 (defun make-versioned-name (name version)
   "Return a keyword consisting of NAME and VERSION."

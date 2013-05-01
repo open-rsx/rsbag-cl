@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag)
+(cl:in-package #:rsbag)
 
 (defun enable-restart-threadpool ()
   "Make sure that the rsbag threadpool is shutdown when saving a core

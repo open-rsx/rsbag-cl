@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag)
+(cl:in-package #:rsbag)
 
 (defvar *threadpool* nil
   "When non-nil, holds the threadpool used by the rsbag system.")

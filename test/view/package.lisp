@@ -4,26 +4,26 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.view.test
+(cl:defpackage #:rsbag.view.test
   (:use
-   :cl
-   :alexandria
-   :iterate
-   :let-plus
-   :lift
+   #:cl
+   #:alexandria
+   #:iterate
+   #:let-plus
+   #:lift
 
-   :rsbag
-   :rsbag.view
+   #:rsbag
+   #:rsbag.view
 
-   :rsbag.test)
+   #:rsbag.test)
 
   (:export
-   :view-root)
+   #:view-root)
 
   (:documentation
    "This package contains unit tests for the view module."))
 
-(cl:in-package :rsbag.view.test)
+(cl:in-package #:rsbag.view.test)
 
 (deftestsuite view-root (root)
   ()

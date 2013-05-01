@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.elan)
+(cl:in-package #:rsbag.backend.elan)
 
 (defmethod find-backend-class ((spec (eql :eaf)))
   (find-class 'file))

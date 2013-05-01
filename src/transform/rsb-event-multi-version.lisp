@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.transform)
+(cl:in-package #:rsbag.transform)
 
 (defmacro define-serialization-version (version &key versioned?)
   "Define a serialization version VERSION."

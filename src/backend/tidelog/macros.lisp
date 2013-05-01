@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.tidelog)
+(cl:in-package #:rsbag.backend.tidelog)
 
 (defmacro define-element ((name) &body specs-and-options)
   (check-type name symbol "a symbol")

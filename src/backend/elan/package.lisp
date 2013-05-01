@@ -4,16 +4,16 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage :rsbag.backend.elan
+(cl:defpackage #:rsbag.backend.elan
   (:use
-   :cl
-   :alexandria
-   :split-sequence
-   :let-plus
-   :iterate
+   #:cl
+   #:alexandria
+   #:split-sequence
+   #:let-plus
+   #:iterate
 
-   :rsbag
-   :rsbag.backend)
+   #:rsbag
+   #:rsbag.backend)
 
   (:documentation
    "This package contains a reading and writing backend for the

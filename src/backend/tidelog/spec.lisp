@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package :rsbag.backend.tidelog)
+(cl:in-package #:rsbag.backend.tidelog)
 
 (define-element (tide)
   (version-major (unsigned-byte 8)
