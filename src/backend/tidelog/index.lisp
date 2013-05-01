@@ -144,7 +144,7 @@ of entries to corresponding file offsets for one channel."))
   ;; entire index block now.
   (unless (%index-sorted-to index)
     (warn "~@<Sorting index block due to out-of-order ~
-insertions.~@:>")
+           insertions.~@:>")
     (let ((entries (indx-entries buffer)))
       (sort entries #'< :key #'index-entry-timestamp)
       (setf (indx-entries buffer) entries)))

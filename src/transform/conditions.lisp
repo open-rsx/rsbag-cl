@@ -15,7 +15,7 @@ failed transform operation."))
   (:report
    (lambda (condition stream)
      (format stream "~@<A transformation involving the transform ~A ~
-failed.~@:>"
+                     failed.~@:>"
              (transform-error-transform condition))))
   (:documentation
    "Errors of this condition class and its subclasses are signaled
@@ -32,7 +32,8 @@ failed."))
    (lambda (condition stream)
      (let ((*print-length* (or *print-length* 16)))
        (format stream "~@<The domain object ~S could not be encoded by ~
-the transform ~A.~/more-conditions::maybe-print-cause/~@:>"
+                       the transform ~
+                       ~A.~/more-conditions::maybe-print-cause/~@:>"
                (transform-error-domain-object condition)
                (transform-error-transform     condition)
                condition))))
@@ -50,7 +51,8 @@ storage in bag fails."))
    (lambda (condition stream)
      (let ((*print-length* (or *print-length* 16)))
        (format stream "~@<The encoded value ~S could not be decoded by ~
-the transform ~A.~/more-conditions::maybe-print-cause/~@:>"
+                       the transform ~
+                       ~A.~/more-conditions::maybe-print-cause/~@:>"
                (transform-error-encoded   condition)
                (transform-error-transform condition)
                condition))))

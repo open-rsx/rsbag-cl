@@ -91,7 +91,8 @@ which produce their decisions by consulting subordinate strategies."))
             ()
             (:documentation
              ,(format nil "This strategy flushes buffers when ~A of ~
-its child strategies indicate that buffers should be flushed."
+                           its child strategies indicate that buffers ~
+                           should be flushed."
                       reducer)))
 
           (defmethod flush? ((strategy ,class-name)

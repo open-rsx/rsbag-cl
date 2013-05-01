@@ -153,7 +153,8 @@ and executes them until termination is requested."))
               (setf current (sequence:iterator-step
                              sequence current (xor (not back?) from-end?)))
               (error "~@<Attempt to step beyond ~:[end~;beginning~] of ~
-sequence. Current position ~:D, valid range [~:D, ~:D[.~@:>"
+                      sequence. Current position ~:D, valid range ~
+                      [~:D, ~:D[.~@:>"
                      back? (sequence:iterator-index sequence current)
                      start-index end-index))))
          ((&labels index (&optional relative-to-bounds?)

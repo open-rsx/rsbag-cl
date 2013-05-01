@@ -118,7 +118,7 @@ translation of their values into indices before replay."))
                 (or (position timestamp sequence
                               :test #'local-time:timestamp<=)
                     (error "~@<Could not find requested timestamp ~A in bag ~
-~A (with temporal range [~A, ~A]).~@:>"
+                            ~A (with temporal range [~A, ~A]).~@:>"
                            timestamp (connection-bag connection)
                            (rsbag:start bag) (end bag)))
                 timestamp)))))
@@ -134,7 +134,7 @@ translation of their values into indices before replay."))
                     name timestamp index effective difference)
               (when (> difference 1)
                 (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
-requested ~A ~A~@:>"
+                       requested ~A ~A~@:>"
                       name effective difference name timestamp))))))
     (when start-time
       (if (and (rsbag:start bag) (end bag))
@@ -142,7 +142,7 @@ requested ~A ~A~@:>"
                      #'(lambda (value) (setf start-index value))
                      "start time")
           (warn "~@<Bag ~A does not have start and end times; ignoring ~
-requested start time ~A~@:>"
+                 requested start time ~A~@:>"
                 bag start-time)))
     (when end-time
       (if (and (rsbag:start bag) (end bag))
@@ -150,7 +150,7 @@ requested start time ~A~@:>"
                      #'(lambda (value) (setf end-index value))
                      "end time")
           (warn "~@<Bag ~A does not have start and end times; ignoring ~
-requested end time ~A~@:>"
+                 requested end time ~A~@:>"
                 bag end-time)))))
 
 ;;; Utility functions
@@ -159,10 +159,12 @@ requested end time ~A~@:>"
   "Signal an error unless EARLIER is smaller than LATER."
   (unless (< earlier later)
     (error "~@<Invalid relation of indices: index ~:D is not greater ~
-than index ~:D.~@:>" later earlier)))
+            than index ~:D.~@:>"
+           later earlier)))
 
 (defun check-ordered-timestamps (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
   (unless (local-time:timestamp< earlier later)
     (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
-later than than timestamp ~A.~@:>" later earlier)))
+            later than timestamp ~A.~@:>"
+           later earlier)))

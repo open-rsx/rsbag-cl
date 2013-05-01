@@ -68,7 +68,8 @@
   (((and error (not tidelog-condition)) invalid-tidelog-structure
     :var condition)
    :source           source
-   :format-control   "~@<Failed to unpack block ~A~@[ at position ~:D~]: ~A~@:>"
+   :format-control   "~@<Failed to unpack block ~A~@[ at position ~:D~]: ~
+                      ~A~@:>"
    :format-arguments (list object
                            (when (streamp source)
                              (file-position source))

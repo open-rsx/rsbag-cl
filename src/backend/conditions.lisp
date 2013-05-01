@@ -14,7 +14,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<An error has been encountered when operating ~
-on ~A.~@:>"
+                     on ~A.~@:>"
              (log-file-error-source condition))))
   (:documentation
    "Errors of this class and subclasses are signaled when operations
@@ -26,7 +26,7 @@ involving log files fail."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Invalid file structure encountered in ~
-~A~/more-conditions::maybe-print-explanation/~@:>"
+                     ~A~/more-conditions::maybe-print-explanation/~@:>"
              (log-file-error-source condition)
              condition)))
   (:documentation

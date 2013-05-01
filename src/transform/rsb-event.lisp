@@ -67,8 +67,9 @@ octet vectors without (de)serializing payloads."))
             (pbb:emit (pb:dependency-closure descriptor)
                       `(:proto :stream ,stream)))
           (warn "~@<Payload serialization format for wire-schema ~S is ~
-not known. Channel format will only describe outer event ~
-serialization; not inner payload serialization.~@:>"
+                 not known. Channel format will only describe outer ~
+                 event serialization; not inner payload ~
+                 serialization.~@:>"
                 wire-schema))))))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))

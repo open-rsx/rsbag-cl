@@ -49,8 +49,9 @@ by means of textual commands."))
                                                 (apply command args))))
                               (format stream "~A~%" (first result))))))
               (format stream "~@<~:[Cannot repeat command without ~
-previous command~;~:*No such command: ~S~]. Available commands: ~
-~{~(~A~)~^, ~}.~@:>~%"
+                              previous command~;~:*No such command: ~
+                              ~S~]. Available commands: ~{~(~A~)~^, ~
+                              ~}.~@:>~%"
                       name (map 'list #'car commands))))))
 
 (defmethod execute-command ((strategy interactive)
@@ -67,7 +68,8 @@ previous command~;~:*No such command: ~S~]. Available commands: ~
                    &key &allow-other-keys)
   (let+ (((&accessors-r/o (stream strategy-stream)) strategy))
     (format stream "~&~@<OHAI, type command; unambiguous prefix ~
-suffices. empty command repeats previous one.~@:>~%")
+                    suffices. empty command repeats previous ~
+                    one.~@:>~%")
     (call-next-method)
     (format stream "~&~@<KTHXBYE~@:>~%")))
 

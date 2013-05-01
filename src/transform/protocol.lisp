@@ -46,10 +46,11 @@ TRANSFORM."
       (use-value (value)
         :report      (lambda (stream)
                        (format stream "~@<Specify a value to use ~
-instead of the result of the failed encoding.~@:>"))
+                                       instead of the result of the ~
+                                       failed encoding.~@:>"))
         :interactive (lambda ()
                        (format *query-io* "~@<Enter replacement ~
-value (unevaluated): ~@:>")
+                                           value (unevaluated): ~@:>")
                        (force-output *query-io*)
                        (list (read *query-io*)))
         value))))
@@ -67,10 +68,11 @@ value (unevaluated): ~@:>")
       (use-value (value)
         :report      (lambda (stream)
                        (format stream "~@<Specify a value to use ~
-instead of the result of the failed decoding.~@:>"))
+                                       instead of the result of the ~
+                                       failed decoding.~@:>"))
         :interactive (lambda ()
                        (format *query-io* "~@<Enter replacement ~
-value (unevaluated): ~@:>")
+                                           value (unevaluated): ~@:>")
                        (force-output *query-io*)
                        (list (read *query-io*)))
         value))))

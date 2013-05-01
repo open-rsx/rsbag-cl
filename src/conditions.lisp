@@ -22,7 +22,7 @@ opened."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Failed to open bag in source ~
-~A.~/more-conditions::maybe-print-cause/~@:>"
+                     ~A.~/more-conditions::maybe-print-cause/~@:>"
              (open-error-source condition)
              condition)))
   (:default-initargs
@@ -52,7 +52,7 @@ associated to a specific bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<There is no channel named ~S in the bag ~
-~A~@:>"
+                     ~A~@:>"
              (no-such-channel-name condition)
              (bag-error-bag        condition))))
   (:default-initargs
@@ -67,9 +67,8 @@ within a bag an cannot or may not be created."))
    (lambda (condition stream)
      (let+ (((&accessors-r/o (bag bag-error-bag)) condition))
        (format stream "~@<The bag ~A has not been opened for output (but ~
-~A).~@:>"
-               bag
-               (bag-direction bag)))))
+                       ~A).~@:>"
+               bag (bag-direction bag)))))
   (:documentation
    "This error is signaled when an attempt is made to write to a bag
 that has not been opened for output."))
@@ -92,7 +91,7 @@ associated to a specific channel within a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Could not open channel ~S in bag
-~A~/more-conditions::maybe-print-cause/~@:>"
+                     ~A~/more-conditions::maybe-print-cause/~@:>"
              (channel-error-channel condition)
              (bag-error-bag         condition)
              condition)))
@@ -121,7 +120,7 @@ channel and bag in question."))
   (:report
    (lambda (condition stream)
      (format stream "~@<No entry could be found for key ~S in the ~
-channel ~A of bag ~A~@:>"
+                     channel ~A of bag ~A~@:>"
              (bag-error-bag         condition)
              (channel-error-channel condition)
              (no-such-entry-key     condition))))

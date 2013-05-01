@@ -236,12 +236,12 @@ SPEC can be of the following types:
         (continue (&optional condition)
           :report (lambda (stream)
                     (format stream "~@<Do not transform events in ~
-channel ~A.~@:>"
+                                    channel ~A.~@:>"
                             name))
           (declare (ignore condition)))
         (use-value (transform)
           :report (lambda (stream)
                     (format stream "~@<Use the supplied transform for ~
-events in channel ~S.~@:>"
+                                    events in channel ~S.~@:>"
                             name))
           transform))))

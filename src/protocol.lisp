@@ -57,15 +57,17 @@ RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
             (retry ()
               :report (lambda (stream)
                         (format stream "~@<Retry opening the bag ~
-stored in ~S.~@:>"
+                                        stored in ~S.~@:>"
                                 source)))
             (use-source (new-value)
               :report      (lambda (stream)
                              (format stream "~@<Use a different source ~
-instead of ~S.~@:>"
+                                             instead of ~S.~@:>"
                                      source))
               :interactive (lambda ()
-                             (format *query-io* "~@<Specify source (not evaluated): ~@:>")
+                             (format *query-io* "~@<Specify ~
+                                                 source (not ~
+                                                 evaluated): ~@:>")
                              (force-output *query-io*)
                              (list (read *query-io*)))
               (setf source new-value))))))

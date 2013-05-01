@@ -21,7 +21,7 @@ implementation (if any) in TRANSFORM."))
   "Return event serialization version 0.4."
   (when args
     (warn "~@<Serialization version ~A does not take arguments (but ~
-arguments ~A have been supplied).~:@>"
+           arguments ~A have been supplied).~:@>"
           :rsb-event-0.4 args))
   (make-transform :rsb-event-0.4 :utf-8-string))
 
@@ -30,7 +30,7 @@ arguments ~A have been supplied).~:@>"
   "Return an instance of `rsb-event/version-detection' which passes
 ARGS to candidate serialization implementations."
   (rsb:log1 :info "Forced to use auto-detection of event serialization ~
-format; version ~S with arguments ~{~S~^, ~}."
+                   format; version ~S with arguments ~{~S~^, ~}."
             spec args)
   (make-instance
    'rsb-event/version-detection
@@ -116,7 +116,10 @@ succeeds."))
                                        ',name implementation condition)
                              (if (next-implementation! transform)
                                  (go :start)
-                                 (error "~@<Could not detect serialization version:~{~2&~{When ~Aing ~S:~&~A~}~}~@:>"
+                                 (error "~@<Could not detect ~
+                                        serialization ~
+                                        version:~{~2&~{When ~Aing ~
+                                        ~S:~&~A~}~}~@:>"
                                         problems)))))
                  (return-from ,name
                    (,name implementation ,@(mapcar #'first args)))))))))

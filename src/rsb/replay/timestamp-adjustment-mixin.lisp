@@ -52,7 +52,7 @@ during replay."))
                  (let ((key (second value)))
                    (or (timestamp event key)
                        (error "~@<Event ~A does not have a ~A ~
-timestamp.~:@>"
+                               timestamp.~:@>"
                               event key))))
 
                 (timestamp-adjustment-value/delta

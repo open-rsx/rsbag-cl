@@ -14,7 +14,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<An error related to connection ~A ~
-occurred.~@:>"
+                     occurred.~@:>"
              (connection-error-connection condition))))
   (:documentation
    "Errors of this condition class and subclasses are signaled when
@@ -39,7 +39,7 @@ errors occur during event recording into a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Event ~A could not be stored in ~
-~A.~/more-conditions::maybe-print-cause/~@:>"
+                     ~A.~/more-conditions::maybe-print-cause/~@:>"
              (connection-error-event      condition)
              (connection-error-connection condition)
              condition)))
@@ -56,7 +56,7 @@ error."))
   (:report
    (lambda (condition stream)
      (format stream "~@<A replay error related to source ~A and replay ~
-strategy ~A occurred.~@:>"
+                     strategy ~A occurred.~@:>"
              (connection-error-connection condition)
              (connection-error-strategy   condition))))
   (:documentation
@@ -69,7 +69,8 @@ errors occur during replay of events from a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Failed to retrieve next event from ~A for ~
-replay according to strategy ~A~/more-conditions::maybe-print-cause/~@:>"
+                     replay according to strategy ~
+                     ~A~/more-conditions::maybe-print-cause/~@:>"
              (connection-error-connection condition)
              (connection-error-strategy   condition)
              condition)))

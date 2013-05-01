@@ -183,8 +183,7 @@ originating from CONNECTION, according to STRATEGY."))
     (continue ()
       :report (lambda (stream)
                 (format stream "~@<Ignore the failed event and ~
-continue with the next event.~@:>")
-                nil)
+                                continue with the next event.~@:>"))
       (values))))
 
 ;;; Timed replay protocol
