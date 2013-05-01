@@ -52,7 +52,7 @@ by means of textual commands."))
                               previous command~;~:*No such command: ~
                               ~S~]. Available commands: ~{~(~A~)~^, ~
                               ~}.~@:>~%"
-                      name (map 'list #'car commands))))))
+                      name (mapcar #'car commands))))))
 
 (defmethod execute-command ((strategy interactive)
                             (command  function))
@@ -76,13 +76,12 @@ by means of textual commands."))
 ;;; Utility functions
 
 (defun %read-command (stream)
-  (let+ ((line (progn
-                 (format stream "~&> ")
-                 (force-output stream)
-                 (read-line stream nil "quit")))
+  (let+ (((&flet line ()
+            (format stream "~&> ")
+            (force-output stream)
+            (read-line stream nil "quit")))
          ((&optional name &rest args)
-          (split-sequence #\Space line
+          (split-sequence #\Space (line)
                           :remove-empty-subseqs t)))
     (when name
-      (cons (string-upcase name)
-            (map 'list #'read-from-string args)))))
+      (cons (string-upcase name) (mapcar #'read-from-string args)))))

@@ -16,13 +16,11 @@
   (check-type args (cons keyword list)
               "a wire-schema keyword, optionally followed by keyword arguments")
 
-  (let+ (((wire-schema &rest rest) args)
-         ((&plist-r/o (converter :converter)) rest))
+  (let+ (((wire-schema &rest rest &key converter) args))
     (apply #'make-instance
            (if converter 'rsb-event/payload-conversion 'rsb-event)
            :wire-schema wire-schema
-           (when converter
-             `(:converter ,converter)))))
+           rest)))
 
 (defmethod find-transform-class ((spec (eql +rsb-schema-name+)))
   (find-class 'rsb-event))

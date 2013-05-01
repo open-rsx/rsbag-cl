@@ -37,7 +37,7 @@ instances."))
    "Instances of this class represent a log file. A log file consists
 of named channels which can be retrieved using the `bag-channels' and
 `bag-channel' methods and modified using the `(setf bag-channel)'
-method. "))
+method."))
 
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)

@@ -11,12 +11,12 @@
   (format-symbol :keyword "~A-~A" name version))
 
 (defmacro with-renamed-package ((old-name new-name
-                                          &optional
-                                          (temp-name (format nil "~A-TEMP" old-name)))
+                                 &optional
+                                 (temp-name (format nil "~A-TEMP" old-name)))
                                 &body body)
   "Execute BODY with the package designated by OLD-NAME moved out of
 the way, then rename the package designated by OLD-NAME to
-NEW-NAME. This allow BODY to seemingly load stuff into OLD-NAME which
+NEW-NAME. This allows BODY to seemingly load stuff into OLD-NAME which
 will end up in NEW-NAME without disturbing the contents of OLD-NAME."
   (with-unique-names (package)
     `(let ((,package (find-package ,old-name)))
@@ -54,8 +54,7 @@ VERSION."
 
   (flet ((without-and-with-version (name)
            (list name (make-versioned-name name version))))
-    `(with-renamed-packages ,(map 'list #'without-and-with-version
-                                  packages)
+    `(with-renamed-packages ,(mapcar #'without-and-with-version packages)
        ,@body)))
 
 ;;; Utility functions

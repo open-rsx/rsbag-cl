@@ -6,6 +6,8 @@
 
 (cl:in-package #:rsbag.rsb.replay)
 
+;;; Class `informer-inject'
+
 (defclass informer-injector (channel-items)
   ((informer :initarg  :informer
              :reader   %informer-injector-informer
@@ -38,7 +40,8 @@ sequence."))
   "Return a function with two parameters that calls CALLBACK in the
 appropriate way if CALLBACK is non-nil"
   (when callback
-    (let+ (((start end) (list 0 (1- (length sequence)))))
+    (let ((start 0)
+          (end   (1- (length sequence))))
       (lambda (index timestamp)
         (funcall callback
                  (/ (1+ (- index start)) (- (1+ end) start))
