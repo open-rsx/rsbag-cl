@@ -221,63 +221,19 @@ See `version/list' for details on keyword parameters."
                 (:module     "rsb/replay"
                  :pathname   "src/rsb/replay"
                  :depends-on ("rsb")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "types"
-                               :depends-on ("package"))
-                              (:file       "util"
-                               :depends-on ("package"))
-                              (:file       "protocol"
-                               :depends-on ("package"))
+                              (:file       "types")
+                              (:file       "util")
+                              (:file       "protocol")
 
-                              (:file       "replay-restart-mixin"
-                               :depends-on ("package"))
-                              (:file       "error-policy-mixin"
-                               :depends-on ("package"))
-                              (:file       "bounds-mixin"
-                               :depends-on ("package"
-                                            "protocol"))
-                              (:file       "view-creation-mixin"
-                               :depends-on ("package" "util"))
-                              (:file       "sequential-mixin"
-                               :depends-on ("package" "util"
-                                            "replay-restart-mixin"
-                                            "bounds-mixin"
-                                            "view-creation-mixin"))
-                              (:file       "speed-adjustment-mixin"
-                               :depends-on ("package"))
-                              (:file       "timed-replay-mixin"
-                               :depends-on ("package" "sequential-mixin"
-                                            "speed-adjustment-mixin"))
-                              (:file       "external-driver-mixin"
-                               :depends-on ("package" "sequential-mixin"))
-                              (:file       "delay-correcting-mixin"
-                               :depends-on ("package"))
-                              (:file       "timestamp-adjustment-mixin"
-                               :depends-on ("package" "types"))
+                              (:file       "strategy-mixins")
 
-                              (:file       "recorded-timing"
-                               :depends-on ("package" "timed-replay-mixin"
-                                            "error-policy-mixin"
-                                            "delay-correcting-mixin"
-                                            "timestamp-adjustment-mixin"))
-                              (:file       "fixed-rate"
-                               :depends-on ("package" "protocol"
-                                            "timed-replay-mixin"
-                                            "error-policy-mixin"
-                                            "delay-correcting-mixin"
-                                            "timestamp-adjustment-mixin"))
-                              (:file       "as-fast-as-possible"
-                               :depends-on ("package" "sequential-mixin"
-                                            "error-policy-mixin"
-                                            "timestamp-adjustment-mixin"))
-                              (:file       "interactive"
-                               :depends-on ("package" "external-driver-mixin"
-                                            "error-policy-mixin"
-                                            "timestamp-adjustment-mixin"))
-                              (:file       "remote-controlled"
-                               :depends-on ("package" "external-driver-mixin"
-                                            "error-policy-mixin"
-                                            "timestamp-adjustment-mixin")))))
+                              (:file       "recorded-timing")
+                              (:file       "fixed-rate")
+                              (:file       "as-fast-as-possible")
+                              (:file       "interactive")
+                              (:file       "remote-controlled"))))
 
   :in-order-to ((test-op (test-op :cl-rsbag-test))))
 

@@ -36,3 +36,37 @@ NEW-VALUE."))
   (:documentation
    "Set the rate in Hertz of events replayed with STRATEGY to
 NEW-VALUE."))
+
+;;; External driver protocol
+
+(defgeneric make-commands (strategy sequence
+                           &key
+                           length step index element emit terminate)
+  (:documentation
+   "Return an alist of items of the form (NAME . FUNCTION) that should
+be used as the command list of STRATEGY and SEQUENCE. The values of
+LENGTH, STEP, INDEX, ELEMENT, EMIT and TERMINATE are functions that
+perform the respective action for SEQUENCE."))
+
+(defgeneric strategy-commands (strategy)
+  (:documentation
+   "Return an alist of items of the form (NAME . FUNCTION) consisting
+of the available commands for STRATEGY."))
+
+(defgeneric find-command (strategy name
+                          &key
+                          error?)
+  (:documentation
+   "Find and return the command named NAME within the list of
+available commands for STRATEGY. If ERROR? is non-nil (the default),
+signal an error if NAME does not designate a command."))
+
+(defgeneric next-command (strategy)
+  (:documentation
+   "Determine and return the next command that should be executed for
+STRATEGY. The returned command should be a thunk, usually from the
+list of available commands of STRATEGY."))
+
+(defgeneric execute-command (strategy command)
+  (:documentation
+   "Execute the thunk COMMAND in a an appropriate way for STRATEGY."))
