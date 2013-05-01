@@ -6,9 +6,7 @@
 
 (cl:in-package :rsbag.backend)
 
-
 ;;; Backend protocol
-;;
 
 (defgeneric backend-location (backend)
   (:documentation
@@ -58,17 +56,13 @@ the data source represented by BACKEND."))
    "Store ENTRY at the position designated by INDEX in CHANNEL in the
 data source represented by BACKEND."))
 
-
 ;;; Stream protocol
-;;
 
 (defgeneric backend-stream (backend)
   (:documentation
    "Return the stream of the data source of BACKEND."))
 
-
 ;;; Buffering protocol
-;;
 
 (defgeneric buffer-property (backend buffer name)
   (:documentation
@@ -95,25 +89,19 @@ represented by BACKEND."))
    "Return the strategy which is used by backend to schedule buffer
 flushes."))
 
-
 ;;; Finding backend classes
-;;
 
 (dynamic-classes:define-findable-class-family backend
     "This class family consists of file format backends.")
 
-
 ;;; Flush strategy protocol
-;;
 
 (defgeneric flush? (strategy backend buffer)
   (:documentation
    "Return non-nil when BUFFER which is used by BACKEND should be
 flushed according to STRATEGY."))
 
-
 ;;; Flush strategy classes
-;;
 
 (dynamic-classes:define-findable-class-family flush-strategy
     "This class family consist of flush strategy classes which
@@ -127,10 +115,10 @@ strategy designated by THING."))
 
 (defmethod make-flush-strategy ((thing symbol) &rest args)
   (apply #'make-flush-strategy
-	 (if (keywordp thing)
-	     (find-flush-strategy-class thing)
-	     (find-class thing))
-	 args))
+         (if (keywordp thing)
+             (find-flush-strategy-class thing)
+             (find-class thing))
+         args))
 
 (defmethod make-flush-strategy ((thing class) &rest args)
   (apply #'make-instance thing args))

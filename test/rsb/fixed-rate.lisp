@@ -13,14 +13,14 @@
 
 (addtest (fixed-rate-root
           :documentation
-	  "Test construction of `fixed-rate' instances.")
+          "Test construction of `fixed-rate' instances.")
   construction
 
   (ensure-cases (args)
       '(()
-	(:delay 1 :rate  1)
-	(:delay 0)
-	(:rate 0))
+        (:delay 1 :rate  1)
+        (:delay 0)
+        (:rate 0))
 
     (ensure-condition 'error
       (apply #'make-instance 'fixed-rate args))))

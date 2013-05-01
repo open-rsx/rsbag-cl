@@ -6,9 +6,7 @@
 
 (cl:in-package :rsbag.rsb.replay)
 
-
 ;;; Bounds specifications
-;;
 
 (deftype range-boundary/timestamp ()
   "Specification of a boundary of a temporal range.
@@ -25,9 +23,7 @@
        negative-real
        local-time:timestamp))
 
-
 ;;; Timestamp adjustment specifications
-;;
 
 (deftype timestamp-adjustment-value/now ()
   "Indicates that the current time (i.e. time of replaying the event)

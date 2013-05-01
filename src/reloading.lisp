@@ -10,6 +10,6 @@
   "Make sure that the rsbag threadpool is shutdown when saving a core
 and restarted when loading a core."
   #+sbcl (progn
-	   (push 'stop-threadpool  sb-ext:*save-hooks*)
-	   (push 'start-threadpool sb-ext:*init-hooks*))
+           (push 'stop-threadpool  sb-ext:*save-hooks*)
+           (push 'start-threadpool sb-ext:*init-hooks*))
   #-sbcl (error "Restarting the rsbag threadpool is not supported in this Lisp."))

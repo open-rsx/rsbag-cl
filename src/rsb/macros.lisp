@@ -14,42 +14,42 @@ properly closed."
      ,@body))
 
 (defmacro with-events->bag ((var source dest
-			     &rest args
-			     &key
-			     transports
-			     filters
-			     timestamp
-			     backend
-			     bag-class
-			     channel-strategy
-			     &allow-other-keys)
-			    &body body)
+                             &rest args
+                             &key
+                             transports
+                             filters
+                             timestamp
+                             backend
+                             bag-class
+                             channel-strategy
+                             &allow-other-keys)
+                            &body body)
   "Execute BODY with VAR bound to a connection that is the result of
 applying `events->bag' to SOURCE, DEST and ARGS. Ensure that the
 resulting connection is properly closed."
   (declare (ignore transports filters timestamp backend bag-class
-		   channel-strategy))
+                   channel-strategy))
   `(with-open-connection (,var (events->bag ,source, dest ,@args))
      ,@body))
 
 (defmacro with-bag->events ((var source dest
-			     &rest args
-			     &key
-			     backend
-			     bag-class
-			     replay-strategy
-			     start-time
-			     start-index
-			     end-time
-			     end-index
-			     channels
-			     &allow-other-keys)
-			    &body body)
+                             &rest args
+                             &key
+                             backend
+                             bag-class
+                             replay-strategy
+                             start-time
+                             start-index
+                             end-time
+                             end-index
+                             channels
+                             &allow-other-keys)
+                            &body body)
   "Execute BODY with VAR bound to a connection that is the result of
 applying `bag->events' to SOURCE, DEST and ARGS. Ensure that the
 resulting connection is properly closed."
   (declare (ignore backend bag-class replay-strategy
-		   start-time start-index end-time end-index
-		   channels))
+                   start-time start-index end-time end-index
+                   channels))
   `(with-open-connection (,var (bag->events ,source ,dest ,@args))
      ,@body))

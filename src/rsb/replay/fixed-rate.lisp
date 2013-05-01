@@ -6,45 +6,43 @@
 
 (cl:in-package :rsbag.rsb.replay)
 
-
 ;;; `fixed-rate' replay strategy class
-;;
 
 (defmethod find-replay-strategy-class ((spec (eql :fixed-rate)))
   (find-class 'fixed-rate))
 
 (defclass fixed-rate (error-policy-mixin
-		      timed-replay-mixin
-		      delay-correcting-mixin
-		      speed-adjustment-mixin
-		      timestamp-adjustment-mixin)
+                      timed-replay-mixin
+                      delay-correcting-mixin
+                      speed-adjustment-mixin
+                      timestamp-adjustment-mixin)
   ((delay :initarg  :delay
-	  :type     positive-real
-	  :accessor strategy-delay
-	  :initform .1
-	  :documentation
-	  "Stores the fixed delay in seconds between publishing
+          :type     positive-real
+          :accessor strategy-delay
+          :initform .1
+          :documentation
+          "Stores the fixed delay in seconds between publishing
 subsequent events."))
   (:documentation
    "This strategy replays events in the order they were recorded and,
 as precisely as possible, with a specified fixed rate."))
 
 (defmethod shared-initialize :before ((instance   fixed-rate)
-				      (slot-names t)
-				      &key
-					delay
-					rate)
+                                      (slot-names t)
+                                      &key
+                                        delay
+                                        rate)
   (cond
     ((and (null delay) (null rate))
      (required-argument :delay-or-rate))
     ((and delay rate)
      (error "~@<The initargs ~S and ~S are mutually exclusive.~@:>"
-	    :delay :rate))))
+            :delay :rate))))
 
 (defmethod shared-initialize :after ((instance   fixed-rate)
                                      (slot-names t)
                                      &key
-				       rate)
+                                       rate)
   (when rate
     (setf (strategy-rate instance) rate)))
 
@@ -52,14 +50,14 @@ as precisely as possible, with a specified fixed rate."))
   (/ (strategy-delay strategy)))
 
 (defmethod (setf strategy-rate) ((new-value real)
-				 (strategy  fixed-rate))
+                                 (strategy  fixed-rate))
   (check-type new-value positive-real "a positive real number")
   (setf (strategy-delay strategy) (/ new-value)))
 
 (defmethod schedule-event ((strategy fixed-rate)
-			   (event    t)
-			   (previous local-time:timestamp)
-			   (next     local-time:timestamp))
+                           (event    t)
+                           (previous local-time:timestamp)
+                           (next     local-time:timestamp))
   (strategy-delay strategy))
 
 (defmethod print-object ((object fixed-rate) stream)

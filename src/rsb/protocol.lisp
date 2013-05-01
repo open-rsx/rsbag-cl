@@ -6,22 +6,20 @@
 
 (cl:in-package :rsbag.rsb)
 
-
 ;;; Connection setup protocol
-;;
 
 (defgeneric events->bag (source dest
-			 &rest args
-			 &key
-			 transports
-			 filters
-			 timestamp
-			 if-exists
-			 backend
-			 bag-class
-			 channel-strategy
-			 start?
-			 &allow-other-keys)
+                         &rest args
+                         &key
+                         transports
+                         filters
+                         timestamp
+                         if-exists
+                         backend
+                         bag-class
+                         channel-strategy
+                         start?
+                         &allow-other-keys)
   (:argument-precedence-order dest source)
   (:documentation
    "Make and return a connection between the RSB participant(s) SOURCE
@@ -65,17 +63,17 @@ If supplied, START? controls whether the recording should start
 immediately. The default behavior is to start immediately."))
 
 (defgeneric bag->events (source dest
-			 &rest args
-		         &key
-			 backend
-			 bag-class
-			 replay-strategy
-			 start-time
-			 start-index
-			 end-time
-			 end-index
-			 channels
-			 &allow-other-keys)
+                         &rest args
+                         &key
+                         backend
+                         bag-class
+                         replay-strategy
+                         start-time
+                         start-index
+                         end-time
+                         end-index
+                         channels
+                         &allow-other-keys)
   (:documentation
    "Make and return a connection between the channel or bag SOURCE and
 the RSB participant(s) DEST. When the connection is established,
@@ -111,9 +109,7 @@ non-negative and from the end of the recorded data when negative.
 If supplied, CHANNELS selects a subset of channels from which events
 should be replayed."))
 
-
 ;;; Connection protocol
-;;
 
 (defgeneric connection-bag (connection)
   (:documentation
@@ -144,13 +140,11 @@ continue using the `start' function."))
 
 ;; connections also implement a method on cl:close
 
-
 ;;; Replay protocol
-;;
 
 (defgeneric replay (connection strategy
-		    &key
-		    progress)
+                    &key
+                    progress)
   (:documentation
    "Replay the events contained in the associated bag of CONNECTION
 according to STRATEGY. Usually, STRATEGY will mostly influence the
@@ -161,45 +155,39 @@ If PROGRESS is non-nil it has to be a function accepting five
 arguments: progress ratio, current index, start index, end index and
 current timestamp."))
 
-
 ;;; View creation protocol
-;;
 
 (defgeneric make-view (connection strategy)
   (:documentation
    "Make and return a sequence view of the events associated to
 CONNECTION for replay according to STRATEGY."))
 
-
 ;;; Sequential processing protocol
-;;
 
 (defgeneric process-event (connection strategy
-			   timestamp previous-timestamp
-			   event sink)
+                           timestamp previous-timestamp
+                           event sink)
   (:documentation
    "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT SINK),
 originating from CONNECTION, according to STRATEGY."))
 
 (defmethod process-event :around ((connection         t)
-				  (strategy           t)
-				  (timestamp          t)
-				  (previous-timestamp t)
-				  (event              t)
-				  (sink               t))
+                                  (strategy           t)
+                                  (timestamp          t)
+                                  (previous-timestamp t)
+                                  (event              t)
+                                  (sink               t))
   "Install a continue restart around processing."
   (restart-case
       (call-next-method)
     (continue ()
       :report (lambda (stream)
-		(format stream "~@<Ignore the failed event and ~
+                (format stream "~@<Ignore the failed event and ~
 continue with the next event.~@:>")
-		nil)
+                nil)
       (values))))
 
-
 ;;; Timed replay protocol
-;;
 
 (defgeneric schedule-event (strategy event previous next)
   (:documentation
@@ -209,14 +197,12 @@ the previous and current event when recorded. PREVIOUS can be nil at
 the start of a replay."))
 
 (defmethod schedule-event ((strategy t)
-			   (event    t)
-			   (previous (eql nil))
-			   (next     local-time:timestamp))
+                           (event    t)
+                           (previous (eql nil))
+                           (next     local-time:timestamp))
   0)
 
-
 ;;; Replay strategy class family
-;;
 
 (dynamic-classes:define-findable-class-family replay-strategy
     "This family consists of classes that implement event replay
@@ -230,10 +216,10 @@ strategy designated by THING."))
 
 (defmethod make-replay-strategy ((thing symbol) &rest args)
   (apply #'make-replay-strategy
-	 (if (keywordp thing)
-	     (find-replay-strategy-class thing)
-	     (find-class thing))
-	  args))
+         (if (keywordp thing)
+             (find-replay-strategy-class thing)
+             (find-class thing))
+          args))
 
 (defmethod make-replay-strategy ((thing class) &rest args)
   (apply #'make-instance thing args))
@@ -242,9 +228,7 @@ strategy designated by THING."))
   (declare (ignore args))
   thing)
 
-
 ;;; Channel allocation protocol
-;;
 
 (defgeneric channel-name-for (bag event strategy)
   (:documentation
@@ -263,28 +247,24 @@ STRATEGY."))
    "Make and return a channel in BAG in which EVENT can be stored
 according to STRATEGY."))
 
-
 ;;; Default behavior
-;;
 
 (defmethod channel-format-for ((bag       t)
-			       (transform (eql nil))
-			       (event     t)
-			       (strategy  t))
+                               (transform (eql nil))
+                               (event     t)
+                               (strategy  t))
   "Default behavior is to not associate a channel format."
   nil)
 
 (defmethod channel-format-for ((bag       t)
-			       (transform t)
-			       (event     t)
-			       (strategy  t))
+                               (transform t)
+                               (event     t)
+                               (strategy  t))
   "Default behavior for non-nil TRANSFORM is to retrieve the channel
 format from TRANSFORM."
   (transform-format transform))
 
-
 ;;; Channel allocation strategy class family
-;;
 
 (dynamic-classes:define-findable-class-family channel-strategy
     "This family consists of classes that implement channel selection
@@ -297,10 +277,10 @@ strategy designated by THING."))
 
 (defmethod make-channel-strategy ((thing symbol) &rest args)
   (apply #'make-channel-strategy
-	 (if (keywordp thing)
-	     (find-channel-strategy-class thing)
-	     (find-class thing))
-	 args))
+         (if (keywordp thing)
+             (find-channel-strategy-class thing)
+             (find-class thing))
+         args))
 
 (defmethod make-channel-strategy ((thing class) &rest args)
   (apply #'make-instance thing args))

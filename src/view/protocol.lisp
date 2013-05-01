@@ -6,14 +6,12 @@
 
 (cl:in-package :rsbag.view)
 
-
 ;;; View construction functions
-;;
 
 (defgeneric make-serialized-view (sequences
-				  &key
-				  selector
-				  compare)
+                                  &key
+                                  selector
+                                  compare)
   (:documentation
    "Make and return a sequence that consists of a serialization of the
 elements of SEQUENCES. The serialization is performed by comparing
@@ -28,9 +26,7 @@ select the elements of the returned sequence.
 
 COMPARE is a ordering predicate."))
 
-
 ;;; Extensible support functions
-;;
 
 (defgeneric %make-key-function (sequence)
   (:documentation

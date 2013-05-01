@@ -6,9 +6,7 @@
 
 (cl:in-package :rsbag.rsb)
 
-
 ;;; `scope-and-type' channel allocation strategy class
-;;
 
 (defmethod find-channel-strategy-class ((spec (eql :scope-and-type)))
   (find-class 'scope-and-type))
@@ -29,39 +27,39 @@ As an example, an event on scope /foo/bar/ with wire-schema
 \"/foo/bar/:.rst.vision.Image\"."))
 
 (defmethod channel-name-for ((connection channel-connection)
-			     (event      event)
-			     (strategy   scope-and-type))
+                             (event      event)
+                             (strategy   scope-and-type))
   (if-let ((scope       (scope-string (event-scope event)))
-	   (wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
+           (wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
     (format nil "~A:~A" scope wire-schema)
     (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
-	   event :rsb.transport.wire-schema)))
+           event :rsb.transport.wire-schema)))
 
-;;; TODO(jmoringe, 2012-02-17): move to protocol or mixin
+;; TODO(jmoringe, 2012-02-17): move to protocol or mixin
 (defmethod ensure-channel-for ((connection channel-connection)
-			       (event      event)
-			       (strategy   scope-and-type))
+                               (event      event)
+                               (strategy   scope-and-type))
   (let* ((name    (channel-name-for connection event strategy))
-	 (bag     (connection-bag connection))
-	 (channel (bag-channel bag name :if-does-not-exist nil)))
+         (bag     (connection-bag connection))
+         (channel (bag-channel bag name :if-does-not-exist nil)))
     (if channel
-	(values channel t)
-	(make-channel-for connection event strategy))))
+        (values channel t)
+        (make-channel-for connection event strategy))))
 
 (defmethod make-channel-for ((connection participant-channel-connection)
-			     (event      event)
-			     (strategy   scope-and-type))
+                             (event      event)
+                             (strategy   scope-and-type))
   (let+ (((&accessors-r/o (bag         connection-bag)
-			  (participant connection-endpoint)) connection)
-	 ((&accessors-r/o (id participant-id)) participant)
-	 (name        (channel-name-for connection event strategy))
-	 (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
-	 (transform   (make-transform +rsb-schema-name+ wire-schema))
-	 (format      (channel-format-for bag transform event strategy)))
+                          (participant connection-endpoint)) connection)
+         ((&accessors-r/o (id participant-id)) participant)
+         (name        (channel-name-for connection event strategy))
+         (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
+         (transform   (make-transform +rsb-schema-name+ wire-schema))
+         (format      (channel-format-for bag transform event strategy)))
     (setf (bag-channel bag name :transform transform)
-	  (append
-	   (list :source-name   (princ-to-string id)
-		 :source-config (princ-to-string
-				 (abstract-uri participant)))
-	   (when format
-	     (list :format format))))))
+          (append
+           (list :source-name   (princ-to-string id)
+                 :source-config (princ-to-string
+                                 (abstract-uri participant)))
+           (when format
+             (list :format format))))))

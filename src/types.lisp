@@ -6,9 +6,7 @@
 
 (cl:in-package :rsbag)
 
-
 ;;; Bag opening and entry reading/writing options
-;;
 
 (deftype direction ()
   "Values of this type are used to indicate whether a bag should be
@@ -24,9 +22,7 @@ opened for reading, writing or both."
 location that is already occupied."
   '(member :error :supersede))
 
-
 ;;; Transformation specifications
-;;
 
 (deftype transform-spec/default ()
   "This transform specification causes the default transformation to

@@ -6,25 +6,23 @@
 
 (cl:in-package :rsbag.backend)
 
-
 ;;; `property-limit' strategy class
-;;
 
 (defmethod find-flush-strategy-class ((spec (eql :property-limit)))
   (find-class 'property-limit))
 
 (defclass property-limit ()
   ((property :initarg  :property
-	     :type     keyword
-	     :accessor flush-strategy-property
-	     :documentation
-	     "Stores the name of the buffer property based on whose
+             :type     keyword
+             :accessor flush-strategy-property
+             :documentation
+             "Stores the name of the buffer property based on whose
 value the flushing decision should be made.")
    (limit    :initarg  :limit
-	     :type     real
-	     :accessor flush-strategy-limit
-	     :documentation
-	     "Stores the "))
+             :type     real
+             :accessor flush-strategy-limit
+             :documentation
+             "Stores the "))
   (:default-initargs
    :property (missing-required-initarg 'property-limit :property)
    :limit    (missing-required-initarg 'property-limit :limit))
@@ -47,29 +45,27 @@ property violates a given limit."))
              property))))
 
 (defmethod flush? ((strategy property-limit)
-		   (backend  t)
-		   (buffer   t))
+                   (backend  t)
+                   (buffer   t))
   (let+ (((&accessors-r/o (property flush-strategy-property)
-			  (limit    flush-strategy-limit)) strategy))
+                          (limit    flush-strategy-limit)) strategy))
     (> (buffer-property backend buffer property) limit)))
 
 (defmethod print-object ((object property-limit) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~S > ~:D"
-	    (flush-strategy-property object)
-	    (flush-strategy-limit    object))))
+            (flush-strategy-property object)
+            (flush-strategy-limit    object))))
 
-
 ;;; `composite-flush-strategy-mixin' mixin class
-;;
 
 (defclass composite-flush-strategy-mixin ()
   ((children :initarg  :children
-	     :type     list
-	     :accessor children
-	     :initform nil
-	     :documentation
-	     "A list of child strategies which are consulted to
+             :type     list
+             :accessor children
+             :initform nil
+             :documentation
+             "A list of child strategies which are consulted to
 produce a decision."))
   (:documentation
    "This class is intended to be mixed into flush strategy classes
@@ -78,37 +74,37 @@ which produce their decisions by consulting subordinate strategies."))
 (defmethod print-object ((object composite-flush-strategy-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A (~D)"
-	    (class-name (class-of object))
-	    (length (children object)))))
+            (class-name (class-of object))
+            (length (children object)))))
 
 (macrolet
     ((define-simple-composite-strategy (name
-					&key
-					(spec       (make-keyword name))
-					(class-name (format-symbol "FLUSH-IF-~A" name))
-					reducer)
+                                        &key
+                                        (spec       (make-keyword name))
+                                        (class-name (format-symbol "FLUSH-IF-~A" name))
+                                        reducer)
        `(progn
-	  (defmethod find-flush-strategy-class ((spec (eql ,spec)))
-	    (find-class ',class-name))
+          (defmethod find-flush-strategy-class ((spec (eql ,spec)))
+            (find-class ',class-name))
 
-	  (defclass ,class-name (composite-flush-strategy-mixin)
-	    ()
-	    (:documentation
-	     ,(format nil "This strategy flushes buffers when ~A of ~
+          (defclass ,class-name (composite-flush-strategy-mixin)
+            ()
+            (:documentation
+             ,(format nil "This strategy flushes buffers when ~A of ~
 its child strategies indicate that buffers should be flushed."
-		      reducer)))
+                      reducer)))
 
-	  (defmethod flush? ((strategy ,class-name)
-			     (backend  t)
-			     (buffer   t))
-	    (,reducer (rcurry #'flush? backend buffer) (children strategy)))
+          (defmethod flush? ((strategy ,class-name)
+                             (backend  t)
+                             (buffer   t))
+            (,reducer (rcurry #'flush? backend buffer) (children strategy)))
 
-	  (defmethod make-flush-strategy ((thing (eql (find-class ',class-name)))
-					  &rest args)
-	    (make-instance
-	     thing
-	     :children (mapcar (curry #'apply #'make-flush-strategy)
-			       args))))))
+          (defmethod make-flush-strategy ((thing (eql (find-class ',class-name)))
+                                          &rest args)
+            (make-instance
+             thing
+             :children (mapcar (curry #'apply #'make-flush-strategy)
+                               args))))))
 
   (define-simple-composite-strategy or
     :class-name flush-if-some

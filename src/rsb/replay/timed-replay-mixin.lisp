@@ -13,11 +13,11 @@
 classes perform time-based scheduling of replayed events."))
 
 (defmethod process-event :before ((connection         replay-bag-connection)
-				  (strategy           timed-replay-mixin)
-				  (timestamp          local-time:timestamp)
-				  (previous-timestamp local-time:timestamp)
-				  (event              t)
-				  (sink               t))
+                                  (strategy           timed-replay-mixin)
+                                  (timestamp          local-time:timestamp)
+                                  (previous-timestamp local-time:timestamp)
+                                  (event              t)
+                                  (sink               t))
   "Delay the publishing of EVENT for the amount of time computed by
 `schedule-event'."
   (let ((amount (schedule-event strategy event previous-timestamp timestamp)))

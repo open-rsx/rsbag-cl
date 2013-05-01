@@ -6,16 +6,14 @@
 
 (cl:in-package :rsbag.rsb.replay)
 
-
 ;;; `as-fast-as-possible' replay strategy class
-;;
 
 (defmethod find-replay-strategy-class ((spec (eql :as-fast-as-possible)))
   (find-class 'as-fast-as-possible))
 
 (defclass as-fast-as-possible (error-policy-mixin
-			       sequential-mixin
-			       timestamp-adjustment-mixin)
+                               sequential-mixin
+                               timestamp-adjustment-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded, but

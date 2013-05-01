@@ -14,23 +14,23 @@ class."))
 
 (addtest (timestamp-adjustment-mixin-root
           :documentation
-	  "Test construction of `timestamp-adjustment-mixin' instances.")
+          "Test construction of `timestamp-adjustment-mixin' instances.")
   construction
 
   (ensure-cases (args expected)
       `(;; These are OK
-	(()                                                        t)
-	((:adjustments ())                                         t)
-	((:adjustments ((:create :now)))                           t)
-	((:adjustments ((:create ,(local-time:now))))              t)
-	((:adjustments ((:create ,(local-time:now)) (:send :now))) t)
-	((:adjustments ((:send   (:copy :create))))                t)
+        (()                                                        t)
+        ((:adjustments ())                                         t)
+        ((:adjustments ((:create :now)))                           t)
+        ((:adjustments ((:create ,(local-time:now))))              t)
+        ((:adjustments ((:create ,(local-time:now)) (:send :now))) t)
+        ((:adjustments ((:send   (:copy :create))))                t)
 
-	;; invalid syntax
-	((:adjustments :foo)                                       error)
-	((:adjustments (:foo))                                     error)
-	((:adjustments ((:foo)))                                   error)
-	((:adjustments ((:create (:copy))))                        error))
+        ;; invalid syntax
+        ((:adjustments :foo)                                       error)
+        ((:adjustments (:foo))                                     error)
+        ((:adjustments ((:foo)))                                   error)
+        ((:adjustments ((:create (:copy))))                        error))
 
   (case expected
     (error

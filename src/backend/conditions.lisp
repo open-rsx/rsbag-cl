@@ -8,27 +8,27 @@
 
 (define-condition log-file-error (rsbag-error)
   ((source :initarg  :source
-	   :reader   log-file-error-source
-	   :documentation
-	   "Stores the source involved in the error."))
+           :reader   log-file-error-source
+           :documentation
+           "Stores the source involved in the error."))
   (:report
    (lambda (condition stream)
      (format stream "~@<An error has been encountered when operating ~
 on ~A.~@:>"
-	     (log-file-error-source condition))))
+             (log-file-error-source condition))))
   (:documentation
    "Errors of this class and subclasses are signaled when operations
 involving log files fail."))
 
 (define-condition invalid-file-structure (simple-error
-					  log-file-error)
+                                          log-file-error)
   ()
   (:report
    (lambda (condition stream)
      (format stream "~@<Invalid file structure encountered in ~
 ~A~/more-conditions::maybe-print-explanation/~@:>"
-	     (log-file-error-source condition)
-	     condition)))
+             (log-file-error-source condition)
+             condition)))
   (:documentation
    "This error is signaled if an invalid file structure is encountered
 while reading a log file."))

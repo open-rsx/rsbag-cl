@@ -16,7 +16,7 @@ the next `replay' methods to be called with error handling based on
 the installed error policy."))
 
 (defmethod replay :around ((connection replay-bag-connection)
-			   (strategy   error-policy-mixin)
-			   &key &allow-other-keys)
+                           (strategy   error-policy-mixin)
+                           &key &allow-other-keys)
   (rsb.ep:with-error-policy (strategy)
     (call-next-method)))

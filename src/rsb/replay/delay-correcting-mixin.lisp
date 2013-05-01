@@ -8,17 +8,17 @@
 
 (defclass delay-correcting-mixin ()
   ((previous-delay :type     (or null real)
-		   :accessor strategy-previous-delay
-		   :initform nil
-		   :documentation
-		   "Stores the previously scheduled delay to estimate
+                   :accessor strategy-previous-delay
+                   :initform nil
+                   :documentation
+                   "Stores the previously scheduled delay to estimate
 the difference between the scheduled and actual delay. This can become
 negative when the previous wait executed too slowly.")
    (previous-call  :type     (or null local-time:timestamp)
-		   :accessor strategy-previous-call
-		   :initform nil
-		   :documentation
-		   "Stores a timestamp for the previous call to
+                   :accessor strategy-previous-call
+                   :initform nil
+                   :documentation
+                   "Stores a timestamp for the previous call to
 `schedule-event' to estimate how much time actually (as opposed to the
 scheduled time) passed between the previous and the current call."))
   (:documentation
@@ -27,9 +27,9 @@ that compute an ideal delay between successive events and need to have
 this delay adjusted to compensate for processing latencies."))
 
 (defmethod schedule-event :around ((strategy delay-correcting-mixin)
-				   (event    t)
-				   (previous local-time:timestamp)
-				   (next     local-time:timestamp))
+                                   (event    t)
+                                   (previous local-time:timestamp)
+                                   (next     local-time:timestamp))
   ;; Compute the difference between the previously scheduled duration
   ;; and the actual duration. Adjust the next scheduled duration
   ;; accordingly.
@@ -42,15 +42,15 @@ this delay adjusted to compensate for processing latencies."))
   ;; PREVIOUS-DELAY hopefully leads to a compensation in the next
   ;; call.
   (let+ (((&accessors (previous-delay strategy-previous-delay)
-		      (previous-call  strategy-previous-call)) strategy)
-	 (now          (local-time:now))
-	 (actual-delay (when previous-call
-			 (local-time:timestamp-difference
-			  now previous-call)))
-	 (overshoot    (if (and actual-delay previous-delay)
-			   (- actual-delay previous-delay)
-			   0))
-	 (corrected    (- (call-next-method) overshoot)))
+                      (previous-call  strategy-previous-call)) strategy)
+         (now          (local-time:now))
+         (actual-delay (when previous-call
+                         (local-time:timestamp-difference
+                          now previous-call)))
+         (overshoot    (if (and actual-delay previous-delay)
+                           (- actual-delay previous-delay)
+                           0))
+         (corrected    (- (call-next-method) overshoot)))
     (setf previous-delay corrected
-	  previous-call  now)
+          previous-call  now)
     corrected))

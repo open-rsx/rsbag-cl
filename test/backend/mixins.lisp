@@ -6,25 +6,23 @@
 
 (cl:in-package :rsbag.backend.test)
 
-
 ;;; `mock-buffering-backend' class
-;;
 
 (define-condition mock-write-back-error (error)
   ())
 
 (defclass mock-buffering-backend ()
   ((written :initarg  :written
-	    :type     list
-	    :accessor backend-written
-	    :initform nil)))
+            :type     list
+            :accessor backend-written
+            :initform nil)))
 
 (defmethod make-buffer ((backend mock-buffering-backend)
-			(buffer  t))
+                        (buffer  t))
   (list (if buffer (first buffer) (gensym)) nil))
 
 (defmethod write-buffer ((backend mock-buffering-backend)
-			 (buffer  t))
+                         (buffer  t))
   ;; Sleep a little while to simulate slow write-back. This is helpful
   ;; for tests which try to detect failure to write-back data.
   (sleep .001)
@@ -34,15 +32,13 @@
   (values))
 
 (defmethod close ((backend mock-buffering-backend)
-		  &key abort)
+                  &key abort)
   (declare (ignore abort)))
 
-
 ;;;
-;;
 
 (defclass async-double-buffered-writer-mock-backend (mock-buffering-backend
-						     async-double-buffered-writer-mixin)
+                                                     async-double-buffered-writer-mixin)
   ())
 
 (deftestsuite rsbag.backend.async-double-buffered-writer (backend-root)
@@ -52,25 +48,25 @@
 
 (addtest (rsbag.backend.async-double-buffered-writer
           :documentation
-	  "Make sure that that the async write-back of
+          "Make sure that that the async write-back of
 `async-double-buffered-writer' write everything and in the correct
 order.")
   write-back/smoke
 
   (ensure-cases (data)
       `(()
-	(1)
-	,(iota 10)
-	,(iota 100))
+        (1)
+        ,(iota 10)
+        ,(iota 100))
 
     (let+ ((backend        (make-instance 'async-double-buffered-writer-mock-backend))
-	   (expected       '())
-	   (current-buffer nil)
-	   ((&flet do-one (data)
-	      (setf current-buffer (make-buffer backend current-buffer))
-	      (setf (second current-buffer) data)
-	      (appendf expected (list current-buffer))
-	      (write-buffer backend current-buffer))))
+           (expected       '())
+           (current-buffer nil)
+           ((&flet do-one (data)
+              (setf current-buffer (make-buffer backend current-buffer))
+              (setf (second current-buffer) data)
+              (appendf expected (list current-buffer))
+              (write-buffer backend current-buffer))))
       (mapcar #'do-one data)
       (close backend)
 
@@ -78,26 +74,26 @@ order.")
 
 (addtest (rsbag.backend.async-double-buffered-writer
           :documentation
-	  "Make sure that the next operation after a failed async
+          "Make sure that the next operation after a failed async
 write-back of `async-double-buffered-writer' operation signals the
 error.")
   write-back/conditions
 
   (macrolet
       ((with-write-back-error (&body body)
-	 `(let* ((backend (make-instance 'async-double-buffered-writer-mock-backend))
-		 (buffer  (make-buffer backend nil)))
-	    (setf (second buffer) 'error) ; signals an error on write-back
-	    (write-buffer backend buffer) ; does not signal immediately
+         `(let* ((backend (make-instance 'async-double-buffered-writer-mock-backend))
+                 (buffer  (make-buffer backend nil)))
+            (setf (second buffer) 'error) ; signals an error on write-back
+            (write-buffer backend buffer) ; does not signal immediately
 
-	    ;; We expect the next operation, BODY, to receive the
-	    ;; error.
-	    (ensure-condition 'mock-write-back-error ,@body))))
+            ;; We expect the next operation, BODY, to receive the
+            ;; error.
+            (ensure-condition 'mock-write-back-error ,@body))))
 
     ;; Catch the async error in the next write operation.
     (with-write-back-error
       (setf buffer          (make-buffer backend buffer)
-	    (second buffer) 1)
+            (second buffer) 1)
       (write-buffer backend buffer))
 
     ;; Catch the async error when closing the backend.

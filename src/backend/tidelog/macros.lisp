@@ -10,18 +10,18 @@
   (check-type name symbol "a symbol")
 
   (let+ (((&values specs (&plist-r/o (documentation :documentation)
-				     (toplevel?     :toplevel?)))
-	  (parse-specs-and-options specs-and-options)))
+                                     (toplevel?     :toplevel?)))
+          (parse-specs-and-options specs-and-options)))
     `(progn
        ,(specs->class name specs :toplevel?     toplevel?
-				 :documentation documentation)
+                                 :documentation documentation)
        ,(specs->size name specs)
        ,(specs->serializer name specs :toplevel? toplevel?)
        ,(specs->deserializer name specs))))
 
 (defun parse-specs-and-options (specs-and-options)
   (let ((specs   (remove-if     #'keywordp specs-and-options
-				:key #'first))
-	(options (remove-if-not #'keywordp specs-and-options
-				:key #'first)))
+                                :key #'first))
+        (options (remove-if-not #'keywordp specs-and-options
+                                :key #'first)))
     (values specs (apply #'append options))))

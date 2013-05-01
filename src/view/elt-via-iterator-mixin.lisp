@@ -16,9 +16,9 @@ positions an iterator on the requested index and retrieves the element
 from it."))
 
 (defmethod sequence:elt ((view  elt-via-iterator-mixin)
-			 (index integer))
+                         (index integer))
   ;; Create an iterator and advance it to INDEX.
   (let+ (((&values iterator &ign from-end)
-	  (sequence:make-simple-sequence-iterator view)))
+          (sequence:make-simple-sequence-iterator view)))
     (iter (repeat index) (sequence:iterator-step view iterator from-end))
     (sequence:iterator-element view iterator)))

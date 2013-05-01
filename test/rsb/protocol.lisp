@@ -13,39 +13,39 @@
 
 (addtest (events->bag-root
           :documentation
-	  "Smoke test for the `events->bag' function.")
+          "Smoke test for the `events->bag' function.")
   smoke
 
   (ensure-cases (args events expected)
       `(;; Invalid channel strategy => error
-	((:channel-strategy :no-such-strategy)
-	 nil
-	 no-such-channel-strategy-class)
+        ((:channel-strategy :no-such-strategy)
+         nil
+         no-such-channel-strategy-class)
 
-	;; These are valid.
-	((:channel-strategy :scope-and-type)
-	 (1 2 3)
-	 (,(octet-vector 1 0 0 0)
-	  ,(octet-vector 2 0 0 0)
-	  ,(octet-vector 3 0 0 0))))
+        ;; These are valid.
+        ((:channel-strategy :scope-and-type)
+         (1 2 3)
+         (,(octet-vector 1 0 0 0)
+          ,(octet-vector 2 0 0 0)
+          ,(octet-vector 3 0 0 0))))
 
     (let+ (((&flet do-it ()
-	      (with-mock-bag (bag :direction :output) ()
-		(with-open-connection
-		    (connection (apply #'events->bag '("inprocess:") bag args))
-		  (rsb:with-informer (informer "inprocess:" t)
-		    (mapc (lambda (datum)
-			    (let ((buffer (make-octet-vector 4)))
-			      (setf (ub32ref/le buffer 0) datum)
-			      (rsb:send informer buffer
-					:rsb.transport.wire-schema :uint32)))
-			  events))
-		  (map 'list #'rsb:event-data (first (bag-channels bag))))))))
+              (with-mock-bag (bag :direction :output) ()
+                (with-open-connection
+                    (connection (apply #'events->bag '("inprocess:") bag args))
+                  (rsb:with-informer (informer "inprocess:" t)
+                    (mapc (lambda (datum)
+                            (let ((buffer (make-octet-vector 4)))
+                              (setf (ub32ref/le buffer 0) datum)
+                              (rsb:send informer buffer
+                                        :rsb.transport.wire-schema :uint32)))
+                          events))
+                  (map 'list #'rsb:event-data (first (bag-channels bag))))))))
      (case expected
        (no-such-channel-strategy-class
-	(ensure-condition 'no-such-channel-strategy-class (do-it)))
+        (ensure-condition 'no-such-channel-strategy-class (do-it)))
        (t
-	(ensure-same (do-it) expected :test #'equalp))))))
+        (ensure-same (do-it) expected :test #'equalp))))))
 
 (deftestsuite bag->events-root (rsb-root)
   ()
@@ -54,43 +54,43 @@
 
 (addtest (bag->events-root
           :documentation
-	  "Smoke test for the `bag->events' function.")
+          "Smoke test for the `bag->events' function.")
   smoke
 
   (ensure-cases (args &optional expected)
       '(;; Invalid channel strategy => error
-	((:replay-strategy :no-such-strategy)
-	 no-such-replay-strategy-class)
+        ((:replay-strategy :no-such-strategy)
+         no-such-replay-strategy-class)
 
-	;; Cannot supply and arguments which would have applied to
-	;; opening the bag => error
-	((:backend   :does-not-matter) incompatible-arguments)
-	((:transform :does-not-matter) incompatible-arguments)
-	((:bag-class :does-not-matter) incompatible-arguments)
+        ;; Cannot supply and arguments which would have applied to
+        ;; opening the bag => error
+        ((:backend   :does-not-matter) incompatible-arguments)
+        ((:transform :does-not-matter) incompatible-arguments)
+        ((:bag-class :does-not-matter) incompatible-arguments)
 
-	;; These are valid.
-	((:replay-strategy :as-fast-as-possible)))
+        ;; These are valid.
+        ((:replay-strategy :as-fast-as-possible)))
 
     (let+ (((&flet do-it ()
-	      (collecting-events (record)
-		(with-open-connection
-		    (connection
-		     (apply #'bag->events (simple-bag) #'record args))
-		  (replay connection (connection-strategy connection)))
-		(record)))))
+              (collecting-events (record)
+                (with-open-connection
+                    (connection
+                     (apply #'bag->events (simple-bag) #'record args))
+                  (replay connection (connection-strategy connection)))
+                (record)))))
       (case expected
-	(no-such-replay-strategy-class
-	 (ensure-condition 'no-such-replay-strategy-class (do-it)))
-	(incompatible-arguments
-	 (ensure-condition 'incompatible-arguments (do-it)))
-	(t
-	 (ensure-same
-	  (length (do-it))
-	  (reduce #'+ (bag-channels (simple-bag)) :key #'length)))))))
+        (no-such-replay-strategy-class
+         (ensure-condition 'no-such-replay-strategy-class (do-it)))
+        (incompatible-arguments
+         (ensure-condition 'incompatible-arguments (do-it)))
+        (t
+         (ensure-same
+          (length (do-it))
+          (reduce #'+ (bag-channels (simple-bag)) :key #'length)))))))
 
 (addtest (bag->events-root
           :documentation
-	  "Ensure that events replayed via RSB by `bag->events' get
+          "Ensure that events replayed via RSB by `bag->events' get
 the configured prefix scope.")
   prefix-scope
 
@@ -100,12 +100,12 @@ the configured prefix scope.")
     (rsb:with-reader (reader "inprocess:")
       ;; Send the events stored in the mock bag.
       (with-open-connection
-	  (connection (bag->events
+          (connection (bag->events
                        (simple-bag) (format nil "inprocess:~A" prefix)
                        :replay-strategy :as-fast-as-possible))
-	(replay connection (connection-strategy connection)))
+        (replay connection (connection-strategy connection)))
       ;; Receive the events.
       (iter (repeat (reduce #'+ (bag-channels (simple-bag)) :key #'length))
-	    (let ((scope (rsb:event-scope (rsb:receive reader))))
-	      (ensure (not (rsb:scope= scope prefix)))
-	      (ensure (rsb:sub-scope? scope prefix)))))))
+            (let ((scope (rsb:event-scope (rsb:receive reader))))
+              (ensure (not (rsb:scope= scope prefix)))
+              (ensure (rsb:sub-scope? scope prefix)))))))

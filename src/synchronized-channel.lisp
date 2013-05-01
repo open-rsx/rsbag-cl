@@ -8,9 +8,9 @@
 
 (defclass synchronized-channel (channel)
   ((lock :initarg  :lock
-	 :accessor %channel-lock
-	 :documentation
-	 "The lock that is used to synchronize accesses to the
+         :accessor %channel-lock
+         :documentation
+         "The lock that is used to synchronize accesses to the
 channel. Usually points to a lock owned by the containing bag."))
   (:default-initargs
    :lock (required-argument :lock))
@@ -22,16 +22,16 @@ in comparison to the single-threaded case."))
 (macrolet
     ((define-synchronized-method (name args)
        `(defmethod ,name :around ,args
-		   (bt:with-lock-held ((%channel-lock channel))
-		     (call-next-method)))))
+                   (bt:with-lock-held ((%channel-lock channel))
+                     (call-next-method)))))
   (define-synchronized-method
       channel-timestamps ((channel synchronized-channel)))
   (define-synchronized-method
       entry ((channel synchronized-channel)
-	     (index   t)
-	     &key &allow-other-keys))
+             (index   t)
+             &key &allow-other-keys))
   (define-synchronized-method
       (setf entry) ((new-value t)
-		    (channel   synchronized-channel)
-		    (index     t)
-		    &key &allow-other-keys)))
+                    (channel   synchronized-channel)
+                    (index     t)
+                    &key &allow-other-keys)))

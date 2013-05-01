@@ -6,20 +6,18 @@
 
 (cl:in-package :rsbag)
 
-
-;;; Back opening protocol
-;;
+;;; Bag opening protocol
 
 (defgeneric open-bag (source
-		      &rest args
-		      &key
-		      direction
-		      if-exists
-		      backend
-		      flush-strategy
-		      bag-class
-		      transform
-		      &allow-other-keys)
+                      &rest args
+                      &key
+                      direction
+                      if-exists
+                      backend
+                      flush-strategy
+                      bag-class
+                      transform
+                      &allow-other-keys)
   (:documentation
    "Open the data source SOURCE and return a bag object using the
 backend designated by BACKEND and passing ARGS (except the keyword
@@ -47,96 +45,92 @@ Example:
 RSBAG> (open-bag #p\"/tmp/mylog.tide\" :backend :tidelog)
 #<BAG (1) {}>"))
 
-
 ;;; Default behavior
-;;
 
 (defmethod open-bag :around ((source t)
-			     &rest args &key)
+                             &rest args &key)
   (with-condition-translation
       (((error open-error)
-	:source source))
+        :source source))
     (iter (restart-case
-	      (return (apply #'call-next-method source args))
-	    (retry ()
-	      :report (lambda (stream)
-			(format stream "~@<Retry opening the bag ~
+              (return (apply #'call-next-method source args))
+            (retry ()
+              :report (lambda (stream)
+                        (format stream "~@<Retry opening the bag ~
 stored in ~S.~@:>"
-				source)))
-	    (use-source (new-value)
-	      :report      (lambda (stream)
-			     (format stream "~@<Use a different source ~
+                                source)))
+            (use-source (new-value)
+              :report      (lambda (stream)
+                             (format stream "~@<Use a different source ~
 instead of ~S.~@:>"
-				     source))
-	      :interactive (lambda ()
-			     (format *query-io* "~@<Specify source (not evaluated): ~@:>")
-			     (force-output *query-io*)
-			     (list (read *query-io*)))
-	      (setf source new-value))))))
+                                     source))
+              :interactive (lambda ()
+                             (format *query-io* "~@<Specify source (not evaluated): ~@:>")
+                             (force-output *query-io*)
+                             (list (read *query-io*)))
+              (setf source new-value))))))
 
 (defmethod open-bag ((source stream)
-		     &rest args
-		     &key
-		     location
-		     (direction      (missing-required-argument :direction))
-		     (backend        (missing-required-argument :backend))
-		     (flush-strategy nil)
-		     (bag-class      'bag)
-		     transform)
+                     &rest args
+                     &key
+                     location
+                     (direction      (missing-required-argument :direction))
+                     (backend        (missing-required-argument :backend))
+                     (flush-strategy nil)
+                     (bag-class      'bag)
+                     transform)
   (check-type direction direction      "either :input, :output or :io")
   (check-type transform transform-spec "a transformation specification")
   (when (and flush-strategy (eq direction :input))
     (incompatible-arguments :direction      direction
-			    :flush-strategy flush-strategy))
+                            :flush-strategy flush-strategy))
 
   (let ((backend (apply #'make-instance
-			(rsbag.backend:find-backend-class backend)
-			:stream    source
-			:location  location
-			:direction direction
-			(append
-			 (when flush-strategy
-			   (list :flush-strategy
-				 (apply #'rsbag.backend:make-flush-strategy
-					(ensure-list flush-strategy))))
-			 (remove-from-plist
-			  args :direction :backend :flush-strategy
-			       :bag-class :transform)))))
+                        (rsbag.backend:find-backend-class backend)
+                        :stream    source
+                        :location  location
+                        :direction direction
+                        (append
+                         (when flush-strategy
+                           (list :flush-strategy
+                                 (apply #'rsbag.backend:make-flush-strategy
+                                        (ensure-list flush-strategy))))
+                         (remove-from-plist
+                          args :direction :backend :flush-strategy
+                               :bag-class :transform)))))
     (make-instance bag-class
-		   :backend   backend
-		   :direction direction
-		   :transform transform)))
+                   :backend   backend
+                   :direction direction
+                   :transform transform)))
 
 (defmethod open-bag ((source pathname)
-		     &rest args
-		     &key
-		     (location  source)
-		     (direction :io)
-		     (if-exists :error)
-		     (backend   (make-keyword
-				 (string-upcase (pathname-type source)))))
+                     &rest args
+                     &key
+                     (location  source)
+                     (direction :io)
+                     (if-exists :error)
+                     (backend   (make-keyword
+                                 (string-upcase (pathname-type source)))))
   (let ((stream (open source
-		      :element-type      '(unsigned-byte 8)
-		      :direction         direction
-		      :if-exists         if-exists
-		      :if-does-not-exist (case direction
-					   (:input        :error)
-					   ((:output :io) :create)))))
+                      :element-type      '(unsigned-byte 8)
+                      :direction         direction
+                      :if-exists         if-exists
+                      :if-does-not-exist (case direction
+                                           (:input        :error)
+                                           ((:output :io) :create)))))
     (apply #'open-bag stream
-	   :location  location
-	   :direction direction
-	   :backend   backend
-	   (remove-from-plist
-	    args :location :direction :if-exists :backend))))
+           :location  location
+           :direction direction
+           :backend   backend
+           (remove-from-plist
+            args :location :direction :if-exists :backend))))
 
 (defmethod open-bag ((source string)
-		     &rest args
-		     &key &allow-other-keys)
+                     &rest args
+                     &key &allow-other-keys)
   (apply #'open-bag (parse-namestring source) args))
 
-
 ;;; Bag protocol
-;;
 
 (defgeneric bag-location (bag)
   (:documentation
@@ -159,8 +153,8 @@ channels of the bag."))
    "Return a list of the `channel's stored in bag."))
 
 (defgeneric bag-channel (bag name
-			 &key
-			 if-does-not-exist)
+                         &key
+                         if-does-not-exist)
   (:documentation
    "Return the `channel' named NAME in BAG.
 
@@ -170,9 +164,9 @@ causes an error to be signaled and nil, which causes nil to be
 returned."))
 
 (defgeneric (setf bag-channel) (spec bag name
-				&key
-				if-exists
-				transform)
+                                &key
+                                if-exists
+                                transform)
   (:documentation
    "Add or update and return the channel named NAME in BAG. SPEC is a
 plist which specifies properties of the created or updated
@@ -188,19 +182,17 @@ applied to all value read from/written to the channel. Valid values
 are nil or an object implementing the transform protocol specified in
 rsbag.transform."))
 
-
 ;;; Bag behind-the-scenes protocol ;)
-;;
 
 (defgeneric %channel-class (bag)
   (:documentation
    "Return the channel class used by bag."))
 
 (defgeneric %make-channel (bag name meta-data transform
-			   &rest args
-			   &key
-			   id
-			   &allow-other-keys)
+                           &rest args
+                           &key
+                           id
+                           &allow-other-keys)
   (:documentation
    "Create and return a new channel named NAME with id ID and
 associated meta-data META-DATA and TRANSFORM for BAG. The returned
@@ -212,9 +204,9 @@ is used.
 ARGS are passed to the constructed channel."))
 
 (defgeneric %make-channel-transform (bag name meta-data
-				     &key
-				     id
-				     spec)
+                                     &key
+                                     id
+                                     spec)
   (:documentation
    "Make and return a suitable transformation for the channel in BAG
 described by NAME, META-DATA, ID and SPEC
@@ -223,9 +215,7 @@ SPEC can be used to specify additional parameters for the constructed
 transformation or to specify an entirely different transformation. See
 the type `transform-spec'."))
 
-
 ;;; Channel protocol
-;;
 
 (defgeneric channel-bag (channel)
   (:documentation
@@ -259,8 +249,8 @@ the points in time for which CHANNEL contains entries."))
 the timestamps and associated entries of CHANNEL."))
 
 (defgeneric entry (channel index
-		   &key
-		   if-does-not-exist)
+                   &key
+                   if-does-not-exist)
   (:documentation
    "Return the entry at position or time INDEX in CHANNEL. If INDEX is
 an integer, the INDEX-th entry is returned. If INDEX is a
@@ -272,8 +262,8 @@ INDEX. Valid values are nil, which causes nil to be returned
 and :error, which causes an error to be signaled."))
 
 (defgeneric (setf entry) (new-value channel index
-			  &key
-			  if-exists)
+                          &key
+                          if-exists)
   (:documentation
    "Store NEW-VALUE as the value of the entry at position or time
 INDEX in CHANNEL. If INDEX is an integer, the INDEX-th entry is
@@ -289,10 +279,9 @@ and :supersede, which causes the stored value to be replaced."))
 ;; protocol such that the channel appears as a sequence of its
 ;; entries.
 
-
 ;;; Time range protocol
-;;
-;; Applicable to at least channels and whole bags.
+;;;
+;;; Applicable to at least channels and whole bags.
 
 (defgeneric start (bag-or-channel)
   (:documentation

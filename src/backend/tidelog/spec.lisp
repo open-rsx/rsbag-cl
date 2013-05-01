@@ -8,17 +8,17 @@
 
 (define-element (tide)
   (version-major (unsigned-byte 8)
-		 :documentation
-		 "Major version of the TIDE format used.")
+                 :documentation
+                 "Major version of the TIDE format used.")
   (version-minor (unsigned-byte 8)
-		 :documentation
-		 "Minor version of the TIDE format used.")
+                 :documentation
+                 "Minor version of the TIDE format used.")
   (num-channels  (unsigned-byte 32)
-		 :documentation
-		 "Number of channels of data in the file.")
+                 :documentation
+                 "Number of channels of data in the file.")
   (num-chunks    (unsigned-byte 32)
-		 :documentation
-		 "Number of chunk blocks that are in the file.")
+                 :documentation
+                 "Number of chunk blocks that are in the file.")
   (:toplevel? t)
   (:documentation
    "Header block of TIDELog file. Implementations are required to
@@ -31,25 +31,25 @@ will hopefully be removed from the specification."))
 
 (define-element (chan)
   (id            (unsigned-byte 32)
-		 :documentation
-		 "Channel identification, used to link entries to the
+                 :documentation
+                 "Channel identification, used to link entries to the
 channel.")
   (name          (:string (unsigned-byte 8))
-		 :documentation
-		 "Name of the channel, as a character string.")
+                 :documentation
+                 "Name of the channel, as a character string.")
   (type          (:string (unsigned-byte 32))
-		 :documentation
-		 "String describing the type of the format.")
+                 :documentation
+                 "String describing the type of the format.")
   (source-name   (:string (unsigned-byte 32))
-		 :documentation
-		 "Human-readable source description.")
+                 :documentation
+                 "Human-readable source description.")
   (source-config (:string (unsigned-byte 32))
-		 :documentation
-		 "Raw data describing the source of this channel's
+                 :documentation
+                 "Raw data describing the source of this channel's
 data.")
   (format        (:string (unsigned-byte 32))
-		 :documentation
-		 "Raw data describing the format of the channel's
+                 :documentation
+                 "Raw data describing the format of the channel's
 data.")
   (:toplevel? t)
   (:documentation
@@ -90,11 +90,11 @@ description in this field."))
 
 (define-element (indx)
   (channel-id (unsigned-byte 32)
-	      :documentation
-	      "Points to the channel this block indexes.")
+              :documentation
+              "Points to the channel this block indexes.")
   (count      (unsigned-byte 32)
-	      :documentation
-	      "Number of indices in this block.")
+              :documentation
+              "Number of indices in this block.")
   (entries    (:repeated count index-entry))
   (:toplevel? t)
   (:documentation
@@ -108,14 +108,14 @@ and `count' fields and a variable-length section consisting of COUNT
 
 (define-element (index-entry)
   (chunk-id  (unsigned-byte 32)
-	     :documentation
-	     "Points to the chunk this entry is stored in.")
+             :documentation
+             "Points to the chunk this entry is stored in.")
   (timestamp (unsigned-byte 64)
-	     :documentation
-	     "Timestamp of the entry.")
+             :documentation
+             "Timestamp of the entry.")
   (offset    (unsigned-byte 64)
-	     :documentation
-	     "Offset (in bytes) in the chunk's uncompressed data of
+             :documentation
+             "Offset (in bytes) in the chunk's uncompressed data of
 the entry.")
   (:documentation
    "The offset points to the specific position in the data of the
@@ -124,20 +124,20 @@ the offset refers to the data once it has been uncompressed."))
 
 (define-element (chnk)
   (chunk-id    (unsigned-byte 32)
-	       :documentation
-	       "Chunk identification, used to link entries to chunks.")
+               :documentation
+               "Chunk identification, used to link entries to chunks.")
   (count       (unsigned-byte 32)
-	       :documentation
-	       "Number of entries in this chunk.")
+               :documentation
+               "Number of entries in this chunk.")
   (start       (unsigned-byte 64)
-	       :documentation
-	       "Timestamp of the first entry in this chunk.")
+               :documentation
+               "Timestamp of the first entry in this chunk.")
   (end         (unsigned-byte 64)
-	       :documentation
-	       "Timestamp of the last entry in this chunk.")
+               :documentation
+               "Timestamp of the last entry in this chunk.")
   (compression (unsigned-byte 8)
-	       :documentation
-	       "Indicates the compression used on the entries.
+               :documentation
+               "Indicates the compression used on the entries.
 
 The value must be one of the following values:
 0: No compression.
@@ -154,17 +154,17 @@ section consisting of COUNT `chunk-entry' elements."))
 
 (define-element (chunk-entry)
   (channel-id (unsigned-byte 32)
-	      :documentation
-	      "Points to the channel this entry belongs to.")
+              :documentation
+              "Points to the channel this entry belongs to.")
   (timestamp  (unsigned-byte 64)
-	      :documentation
-	      "Timestamp of the entry.")
+              :documentation
+              "Timestamp of the entry.")
   (size       (unsigned-byte 32)
-	      :documentation
-	      "Size of the following serialised data.")
+              :documentation
+              "Size of the following serialised data.")
   (entry      (:blob size)
-	      :documentation
-	      "Serialized entry data.")
+              :documentation
+              "Serialized entry data.")
   (:documentation
    "A CHUNK-ENTRY block stores a single data item that was recorded on
 a particular channel and a particular point in time."))

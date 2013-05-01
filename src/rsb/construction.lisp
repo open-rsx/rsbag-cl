@@ -6,194 +6,188 @@
 
 (cl:in-package :rsbag.rsb)
 
-
 ;;; RSB events -> bag
-;;
 
 (defmethod events->bag ((source listener)
-			(dest   bag)
-			&key
-			(timestamp        :send)
-			(channel-strategy :scope-and-type)
-			(start?           t)
-			&allow-other-keys)
+                        (dest   bag)
+                        &key
+                        (timestamp        :send)
+                        (channel-strategy :scope-and-type)
+                        (start?           t)
+                        &allow-other-keys)
   (make-instance
    'recording-channel-connection
    :bag       dest
    :endpoint  source
    :timestamp timestamp
    :strategy  (apply #'make-channel-strategy
-		     (ensure-list channel-strategy))
+                     (ensure-list channel-strategy))
    :start?    start?))
 
 (defmethod events->bag ((source puri:uri)
-			(dest   bag)
-			&rest args
-			&key
-			(transports '((t :expose (:rsb.transport.wire-schema))))
-			(filters    nil filters-supplied?))
+                        (dest   bag)
+                        &rest args
+                        &key
+                        (transports '((t :expose (:rsb.transport.wire-schema))))
+                        (filters    nil filters-supplied?))
   (let ((listener (make-listener source
-				 :transports transports
-				 :converters '((t . :fundamental-null)))))
+                                 :transports transports
+                                 :converters '((t . :fundamental-null)))))
     (when filters-supplied?
       (setf (receiver-filters listener) filters))
     (apply #'events->bag
-	   listener
-	   dest
-	   (remove-from-plist args :transports :filters))))
+           listener
+           dest
+           (remove-from-plist args :transports :filters))))
 
 (defmethod events->bag ((source string)
-			(dest   bag)
-			&rest args &key)
+                        (dest   bag)
+                        &rest args &key)
   (apply #'events->bag (puri:parse-uri source) dest args))
 
 (defmethod events->bag ((source sequence)
-			(dest   bag)
-			&rest args &key)
+                        (dest   bag)
+                        &rest args &key)
   (make-instance 'bag-connection
-		 :bag      dest
-		 :channels (map 'list
-				#'(lambda (source)
-				    (apply #'events->bag source dest args))
-				source)))
+                 :bag      dest
+                 :channels (map 'list
+                                #'(lambda (source)
+                                    (apply #'events->bag source dest args))
+                                source)))
 
 (macrolet ((define-open-bag-method (type)
-	     `(progn
-		(defmethod events->bag ((source string)
-					(dest   ,type)
-					&rest args &key)
-		  (apply #'events->bag (list source) dest args))
+             `(progn
+                (defmethod events->bag ((source string)
+                                        (dest   ,type)
+                                        &rest args &key)
+                  (apply #'events->bag (list source) dest args))
 
-		(defmethod events->bag ((source t)
-					(dest   ,type)
-					&rest args
-					&key
-					(if-exists      :error if-exists-supplied?)
-					backend
-					(flush-strategy nil)
-					(bag-class      'synchronized-bag))
-		  (apply #'events->bag source
-			 (apply #'open-bag dest
-				:bag-class bag-class
-				:direction :io
-				(append (when if-exists-supplied?
-					  (list :if-exists if-exists))
-					(when backend
-					  (list :backend backend))
-					(when flush-strategy
-					  (list :flush-strategy flush-strategy))))
-			 (remove-from-plist args :backend :flush-strategy :bag-class))))))
+                (defmethod events->bag ((source t)
+                                        (dest   ,type)
+                                        &rest args
+                                        &key
+                                        (if-exists      :error if-exists-supplied?)
+                                        backend
+                                        (flush-strategy nil)
+                                        (bag-class      'synchronized-bag))
+                  (apply #'events->bag source
+                         (apply #'open-bag dest
+                                :bag-class bag-class
+                                :direction :io
+                                (append (when if-exists-supplied?
+                                          (list :if-exists if-exists))
+                                        (when backend
+                                          (list :backend backend))
+                                        (when flush-strategy
+                                          (list :flush-strategy flush-strategy))))
+                         (remove-from-plist args :backend :flush-strategy :bag-class))))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
 
-
 ;;; bag -> RSB events
-;;
 
 (macrolet ((define-open-bag-method (type)
-	     `(defmethod bag->events ((source ,type)
-				      (dest   t)
-				      &rest args
-				      &key
-				      backend
-				      transform
-				      (bag-class 'synchronized-bag))
-		(apply #'bag->events
-		       (apply #'open-bag source
-			      :bag-class bag-class
-			      :direction :input
-			      (append (when backend
-					(list :backend backend))
-				      (when transform
-					(list :transform transform))))
-		       dest
-		       (remove-from-plist
-			args :backend :transform :bag-class)))))
+             `(defmethod bag->events ((source ,type)
+                                      (dest   t)
+                                      &rest args
+                                      &key
+                                      backend
+                                      transform
+                                      (bag-class 'synchronized-bag))
+                (apply #'bag->events
+                       (apply #'open-bag source
+                              :bag-class bag-class
+                              :direction :input
+                              (append (when backend
+                                        (list :backend backend))
+                                      (when transform
+                                        (list :transform transform))))
+                       dest
+                       (remove-from-plist
+                        args :backend :transform :bag-class)))))
   (define-open-bag-method string)
   (define-open-bag-method pathname)
   (define-open-bag-method stream))
 
 (defmethod bag->events ((source bag)
-			(dest   t)
-			&rest args
-			&key
-			(replay-strategy :recorded-timing)
-			(channels        t)
-			(backend   nil backend-supplied?)
-			(transform nil transform-supplied?)
-			(bag-class nil bag-class-supplied?))
+                        (dest   t)
+                        &rest args
+                        &key
+                        (replay-strategy :recorded-timing)
+                        (channels        t)
+                        (backend   nil backend-supplied?)
+                        (transform nil transform-supplied?)
+                        (bag-class nil bag-class-supplied?))
   (let+ (((&flet check-arg (name value supplied?)
-	   (when supplied?
-	     (more-conditions:incompatible-arguments
-	      'source source name value)))))
+           (when supplied?
+             (more-conditions:incompatible-arguments
+              'source source name value)))))
     (check-arg :backend   backend   backend-supplied?)
     (check-arg :transform transform transform-supplied?)
     (check-arg :bag-class bag-class bag-class-supplied?))
 
   (let+ ((predicate  (if (eq channels t) (constantly t) channels))
-	 (channels   (remove-if-not predicate (bag-channels source)))
-	 (other-args (remove-from-plist args :replay-strategy :channels))
-	 ((&flet do-channel (channel)
-	    (apply #'bag->events channel dest other-args)))
-	 (connections (map 'list #'do-channel channels))
-	 ((class &rest args) (ensure-list replay-strategy))
-	 (strategy (apply #'make-replay-strategy class
-			  (append other-args args))))
+         (channels   (remove-if-not predicate (bag-channels source)))
+         (other-args (remove-from-plist args :replay-strategy :channels))
+         ((&flet do-channel (channel)
+            (apply #'bag->events channel dest other-args)))
+         (connections (map 'list #'do-channel channels))
+         ((class &rest args) (ensure-list replay-strategy))
+         (strategy (apply #'make-replay-strategy class
+                          (append other-args args))))
     (make-instance 'replay-bag-connection
-		   :bag      source
-		   :channels connections
-		   :strategy strategy)))
+                   :bag      source
+                   :channels connections
+                   :strategy strategy)))
 
 (defmethod bag->events ((source t)
-			(dest   string)
-			&rest args &key)
+                        (dest   string)
+                        &rest args &key)
   (apply #'bag->events source (puri:parse-uri dest) args))
 
 (defmethod bag->events ((source channel)
-			(dest   puri:uri)
-			&key)
+                        (dest   puri:uri)
+                        &key)
   (let+ ((name (%legalize-name
-		(if (starts-with #\/ (channel-name source))
-		    (subseq (channel-name source) 1)
-		    (channel-name source))))
-	 ((&values uri prefix-scope) (%make-playback-uri name dest))
-	 ((&plist-r/o (type :type)) (channel-meta-data source))
-	 (converter
-	  (make-instance 'rsb.converter:force-wire-schema
-			 :wire-schema (if (consp type)
-					  (second type)
-					  :bytes)))
-	 (participant
-	  (apply #'make-informer
-		 uri t :converters `((t . ,converter))
-		 (when-let ((transform
-			     (%make-scope-transform prefix-scope type)))
-		   (list :transform (list transform))))))
+                (if (starts-with #\/ (channel-name source))
+                    (subseq (channel-name source) 1)
+                    (channel-name source))))
+         ((&values uri prefix-scope) (%make-playback-uri name dest))
+         ((&plist-r/o (type :type)) (channel-meta-data source))
+         (converter
+          (make-instance 'rsb.converter:force-wire-schema
+                         :wire-schema (if (consp type)
+                                          (second type)
+                                          :bytes)))
+         (participant
+          (apply #'make-informer
+                 uri t :converters `((t . ,converter))
+                 (when-let ((transform
+                             (%make-scope-transform prefix-scope type)))
+                   (list :transform (list transform))))))
     (make-instance 'participant-channel-connection
-		   :bag      (channel-bag source)
-		   :channels (list source)
-		   :endpoint participant)))
+                   :bag      (channel-bag source)
+                   :channels (list source)
+                   :endpoint participant)))
 
 (defmethod bag->events ((source channel)
-			(dest   function)
-			&key)
+                        (dest   function)
+                        &key)
   (make-instance 'channel-connection
-		 :bag      (channel-bag source)
-		 :channels (list source)
-		 :endpoint dest))
+                 :bag      (channel-bag source)
+                 :channels (list source)
+                 :endpoint dest))
 
-
 ;;; Utility functions
-;;
 
 (defun %legalize-name (name)
   "Remove characters from NAME which would be illegal in scope names."
   (if-let ((colon-index (position #\: name)))
     (%legalize-name (subseq name 0 colon-index))
     (remove-if (complement (disjoin #'alphanumericp
-				    (curry #'char-equal #\/)))
-	       name)))
+                                    (curry #'char-equal #\/)))
+               name)))
 
 (defun %make-playback-uri (channel-name base-uri)
   "Return two values:
@@ -211,14 +205,14 @@
     ;; there is a "/" or not.
     (unless (ends-with #\/ (puri:uri-path base-uri))
       (setf (puri:uri-path base-uri)
-	    (concatenate 'string (puri:uri-path base-uri) "/")))
+            (concatenate 'string (puri:uri-path base-uri) "/")))
     (let ((result (puri:merge-uris channel-name base-uri))
-	  (prefix (unless (string= (puri:uri-path base-uri) "/")
-		    (rsb:make-scope (puri:uri-path base-uri) :intern? t))))
+          (prefix (unless (string= (puri:uri-path base-uri) "/")
+                    (rsb:make-scope (puri:uri-path base-uri) :intern? t))))
       ;; Merging stomps on the query part, if any, of
       ;; BASE-URI. Restore it afterward.
       (when (puri:uri-query base-uri)
-	(setf (puri:uri-query result) (puri:uri-query base-uri)))
+        (setf (puri:uri-query result) (puri:uri-query base-uri)))
       (values result prefix))))
 
 (defun %make-scope-transform (scope type)
@@ -229,9 +223,9 @@ scopes of transformed events if TYPE is of the form
 
 ."
   (when (and scope
-	     (typep type '(cons keyword))
-	     (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))
+             (typep type '(cons keyword))
+             (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))
     (lambda (event)
       (setf (event-scope event)
-	    (rsb:merge-scopes (event-scope event) scope))
+            (rsb:merge-scopes (event-scope event) scope))
       event)))

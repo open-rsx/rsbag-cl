@@ -13,14 +13,14 @@
 condition classes."))
 
 (define-condition tidelog-file-error (log-file-error
-				      tidelog-condition)
+                                      tidelog-condition)
   ()
   (:documentation
    "Errors of this class and subclasses are signaled when operations
 involving TIDE log files fail."))
 
 (define-condition invalid-tidelog-structure (invalid-file-structure
-					     tidelog-condition)
+                                             tidelog-condition)
   ()
   (:documentation
    "This error is signaled if an invalid file structure is encountered

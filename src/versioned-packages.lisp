@@ -11,9 +11,9 @@
   (format-symbol :keyword "~A-~A" name version))
 
 (defmacro with-renamed-package ((old-name new-name
-					  &optional
-					  (temp-name (format nil "~A-TEMP" old-name)))
-				&body body)
+                                          &optional
+                                          (temp-name (format nil "~A-TEMP" old-name)))
+                                &body body)
   "Execute BODY with the package designated by OLD-NAME moved out of
 the way, then rename the package designated by OLD-NAME to
 NEW-NAME. This allow BODY to seemingly load stuff into OLD-NAME which
@@ -23,14 +23,14 @@ will end up in NEW-NAME without disturbing the contents of OLD-NAME."
        (%maybe-delete-package ,new-name)
        (%maybe-delete-package ,temp-name)
        (when ,package
-	 (rename-package ,package ,temp-name))
+         (rename-package ,package ,temp-name))
        (unwind-protect
-	    (prog1
-		,@body
-	      (rename-package (find-package ,old-name) ,new-name))
-	 (%maybe-delete-package ,old-name)
-	 (when ,package
-	   (rename-package ,package ,old-name))))))
+            (prog1
+                ,@body
+              (rename-package (find-package ,old-name) ,new-name))
+         (%maybe-delete-package ,old-name)
+         (when ,package
+           (rename-package ,package ,old-name))))))
 
 (defmacro with-renamed-packages ((&rest renames) &body body)
   "Execute BODY with multiple renamings in the sense of
@@ -40,10 +40,10 @@ will end up in NEW-NAME without disturbing the contents of OLD-NAME."
 
 ."
   (labels ((wrap (renames body)
-	     (if renames
-		 `(with-renamed-package ,(first renames)
-		    ,(wrap (rest renames) body))
-		 `(progn ,@body))))
+             (if renames
+                 `(with-renamed-package ,(first renames)
+                    ,(wrap (rest renames) body))
+                 `(progn ,@body))))
     (wrap renames body)))
 
 (defmacro with-versioned-packages ((version &rest packages) &body body)
@@ -53,14 +53,12 @@ VERSION."
   (check-type version string)
 
   (flet ((without-and-with-version (name)
-	   (list name (make-versioned-name name version))))
+           (list name (make-versioned-name name version))))
     `(with-renamed-packages ,(map 'list #'without-and-with-version
-				  packages)
+                                  packages)
        ,@body)))
 
-
 ;;; Utility functions
-;;
 
 (defun %maybe-delete-package (designator)
   "If DESIGNATOR designates a package, delete it."

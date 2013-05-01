@@ -8,23 +8,23 @@
 
 (defclass mock-buffer ()
   ((length/entries :initarg  :length/entries
-		   :accessor length/entries)
+                   :accessor length/entries)
    (length/bytes   :initarg  :length/bytes
-		   :accessor length/bytes)))
+                   :accessor length/bytes)))
 
 (defmethod buffer-property ((backend t)
-			    (buffer  mock-buffer)
-			    (name    (eql :length/entries)))
+                            (buffer  mock-buffer)
+                            (name    (eql :length/entries)))
   (length/entries buffer))
 
 (defmethod buffer-property ((backend t)
-			    (buffer  mock-buffer)
-			    (name    (eql :length/bytes)))
+                            (buffer  mock-buffer)
+                            (name    (eql :length/bytes)))
   (length/bytes buffer))
 
 (defmethod buffer-property ((backend t)
-			    (buffer  mock-buffer)
-			    (name    (eql :time-to-last-write)))
+                            (buffer  mock-buffer)
+                            (name    (eql :time-to-last-write)))
   5)
 
 (deftestsuite flush-strategies-root (backend-root)
@@ -39,40 +39,40 @@
   (let ((suite-name (format-symbol *package* "~A-ROOT" spec)))
     `(progn
        (deftestsuite ,suite-name (flush-strategies-root)
-	 ()
-	 (:documentation
-	  ,(format nil "Test suite for ~(~A~) flush strategy."
-		   spec)))
+         ()
+         (:documentation
+          ,(format nil "Test suite for ~(~A~) flush strategy."
+                   spec)))
 
        (addtest (,suite-name
-		 :documentation
-		 ,(format nil "Test constructing ~(~A~) instances."
-			  spec))
-	 construct
+                 :documentation
+                 ,(format nil "Test constructing ~(~A~) instances."
+                          spec))
+         construct
 
-	 (ensure-cases (strategy-args buffer-args expected)
-	     (list ,@cases)
+         (ensure-cases (strategy-args buffer-args expected)
+             (list ,@cases)
 
-	   (if (eq expected :error)
-	       (ensure-condition 'error
-		 (make-strategy ,spec strategy-args))
-	       (ensure-null
-		(emptyp
-		 (princ-to-string
-		  (make-strategy ,spec strategy-args)))))))
+           (if (eq expected :error)
+               (ensure-condition 'error
+                 (make-strategy ,spec strategy-args))
+               (ensure-null
+                (emptyp
+                 (princ-to-string
+                  (make-strategy ,spec strategy-args)))))))
 
        (addtest (,suite-name
-		 :documentation
-		 ,(format nil "Test constructing ~(~A~) instances."
-			  spec))
-	 smoke
+                 :documentation
+                 ,(format nil "Test constructing ~(~A~) instances."
+                          spec))
+         smoke
 
-	 (ensure-cases (strategy-args buffer-args expected)
-	     (remove :error (list ,@cases) :key #'third)
+         (ensure-cases (strategy-args buffer-args expected)
+             (remove :error (list ,@cases) :key #'third)
 
-	   (let ((strategy (make-strategy ,spec strategy-args))
-		 (buffer   (apply #'make-instance 'mock-buffer buffer-args)))
-	     (ensure-same (flush? strategy t buffer) expected)))))))
+           (let ((strategy (make-strategy ,spec strategy-args))
+                 (buffer   (apply #'make-instance 'mock-buffer buffer-args)))
+             (ensure-same (flush? strategy t buffer) expected)))))))
 
 (define-basic-flush-strategy-suite (:property-limit)
   ;; Missing required initargs.
