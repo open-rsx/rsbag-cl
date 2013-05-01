@@ -35,29 +35,29 @@
 (defmethod %make-key-function ((sequence sequence))
   "When SEQUENCE is just a `sequence', we assume it consists of
 timestamps."
-  #'(lambda (sequence iterator limit from-end)
-      (unless (sequence:iterator-endp sequence iterator limit from-end)
-        (sequence:iterator-element sequence iterator))))
+  (lambda (sequence iterator limit from-end)
+    (unless (sequence:iterator-endp sequence iterator limit from-end)
+      (sequence:iterator-element sequence iterator))))
 
 (defmethod %make-key-function ((sequence channel))
   "When SEQUENCE is a `channel', we can use timestamps as keys by
 using the index of the iterator and looking up the corresponding
 timestamp in `channel-timestamps'."
-  #'(lambda (sequence iterator limit from-end)
-      (unless (sequence:iterator-endp sequence iterator limit from-end)
-        (sequence:elt
-         (channel-timestamps sequence)
-         (sequence:iterator-index sequence iterator)))))
+  (lambda (sequence iterator limit from-end)
+    (unless (sequence:iterator-endp sequence iterator limit from-end)
+      (sequence:elt
+       (channel-timestamps sequence)
+       (sequence:iterator-index sequence iterator)))))
 
 (defmethod %make-key-function ((sequence channel-items))
   "When SEQUENCE is of type `channel-items', we can use the index of
 the iterator and look up the corresponding timestamp in the timestamp
 sequence."
-  #'(lambda (sequence iterator limit from-end)
-      (unless (sequence:iterator-endp sequence iterator limit from-end)
-        (sequence:elt
-         (rsbag::%channel-items-timestamps sequence)
-         (sequence:iterator-index sequence iterator)))))
+  (lambda (sequence iterator limit from-end)
+    (unless (sequence:iterator-endp sequence iterator limit from-end)
+      (sequence:elt
+       (rsbag::%channel-items-timestamps sequence)
+       (sequence:iterator-index sequence iterator)))))
 
 ;;; `serialized' class
 
@@ -216,7 +216,7 @@ the previous element of the serialized sequence of nil."
          ((&flet back (iterator)
             (cons (%iterator-step (copy-list iterator) key t) iterator))))
     (cdr (reduce
-          #'(lambda (left right)
-              (if (eq (%iterator-min (car left) (car right) compare) (car left))
-                  right left))
+          (lambda (left right)
+            (if (eq (%iterator-min (car left) (car right) compare) (car left))
+                right left))
           (mapcar #'back (remove-if #'cannot-step-back? iterators))))))

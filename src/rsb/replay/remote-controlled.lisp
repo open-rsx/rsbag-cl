@@ -87,16 +87,16 @@ quit(): void
   "Create methods in the RPC server for the elements of NEW-VALUE."
   (let+ (((&accessors-r/o (server %strategy-server)) strategy)
          ((&flet make-command (function request future)
-            #'(lambda ()
-                (handler-case
-                    (let ((result (multiple-value-list
-                                   (apply function request))))
-                      (setf (future-result future)
-                            (if result
-                                (first result)
-                                rsb.converter:+no-value+))) ; TODO(jmoringe): ugly
-                  (error (condition)
-                    (setf (future-error future) condition)))))))
+            (lambda ()
+              (handler-case
+                  (let ((result (multiple-value-list
+                                 (apply function request))))
+                    (setf (future-result future)
+                          (if result
+                              (first result)
+                              rsb.converter:+no-value+))) ; TODO(jmoringe): ugly
+                (error (condition)
+                  (setf (future-error future) condition)))))))
     ;; Remove registered methods from the server.
     (iter (for method in (server-methods server))
           (setf (server-method server (method-name method)) nil))
@@ -110,13 +110,13 @@ quit(): void
           (let+ (((name . lambda) name-and-lambda)
                  (name (string-downcase name)))
             (setf (server-method server name)
-                  #'(lambda (&rest request)
-                      (let ((future (make-instance 'rsb.patterns:future)))
-                        (enqueue strategy (make-command lambda request future))
-                        (let ((result (future-result future))) ; TODO(jmoringe): cumbersome
-                          (if (eq result rsb.converter:+no-value+)
-                              (values)
-                              result)))))))))
+                  (lambda (&rest request)
+                    (let ((future (make-instance 'rsb.patterns:future)))
+                      (enqueue strategy (make-command lambda request future))
+                      (let ((result (future-result future))) ; TODO(jmoringe): cumbersome
+                        (if (eq result rsb.converter:+no-value+)
+                            (values)
+                            result)))))))))
 
 (defmethod enqueue ((strategy remote-controlled)
                     (command  t))

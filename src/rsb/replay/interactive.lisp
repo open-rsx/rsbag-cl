@@ -44,10 +44,10 @@ by means of textual commands."))
           (if command
               (progn
                 (setf previous command)
-                (return #'(lambda ()
-                            (when-let ((result (multiple-value-list
-                                                (apply command args))))
-                              (format stream "~A~%" (first result))))))
+                (return (lambda ()
+                          (when-let ((result (multiple-value-list
+                                              (apply command args))))
+                            (format stream "~A~%" (first result))))))
               (format stream "~@<~:[Cannot repeat command without ~
                               previous command~;~:*No such command: ~
                               ~S~]. Available commands: ~{~(~A~)~^, ~

@@ -39,8 +39,7 @@ sequence."))
 appropriate way if CALLBACK is non-nil"
   (when callback
     (let+ (((start end) (list 0 (1- (length sequence)))))
-      #'(lambda (index timestamp)
-          (funcall callback
-                   (/ (1+ (- index start)) (- (1+ end) start))
-                   index start end
-                   timestamp)))))
+      (lambda (index timestamp)
+        (funcall callback
+                 (/ (1+ (- index start)) (- (1+ end) start))
+                 index start end timestamp)))))

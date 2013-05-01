@@ -139,7 +139,7 @@ translation of their values into indices before replay."))
     (when start-time
       (if (and (rsbag:start bag) (end bag))
           (set-index start-time
-                     #'(lambda (value) (setf start-index value))
+                     (lambda (value) (setf start-index value))
                      "start time")
           (warn "~@<Bag ~A does not have start and end times; ignoring ~
                  requested start time ~A~@:>"
@@ -147,7 +147,7 @@ translation of their values into indices before replay."))
     (when end-time
       (if (and (rsbag:start bag) (end bag))
           (set-index end-time
-                     #'(lambda (value) (setf end-index value))
+                     (lambda (value) (setf end-index value))
                      "end time")
           (warn "~@<Bag ~A does not have start and end times; ignoring ~
                  requested end time ~A~@:>"

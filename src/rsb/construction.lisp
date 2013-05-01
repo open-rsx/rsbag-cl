@@ -51,8 +51,8 @@
   (make-instance 'bag-connection
                  :bag      dest
                  :channels (map 'list
-                                #'(lambda (source)
-                                    (apply #'events->bag source dest args))
+                                (lambda (source)
+                                  (apply #'events->bag source dest args))
                                 source)))
 
 (macrolet ((define-open-bag-method (type)

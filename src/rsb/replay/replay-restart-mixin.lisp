@@ -16,27 +16,27 @@ around the actual work of the `replay' method."))
                            (strategy   replay-restart-mixin)
                            &key &allow-other-keys)
   (handler-bind
-      ((error #'(lambda (condition)
-                  (restart-case
-                      (error 'event-retrieval-failed
-                             :connection connection
-                             :strategy   strategy
-                             :cause      condition)
-                    (continue (&optional condition)
-                      :report (lambda (stream)
-                                (format stream "~@<Ignore the failed ~
-                                                event and continue ~
-                                                with the next ~
-                                                event.~@:>"))
-                      (declare (ignore condition))
-                      (use-value :skip))
-                    (log (&optional condition)
-                      :report (lambda (stream)
-                                (format stream "~@<Log an error ~
-                                                message and continue ~
-                                                with the next ~
-                                                event.~@:>"))
-                      (log1 :error "Failed to retrieve an event for replay: ~A"
-                            condition)
-                      (use-value :skip))))))
+      ((error (lambda (condition)
+                (restart-case
+                    (error 'event-retrieval-failed
+                           :connection connection
+                           :strategy   strategy
+                           :cause      condition)
+                  (continue (&optional condition)
+                    :report (lambda (stream)
+                              (format stream "~@<Ignore the failed ~
+                                              event and continue ~
+                                              with the next ~
+                                              event.~@:>"))
+                    (declare (ignore condition))
+                    (use-value :skip))
+                  (log (&optional condition)
+                    :report (lambda (stream)
+                              (format stream "~@<Log an error ~
+                                              message and continue ~
+                                              with the next ~
+                                              event.~@:>"))
+                    (log1 :error "Failed to retrieve an event for replay: ~A"
+                          condition)
+                    (use-value :skip))))))
     (call-next-method)))
