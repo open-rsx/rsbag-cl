@@ -102,11 +102,21 @@
        ((:repeated count-slot sub-type)
         `(iter (repeat (slot-value object ',count-slot)) ; TODO(jmoringe): slot access
                (with offset = ,offset)
-               (let+ (((&values value length)
-                       ,(type-spec->deserializer sub-type source offset)))
-                 (incf offset length)
-                 (collect value  :into result :result-type vector)
-                 (summing length :into length*))
+               (restart-case
+                   (let+ (((&values value length)
+                           ,(type-spec->deserializer sub-type source offset)))
+                     (incf offset length)
+                     (collect value  :into result :result-type vector)
+                     (summing length :into length*))
+                 (continue (&optional condition)
+                   :report (lambda (stream)
+                             (format stream "~@<Ignore the rest of the ~
+                                             ~S chunk at (local ~
+                                             offset) ~:D and continue ~
+                                             processing.~@:>"
+                                             ',type-spec offset))
+                   (declare (ignore condition))
+                   (terminate)))
                (finally (return (values result length*)))))
 
        ((:blob length-slot)

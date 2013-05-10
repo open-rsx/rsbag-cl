@@ -326,7 +326,10 @@ See `version/list' for details on keyword parameters."
                                :depends-on ("package" "spec" "io"))
                               (:file       "file"
                                :depends-on ("package" "variables"
-                                            "spec" "io"))))))
+                                            "spec" "io"))
+
+                              (:file       "repair"
+                               :depends-on ("package" "spec" "io"))))))
 
 ;;; Elan file format backend
 

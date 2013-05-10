@@ -63,6 +63,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
                       (next-channel-id %file-next-channel-id)
                       (next-chunk-id   %file-next-chunk-id)) instance)
          ((&values chans indxs chnks) (scan stream :tide)))
+
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks           (sort (coerce chnks 'vector) #'<
                                 :key #'car)
@@ -74,6 +75,27 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
                                       :key           #'chan-id))
           channels        (map 'list #'make-channel chans))
     (setf (chnk-chunk-id buffer) next-chunk-id)
+
+    ;; Verify presence of indices.
+    (when (and (not (emptyp chnks)) (emptyp indxs))
+      (restart-case
+          ;; The `progn' prevents our restarts from being only
+          ;; applicable to the specific condition signaled here. See
+          ;; remark about (restart-case (error ...)) in CLHS on
+          ;; `restart-case'.
+          (progn (error "~@<Read ~:D chunk~:P, but no indices.~@:>"
+                        (length chnks)))
+        (continue (&optional condition)
+          :report (lambda (stream)
+                    (format stream "~@<Regenerate indices.~@:>"))
+          (declare (ignore condition))
+          (setf indxs (reconstruct-indices stream chnks)))
+        (use-value (new-indxs)
+          :report (lambda (stream)
+                    (format stream "~@<Use the supplied value as ~
+                                    list of indices and ~
+                                    continue.~@:>"))
+          (setf indxs new-indxs))))
 
     ;; Create indices for all channels.
     (iter (for (id name meta-data) in channels)
@@ -292,11 +314,16 @@ type information."
                           &optional
                           (start 0)
                           (end   (length index)))
+  (when (= start end)
+    (error "~@<Chunk with id ~:D not found in index.~@:>"
+           id))
+
   (let* ((pivot  (ash (+ start end) -1))
          (pivot* (car (aref index pivot))))
     (cond
       ((< pivot* id)
-       (%chunk-id->offset id index pivot end))
+       (%chunk-id->offset id index (1+ pivot) end))
       ((> pivot* id)
        (%chunk-id->offset id index start pivot))
-      (t (cdr (aref index pivot))))))
+      (t
+       (cdr (aref index pivot))))))

@@ -34,11 +34,19 @@
   (unpack source :block)
   ;; Scan through remaining blocks.
   (iter (while (listen source))
-        (let+ (((&values offset block) (scan source :block)))
-          (typecase block
-            (chan    (collect block               :into channels))
-            (indx    (collect block               :into indices))
-            (integer (collect (cons block offset) :into chunks))))
+        (restart-case
+            (let+ (((&values offset block) (scan source :block)))
+              (typecase block
+                (chan    (collect block               :into channels))
+                (indx    (collect block               :into indices))
+                (integer (collect (cons block offset) :into chunks))))
+          (continue (&optional condition)
+            :report (lambda (stream)
+                      (format stream "~@<Ignore the remaining content ~
+                                      of ~A.~@:>"
+                              source))
+            (declare (ignore condition))
+            (return (values channels indices chunks))))
         (finally (return (values channels indices chunks)))))
 
 (defmethod scan ((source stream) (object (eql :block))
@@ -87,11 +95,19 @@
 
   (let ((header (read-chunk-of-length 12 source)))
     (declare (dynamic-extent header))
-    (values (sb-ext:octets-to-string header
-                                     :external-format :ascii
-                                     :start           0
-                                     :end             4)
-            (nibbles:ub64ref/le header 4))))
+    (handler-bind
+        ((error (lambda (condition)
+                  (error "~@<Could not decode header~_~2T~{~2,'0X~^ ~
+                          ~} ~_at stream position ~
+                          ~/rsbag.backend::print-offset/: ~A.~@:>"
+                         (coerce header 'list)
+                         (file-position source)
+                         condition))))
+      (values (sb-ext:octets-to-string header
+                                       :external-format :ascii
+                                       :start           0
+                                       :end             4)
+              (nibbles:ub64ref/le header 4)))))
 
 (defmethod unpack ((source stream) (object (eql :block))
                    &optional start)
@@ -100,6 +116,15 @@
   (let+ (((&values name length) (unpack source :block-header))
          (name  (find-symbol name #.*package*)) ; TODO(jmoringe): bottleneck
          (class (find-class name)))
+    (when (> (+ (file-position source) length) (file-length source))
+      (cerror "Try to read the block anyway"
+              "~@<Bounds [~/rsbag.backend::print-offset/, ~
+               ~/rsbag.backend::print-offset/[ of ~S block would be ~
+               outside bounds [~/rsbag.backend::print-offset/, ~
+               ~/rsbag.backend::print-offset/[ of ~A.~@:>"
+              (file-position source) (+ (file-position source) length)
+              name
+              0 (file-length source) source))
     (unpack (read-chunk-of-length (if (eq name 'tide) 10 length) source)  ; TODO(jmoringe): hack
             (allocate-instance class))))
 

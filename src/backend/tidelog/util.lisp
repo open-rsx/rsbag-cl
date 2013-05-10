@@ -15,9 +15,10 @@
 length LENGTH and read LENGTH from STREAM into it. Return the buffer."
   (let ((read (read-sequence buffer stream)))
     (unless (= read length)
-      (error "~@<Could only read ~:D byte~:P when trying to read a ~
-              sequence of ~:D byte~:P at stream position ~:D.~@:>"
-             read length (file-position stream))))
+      (cerror "Continue with incomplete block"
+              "~@<Could only read ~:D byte~:P when trying to read a ~
+               sequence of ~:D byte~:P at stream position ~:D.~@:>"
+              read length (file-position stream))))
   buffer)
 
 ;;; Time-related utility functions
