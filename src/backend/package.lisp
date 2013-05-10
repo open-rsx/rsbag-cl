@@ -94,6 +94,10 @@
 
    #:make-flush-strategy)
 
+  ;; Utilities
+  (:export
+   :print-offset)
+
   (:documentation
    "This package contains protocol and implementation aids for file
 format backends for cl-rsbag."))

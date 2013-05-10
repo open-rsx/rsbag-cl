@@ -105,6 +105,8 @@ See `version/list' for details on keyword parameters."
                  :pathname   "src/backend"
                  :depends-on ("src/early")
                  :components ((:file       "package")
+                              (:file       "util"
+                               :depends-on ("package"))
                               (:file       "conditions"
                                :depends-on ("package"))
                               (:file       "protocol"
