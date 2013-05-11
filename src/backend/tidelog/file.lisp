@@ -216,21 +216,24 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod write-buffer ((file   file)
                          (buffer chnk))
-  ;; We abused chnk-count to store the size of the chunk instead of
-  ;; the number of entries. Correct this before writing the chunk.
-  (unless (zerop (chnk-count buffer))
-    (setf (chnk-count buffer) (length (chnk-entries buffer)))
-    (pack buffer (backend-stream file))
+  (let+ (((&accessors-r/o (stream backend-stream)) file)
+         ((&accessors     (count   chnk-count)
+                          (entries chnk-entries)) buffer))
+   ;; We abused chnk-count to store the size of the chunk instead of
+   ;; the number of entries. Correct this before writing the chunk.
+   (unless (zerop count)
+     (setf count (length entries))
+     (pack buffer stream)
 
-    ;; For the sake of conservative garbage collectors, we deference
-    ;; as much as possible here. On SBCL we even garbage collect
-    ;; explicitly.
-    (map-into (chnk-entries buffer)
-              (lambda (entry)
-                (setf (chunk-entry-entry entry) (nibbles:octet-vector))
-                nil)
-              (chnk-entries buffer))
-    #+sbcl (sb-ext:gc)))
+     ;; For the sake of conservative garbage collectors, we
+     ;; dereference as much as possible here. On SBCL we even garbage
+     ;; collect explicitly.
+     (map-into entries
+               (lambda (entry)
+                 (setf (chunk-entry-entry entry) (nibbles:octet-vector))
+                 nil)
+               entries)
+     #+sbcl (sb-ext:gc))))
 
 (defmethod buffer-property ((backend file)
                             (buffer  chnk)
