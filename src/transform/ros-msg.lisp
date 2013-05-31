@@ -36,7 +36,8 @@
                           (format transform-format)) instance))
     (if (or (not format) (emptyp format))
         (warn "~@<No message definition is available for ~S; returning ~
-               raw data.~@:>" type)
+               raw data.~@:>"
+              type)
         (let+ (((package-name . message-name) (rs.ros:parse-type-name (string type)))
                (repository (make-instance 'rs.m.d::base-repository)))
           (handler-bind ((warning #'muffle-warning))

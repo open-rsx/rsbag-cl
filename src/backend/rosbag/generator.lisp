@@ -18,7 +18,7 @@
 ;;;; field) contains a sequence of name=value fields, formatted as
 ;;;; follows:
 ;;;;
-;;;;   <field1_len><field1_name>=<field1_value><field2_len><field2_name>=<field2_value>...<fieldN_len><fieldN_name>=<fieldN_value>
+;;;;   <field1_len><field1_name>=<field1_value>...<fieldN_len><fieldN_name>=<fieldN_value>
 ;;;;
 ;;;; The total length of fieldX_name=fieldX_value, including the '='
 ;;;; character, is fieldX_len bytes. The total length of this header

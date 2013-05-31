@@ -70,11 +70,11 @@
                 in the data_len field of the record.")
   (size        (unsigned-byte 32)
                :documentation
-               "size in bytes of the uncompressed chunk")
+               "Size in bytes of the uncompressed chunk")
   (data-length (unsigned-byte 32)
                :id "data_len"
                :documentation
-               "size in bytes of the uncompressed chunk")
+               "Size in bytes of the uncompressed chunk")
   (&data       (:compressed compression (:repeated :detect))
                :documentation
                "The data for a chunk record consists of message data
