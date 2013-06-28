@@ -245,11 +245,11 @@ See `version/list' for details on keyword parameters."
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
-  :depends-on  ((:version :cl-rsbag         #.(version/string))
-                ;; TODO temp until we split this into multiple systems
-                (:version :cl-rsbag-tidelog #.(version/string))
+  :depends-on  ((:version :cl-rsbag      #.(version/string))
+                ;; TODO temp
+                (:version :rsbag-tidelog #.(version/string))
 
-                (:version :lift             "1.7.1"))
+                (:version :lift          "1.7.1"))
   :components  ((:module     "test"
                  :components ((:file       "package")
                               (:file       "protocol"
@@ -291,64 +291,3 @@ See `version/list' for details on keyword parameters."
 (defmethod perform ((op     test-op)
                     (system (eql (find-system :cl-rsbag-test))))
   (funcall (find-symbol "RUN-TESTS" :lift) :config :generic))
-
-;;; TIDE log file format backend
-
-(defsystem :cl-rsbag-tidelog
-  :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
-  :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
-  :version     #.(version/string)
-  :license     "LGPLv3; see COPYING file for details."
-  :description "TIDE log file format backend for cl-rsbag."
-  :depends-on  ((:version :cl-rsbag #.(version/string)))
-  :components  ((:module     "tidelog"
-                 :pathname   "src/backend/tidelog"
-                 :components ((:file       "package")
-                              (:file       "conditions"
-                               :depends-on ("package"))
-                              (:file       "variables"
-                               :depends-on ("package"))
-                              (:file       "util"
-                               :depends-on ("package"))
-
-                              (:file       "generator"
-                               :depends-on ("package"))
-                              (:file       "macros"
-                               :depends-on ("package" "generator"))
-
-                              (:file       "spec"
-                               :depends-on ("package" "macros"))
-                              (:file       "io"
-                               :depends-on ("package" "conditions"
-                                            "util" "spec"))
-
-                              (:file       "index"
-                               :depends-on ("package" "spec" "io"))
-                              (:file       "file"
-                               :depends-on ("package" "variables"
-                                            "spec" "io"))
-
-                              (:file       "repair"
-                               :depends-on ("package" "spec" "io"))))))
-
-;;; Elan file format backend
-
-(defsystem :cl-rsbag-elan
-  :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
-  :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
-  :version     #.(version/string)
-  :license     "LGPLv3; see COPYING file for details."
-  :description "Elan file format backend for cl-rsbag."
-  :depends-on  ((:version :xml.location                "0.2.0")
-                (:version :xml.location-and-local-time "0.2.0")
-
-                (:version :cl-rsbag                    #.(version/string)))
-  :components  ((:module     "elan"
-                 :pathname   "src/backend/elan"
-                 :components ((:file       "package")
-                              (:file       "types"
-                               :depends-on ("package"))
-                              (:file       "xml"
-                               :depends-on ("package" "types"))
-                              (:file       "file"
-                               :depends-on ("package" "types" "xml"))))))
