@@ -11,6 +11,9 @@
 
 (defun start-threadpool ()
   "Create and initialize a threadpool for use by the rsbag system."
+  (when *threadpool*
+    (warn "~@<Threadpool already initialized to ~A.~@:>"
+          *threadpool*))
   (setf *threadpool* (lparallel:make-kernel 2 :name "rsbag")))
 
 (defun stop-threadpool ()
@@ -28,4 +31,5 @@ errors are transferred."
 
 ;; Start the threadpool when loading or executing this. It may have to
 ;; be stopped and restarted when saving an image. See reloading.lisp.
-(start-threadpool)
+(unless *threadpool*
+  (start-threadpool))
