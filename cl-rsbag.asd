@@ -11,7 +11,10 @@
 
   (:export
    #:version/list
-   #:version/string))
+   #:version/string
+
+   #:serialization-version/list
+   #:serialization-version/string))
 
 (cl:in-package #:cl-rsbag-system)
 
@@ -20,7 +23,7 @@
 (defparameter +version-major+ 0
   "Major component of version number.")
 
-(defparameter +version-minor+ 9
+(defparameter +version-minor+ 10
   "Minor component of version number.")
 
 (let* ((version-file (merge-pathnames "version.sexp" *load-truename*))
@@ -63,6 +66,28 @@ optional.
 See `version/list' for details on keyword parameters."
   (declare (ignore revision? commit?))
   (format nil "~{~A.~A~^.~A~^-~A~}" (apply #'version/list args)))
+
+;;; Native serialization version
+;;;
+;;; We separate the serialization version from the system version to
+;;; avoid unnecessary version bumps and the resulting bloat of
+;;; multiple almost-compatible serialization versions.
+
+(defparameter +serialization-version-major+ 0
+  "Major component of the native serialization version number.")
+
+(defparameter +serialization-version-minor+ 9
+  "Minor component of the native serialization version number.")
+
+(defun serialization-version/list ()
+  "Return a version of the form (MAJOR MINOR)."
+  (list +serialization-version-major+ +serialization-version-minor+))
+
+(defun serialization-version/string ()
+  "Return a version string of the form \"MAJOR.MINOR\".
+
+See `serialization-version/list' for details."
+  (format nil "~{~A.~A~}" (serialization-version/list)))
 
 ;;; System definition
 

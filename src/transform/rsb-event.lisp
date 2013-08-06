@@ -8,7 +8,7 @@
 
 (defconstant +rsb-schema-name+
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
-                 (subseq (cl-rsbag-system:version/list) 0 2)))
+                 (cl-rsbag-system:serialization-version/list)))
 
 (defmethod make-transform ((spec (eql +rsb-schema-name+))
                            &rest args)
