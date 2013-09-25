@@ -366,6 +366,28 @@ this delay adjusted to compensate for processing latencies."))
           previous-call  now)
     corrected))
 
+;;; `delay-limiting-mixin' mixin class
+
+(defclass delay-limiting-mixin ()
+  ((max-delay :initarg  :max-delay
+              :type     (or null non-negative-real)
+              :accessor strategy-max-delay
+              :initform nil
+              :documentation
+              "Maximum delay between adjacent events in seconds."))
+  (:documentation
+   "This mixin class adds to timed replay strategy classes the ability
+to limit the delays between adjacent events to a particular
+maximum."))
+
+(defmethod schedule-event :around ((strategy delay-limiting-mixin)
+                                   (event    t)
+                                   (previous local-time:timestamp)
+                                   (next     local-time:timestamp))
+  (if-let ((max-delay (strategy-max-delay strategy)))
+    (min (call-next-method) max-delay)
+    (call-next-method)))
+
 ;;; `speed-adjustment-mixin' mixin class
 
 (defclass speed-adjustment-mixin ()

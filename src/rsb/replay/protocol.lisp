@@ -37,6 +37,19 @@ NEW-VALUE."))
    "Set the rate in Hertz of events replayed with STRATEGY to
 NEW-VALUE."))
 
+;;; Delay limiting protocol
+
+(defgeneric strategy-max-delay (strategy)
+  (:documentation
+   "Return the maximum delay between adjacent events permitted by
+STRATEGY or nil if STRATEGY does not impose such a constraint."))
+
+(defgeneric (setf strategy-max-delay) (new-value strategy)
+  (:documentation
+   "Set the maximum delay between adjacent events permitted by
+STRATEGY to NEW-VALUE. When NEW-VALUE is nil STRATEGY does not impose
+such a constraint."))
+
 ;;; External driver protocol
 
 (defgeneric make-commands (strategy sequence

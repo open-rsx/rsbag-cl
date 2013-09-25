@@ -69,6 +69,12 @@
 
    #:speed-adjustment-mixin)
 
+  ;; delay limiting protocol and mixin class
+  (:export
+   #:strategy-max-delay
+
+   #:delay-limiting-mixin)
+
   ;; external driver protocol and mixin class
   (:export
    #:make-commands
