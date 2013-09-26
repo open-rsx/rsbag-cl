@@ -55,8 +55,8 @@ around the actual work of the `replay' method."))
                                               message and continue ~
                                               with the next ~
                                               event.~@:>"))
-                    (log1 :error "Failed to retrieve an event for replay: ~A"
-                          condition)
+                    (log:error "~@<Failed to retrieve an event for replay: ~A~@:>"
+                               condition)
                     (use-value :skip))))))
     (call-next-method)))
 
@@ -177,15 +177,16 @@ translation of their values into indices before replay."))
                            (rsbag:start bag) (end bag)))
                 timestamp)))))
          ((&flet set-index (timestamp setter name)
-            (log1 :info "Mapping requested ~A ~A to index (this can take a moment)"
-                  name timestamp)
+            (log:info "~@<Mapping requested ~A ~A to index (this can take a moment)~@:>"
+                      name timestamp)
             (let+ (((&values index timestamp) (timestamp->index timestamp))
                    (effective  (elt sequence index))
                    (difference (abs (local-time:timestamp-difference
                                      timestamp effective))))
               (funcall setter index)
-              (log1 :info "Mapped requested ~A ~A to index ~:D (at time ~A, ~,6F seconds difference)"
-                    name timestamp index effective difference)
+              (log:info "~@<Mapped requested ~A ~A to index ~:D (at ~
+                         time ~A, ~,6F seconds difference)~@:>"
+                        name timestamp index effective difference)
               (when (> difference 1)
                 (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
                        requested ~A ~A~@:>"

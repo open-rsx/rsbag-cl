@@ -17,6 +17,11 @@
             :accessor backend-written
             :initform nil)))
 
+(defmethod buffer-property ((backend mock-buffering-backend)
+                            (buffer  t)
+                            (name    t))
+  0)
+
 (defmethod make-buffer ((backend mock-buffering-backend)
                         (buffer  t))
   (list (if buffer (first buffer) (gensym)) nil))

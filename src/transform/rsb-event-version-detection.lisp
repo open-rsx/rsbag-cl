@@ -29,8 +29,8 @@ implementation (if any) in TRANSFORM."))
                            &rest args)
   "Return an instance of `rsb-event/version-detection' which passes
 ARGS to candidate serialization implementations."
-  (rsb:log1 :info "Forced to use auto-detection of event serialization ~
-                   format; version ~S with arguments ~{~S~^, ~}."
+  (log:info "~@<Forced to use auto-detection of event serialization ~
+             format; version ~S with arguments ~{~S~^, ~}.~@:>"
             spec args)
   (make-instance
    'rsb-event/version-detection
@@ -86,11 +86,11 @@ succeeds."))
     (tagbody
      :start
        (when-let ((candidate (pop candidates)))
-         (rsb:log1 :info "Trying ~A" candidate)
+         (log:info "~@<Trying ~A~@:>" candidate)
          (handler-bind
              ((error (lambda (condition)
                        (appendf problems (list :instantiate candidate condition))
-                       (rsb:log1 :info "Failed to instantiate ~A with args ~{~A~^ ~}: ~A"
+                       (log:info "~@<Failed to instantiate ~A with args ~{~A~^ ~}: ~A~@:>"
                                  (first candidate) (rest candidate) condition)
                        (go :start))))
            (return-from next-implementation!
@@ -112,7 +112,7 @@ succeeds."))
                (handler-bind
                    ((error (lambda (condition)
                              (appendf problems (list (list :use implementation condition)))
-                             (rsb:log1 :info "~A failed with ~A: ~A"
+                             (log:info "~@<~A failed with ~A: ~A~@:>"
                                        ',name implementation condition)
                              (if (next-implementation! transform)
                                  (go :start)

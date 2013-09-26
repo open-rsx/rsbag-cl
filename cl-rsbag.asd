@@ -104,6 +104,7 @@ See `serialization-version/list' for details."
                 :iterate
                 :cl-dynamic-classes
                 :more-conditions
+                (:version :log4cl   "1.1.1")
 
                 :bordeaux-threads
                 :lparallel

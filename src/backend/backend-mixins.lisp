@@ -118,9 +118,9 @@ and potentially do it."
 
 (defmethod write-buffer :before ((backend t)
                                  (buffer  t))
-  (rsb:log1 :info backend "Writing ~A (~@[~:D entr~:@P~]~@[, ~:D ~
-byte~:P~]~@[, ~,2F sec~:P~])"
-            buffer
+  (log:info "~@<~A is writing ~A (~@[~:D entr~:@P~]~@[, ~:D ~
+             byte~:P~]~@[, ~,2F sec~:P~])~@:>"
+            backend buffer
             (buffer-property backend buffer :length/entries)
             (buffer-property backend buffer :length/bytes)
             (buffer-property backend buffer :time-to-last-write)))
@@ -188,9 +188,9 @@ by the backend."))
     (setf (%writer backend)
           (lparallel:future
             (let ((*async?* nil))
-              (rsb:log1 :info backend "Starting to flush buffer ~A" buffer)
+              (log:info "~@<~A is starting to flush buffer ~A~@:>" backend buffer)
               (write-buffer backend buffer)
-              (rsb:log1 :info backend "Finished flushing buffer ~A" buffer)
+              (log:info "~@<~A has finished flushing buffer ~A~@:>" backend buffer)
               buffer)))))
 
 (defmethod make-buffer :around ((backend async-double-buffered-writer-mixin)
