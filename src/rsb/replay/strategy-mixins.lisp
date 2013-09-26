@@ -136,14 +136,14 @@ translation of their values into indices before replay."))
                                       (end-index   nil end-index-supplied?)
                                       (start-time  nil start-time-supplied?)
                                       (end-time    nil end-time-supplied?))
-  (declare (ignore start-index end-index))
-
   (when (and start-index-supplied? start-time-supplied?)
-    (error "~@<The initargs ~S and ~S are mutually exclusive.~@:>"
-           :start-index :start-time))
+    (incompatible-initargs 'time-bounds-mixin
+                           :start-index start-index
+                           :start-time  start-time))
   (when (and end-index-supplied? end-time-supplied?)
-    (error "~@<The initargs ~S and ~S are mutually exclusive.~@:>"
-           :end-index :end-time))
+    (incompatible-initargs 'time-bounds-mixin
+                           :end-index end-index
+                           :end-time  end-time))
 
   (when (and start-time-supplied? end-time-supplied?)
     (check-ordered-timestamps start-time end-time)))
@@ -301,7 +301,7 @@ with EVENT."
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy
-classes perform time-based scheduling of replayed events."))
+classes which perform time-based scheduling of replayed events."))
 
 (defmethod process-event :before ((connection         replay-bag-connection)
                                   (strategy           timed-replay-mixin)
