@@ -12,6 +12,9 @@
   (let+ (((type &key format &allow-other-keys) args))
     (make-instance 'ros-msg :type type :format format)))
 
+(defmethod find-transform-class ((spec (eql :ros-msg)))
+  (find-class 'ros-msg))
+
 (defclass ros-msg ()
   ((type   :initarg  :type ; TODO store parsed type
            :type     keyword #+maybe string
@@ -20,7 +23,7 @@
            "")
    (format :initarg  :format
            :type     (or null string)
-           :reader transform-format
+           :reader transform-%format
            :documentation
            ""))
   (:default-initargs
@@ -33,7 +36,7 @@
                                      (slot-names t)
                                      &key)
   (let+ (((&accessors-r/o (type   transform-type)
-                          (format transform-format)) instance))
+                          (format transform-%format)) instance))
     (if (or (not format) (emptyp format))
         (warn "~@<No message definition is available for ~S; returning ~
                raw data.~@:>"
@@ -62,12 +65,8 @@
 (defmethod transform-name ((transform ros-msg))
   (list :ros-msg (transform-type transform)))
 
-;; TODO(jmoringe, 2012-03-04): this is a horrible hack
-;; maybe the converter should supply the schema information?
-#+no (defmethod transform-format ((transform rsb-event))
-  #+later (let+ (((&accessors-r/o (wire-schema transform-wire-schema)) transform))
-    )
-  "")
+(defmethod transform-format ((transform ros-msg))
+  (transform-%format transform))
 
 (defmethod encode ((transform ros-msg) (domain-object t))
   domain-object
