@@ -20,24 +20,26 @@
   ()
   (:documentation
    "This strategy replays events in the order they were recorded and,
-as much as possible, with identical local temporal relations. A
-faithful replay with respect to global temporal relations (e.g. time
-between first and last event) is not attempted explicitly.
+    as much as possible, with identical local temporal relations. A
+    faithful replay with respect to global temporal
+    relations (e.g. time between first and last event) is not
+    attempted explicitly.
 
-Besides this default \"faithful\" replay timing, variations of the
-recorded timing can be produced as follows:
+    Besides this default \"faithful\" replay timing, variations of the
+    recorded timing can be produced as follows:
 
-  :speed SPEED
+      :speed SPEED
 
-    Scale all individual delays between events by SPEED. I.e. when
-    SPEED is 0.5, all delays are doubled.
+        Scale all individual delays between events by SPEED. I.e. when
+        SPEED is 0.5, all delays are doubled.
 
-  :max-delay DELAY
+      :max-delay DELAY
 
-    Constrain all individual delays between events to be at most DELAY
-    seconds. The intention is replaying events as recorded when they
-    originally occurred in quick succession but squash large \"gaps\"
-    in the sequence of events into short pauses of DELAY seconds. "))
+        Constrain all individual delays between events to be at most
+        DELAY seconds. The intention is replaying events as recorded
+        when they originally occurred in quick succession but squash
+        large \"gaps\" in the sequence of events into short pauses of
+        DELAY seconds. "))
 
 (defmethod schedule-event ((strategy recorded-timing)
                            (event    t)

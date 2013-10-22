@@ -15,9 +15,10 @@
                                  (temp-name (format nil "~A-TEMP" old-name)))
                                 &body body)
   "Execute BODY with the package designated by OLD-NAME moved out of
-the way, then rename the package designated by OLD-NAME to
-NEW-NAME. This allows BODY to seemingly load stuff into OLD-NAME which
-will end up in NEW-NAME without disturbing the contents of OLD-NAME."
+   the way, then rename the package designated by OLD-NAME to
+   NEW-NAME. This allows BODY to seemingly load stuff into OLD-NAME
+   which will end up in NEW-NAME without disturbing the contents of
+   OLD-NAME."
   (with-unique-names (package)
     `(let ((,package (find-package ,old-name)))
        (%maybe-delete-package ,new-name)
@@ -34,11 +35,11 @@ will end up in NEW-NAME without disturbing the contents of OLD-NAME."
 
 (defmacro with-renamed-packages ((&rest renames) &body body)
   "Execute BODY with multiple renamings in the sense of
-`with-renamed-package'. RENAMES is a list of items of the form
+   `with-renamed-package'. RENAMES is a list of items of the form
 
-  (OLD-NAME NEW-NAME)
+     (OLD-NAME NEW-NAME)
 
-."
+   ."
   (labels ((wrap (renames body)
              (if renames
                  `(with-renamed-package ,(first renames)
@@ -48,8 +49,8 @@ will end up in NEW-NAME without disturbing the contents of OLD-NAME."
 
 (defmacro with-versioned-packages ((version &rest packages) &body body)
   "Execute body with certain package renamings in the sense of
-`with-renamed-packages'. PACKAGES are renamed to names suffixed with
-VERSION."
+   `with-renamed-packages'. PACKAGES are renamed to names suffixed
+   with VERSION."
   (check-type version string)
 
   (flet ((without-and-with-version (name)

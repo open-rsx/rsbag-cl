@@ -43,7 +43,7 @@
 (addtest (protocol-root
           :documentation
           "Test cases for which the `open-bag' function has to signal
-errors.")
+           errors.")
   open-bag/invalid
 
   (ensure-cases (args)

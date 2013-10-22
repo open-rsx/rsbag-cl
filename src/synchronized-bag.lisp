@@ -11,11 +11,11 @@
          :initform (bt:make-lock "Bag lock")
          :documentation
          "The lock that is used to synchronized accesses to the
-bag."))
+          bag."))
   (:documentation
    "Instances of this bag class can be safely used from multiple
-threads. Callers have to be prepared to encounter increased latencies
-in comparison to the single-threaded case."))
+    threads. Callers have to be prepared to encounter increased
+    latencies in comparison to the single-threaded case."))
 
 (macrolet
     ((define-synchronized-method (name args)

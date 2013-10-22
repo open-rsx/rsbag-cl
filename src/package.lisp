@@ -127,6 +127,6 @@
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.
 
-The client interface primarily consists of the `file' and `channel'
-classes. Conceptually, files consists of multiple named channels which
-in turned contain sequences of timestamped data items."))
+    The client interface primarily consists of the `bag' and `channel'
+    classes. Conceptually, bags consists of multiple named channels
+    which in turn contain sequences of timestamped data items."))

@@ -14,8 +14,8 @@
    :error-policy #'log-error)
   (:documentation
    "This mixin class provides a method on `replay' that arranges for
-the next `replay' methods to be called with error handling based on
-the installed error policy."))
+    the next `replay' methods to be called with error handling based
+    on the installed error policy."))
 
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   error-policy-mixin)
@@ -29,7 +29,7 @@ the installed error policy."))
   ()
   (:documentation
    "This mixin class add the establishing of continue and log restarts
-around the actual work of the `replay' method."))
+    around the actual work of the `replay' method."))
 
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   replay-restart-mixin)
@@ -70,18 +70,19 @@ around the actual work of the `replay' method."))
                 :initform nil
                 :documentation
                 "Stores the index of the event at which the replay
-should start or nil if the replay should just start at the first
-event.")
+                 should start or nil if the replay should just start
+                 at the first event.")
    (end-index   :initarg  :end-index
                 :type     (or null non-negative-integer)
                 :accessor strategy-end-index
                 :initform nil
                 :documentation
                 "Stores the index after the event at which the replay
-should stop or nil if the replay should end at the final event."))
+                 should stop or nil if the replay should end at the
+                 final event."))
   (:documentation
    "Provides start-index and end-index slots, some consistency checks
-on there values and a method on `print-object'."))
+    on there values and a method on `print-object'."))
 
 (defmethod shared-initialize :before ((instance   bounds-mixin)
                                       (slot-names t)
@@ -116,18 +117,20 @@ on there values and a method on `print-object'."))
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should start
-or nil if the replay should not start at a specific time but at an
-specific index or just at the first event.")
+                or nil if the replay should not start at a specific
+                time but at an specific index or just at the first
+                event.")
    (end-time   :initarg  :end-time
                :type     range-boundary/timestamp
                :accessor strategy-end-time
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should stop
-or nil if the replay should not stop at a specific time."))
+                or nil if the replay should not stop at a specific
+                time."))
   (:documentation
    "This mixin class adds start-time and end-time slots and
-translation of their values into indices before replay."))
+    translation of their values into indices before replay."))
 
 (defmethod shared-initialize :before ((instance   time-bounds-mixin)
                                       (slot-names t)
@@ -214,10 +217,10 @@ translation of their values into indices before replay."))
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that have to construct a view sequence for multiple channels. The
-generic function `make-view' can be used to customize this
-behavior. The method for `view-creation-mixin' creates a
-serialized view of events across channels."))
+    that have to construct a view sequence for multiple channels. The
+    generic function `make-view' can be used to customize this
+    behavior. The method for `view-creation-mixin' creates a
+    serialized view of events across channels."))
 
 (defmethod make-view ((connection replay-bag-connection)
                       (strategy   view-creation-mixin)
@@ -236,10 +239,10 @@ serialized view of events across channels."))
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that essentially process all events in a sequential manner. The method
-on `replay' for `sequential-mixin' creates a sequence via `make-view'
-and processes all elements of the sequence by sequential calls to
-`process-event'."))
+    that essentially process all events in a sequential manner. The
+    method on `replay' for `sequential-mixin' creates a sequence via
+    `make-view' and processes all elements of the sequence by
+    sequential calls to `process-event'."))
 
 (defmethod replay ((connection replay-bag-connection)
                    (strategy   sequential-mixin)
@@ -272,7 +275,7 @@ and processes all elements of the sequence by sequential calls to
                           (event              (eql :skip))
                           (sink               t))
   "Error recovery behaviors may inject the value :skip for EVENT. The
-default behavior is just ignoring the failed event. "
+   default behavior is just ignoring the failed event. "
   (values))
 
 (defmethod process-event ((connection         replay-bag-connection)
@@ -282,7 +285,7 @@ default behavior is just ignoring the failed event. "
                           (event              t)
                           (sink               t))
   "The default behavior consists in sending EVENT via SINK which is
-assumed to be an `rsb:informer'."
+   assumed to be an `rsb:informer'."
   (send sink event :unchecked? t))
 
 (defmethod process-event ((connection         replay-bag-connection)
@@ -292,7 +295,7 @@ assumed to be an `rsb:informer'."
                           (event              t)
                           (sink               function))
   "The default behavior for a function SINK consists in calling SINK
-with EVENT."
+   with EVENT."
   (funcall sink event))
 
 ;;; `timed-replay-mixin' mixin class
@@ -300,8 +303,8 @@ with EVENT."
 (defclass timed-replay-mixin (sequential-mixin)
   ()
   (:documentation
-   "This class is intended to be mixed into replay strategy
-classes which perform time-based scheduling of replayed events."))
+   "This class is intended to be mixed into replay strategy classes
+    which perform time-based scheduling of replayed events."))
 
 (defmethod process-event :before ((connection         replay-bag-connection)
                                   (strategy           timed-replay-mixin)
@@ -310,7 +313,7 @@ classes which perform time-based scheduling of replayed events."))
                                   (event              t)
                                   (sink               t))
   "Delay the publishing of EVENT for the amount of time computed by
-`schedule-event'."
+   `schedule-event'."
   (let ((amount (schedule-event strategy event previous-timestamp timestamp)))
     (when (plusp amount)
       (sleep amount))))
@@ -323,19 +326,22 @@ classes which perform time-based scheduling of replayed events."))
                    :initform nil
                    :documentation
                    "Stores the previously scheduled delay to estimate
-the difference between the scheduled and actual delay. This can become
-negative when the previous wait executed too slowly.")
+                    the difference between the scheduled and actual
+                    delay. This can become negative when the previous
+                    wait executed too slowly.")
    (previous-call  :type     (or null local-time:timestamp)
                    :accessor strategy-previous-call
                    :initform nil
                    :documentation
                    "Stores a timestamp for the previous call to
-`schedule-event' to estimate how much time actually (as opposed to the
-scheduled time) passed between the previous and the current call."))
+                    `schedule-event' to estimate how much time
+                    actually (as opposed to the scheduled time) passed
+                    between the previous and the current call."))
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that compute an ideal delay between successive events and need to have
-this delay adjusted to compensate for processing latencies."))
+    that compute an ideal delay between successive events and need to
+    have this delay adjusted to compensate for processing
+    latencies."))
 
 (defmethod schedule-event :around ((strategy delay-correcting-mixin)
                                    (event    t)
@@ -377,8 +383,8 @@ this delay adjusted to compensate for processing latencies."))
               "Maximum delay between adjacent events in seconds."))
   (:documentation
    "This mixin class adds to timed replay strategy classes the ability
-to limit the delays between adjacent events to a particular
-maximum."))
+    to limit the delays between adjacent events to a particular
+    maximum."))
 
 (defmethod schedule-event :around ((strategy delay-limiting-mixin)
                                    (event    t)
@@ -397,10 +403,10 @@ maximum."))
           :initform 1
           :documentation
           "Stores the speed factor that should be applied to the
-results of scheduling events."))
+           results of scheduling events."))
   (:documentation
    "This mixin class adds to timed replay strategy classes the ability
-to speed up or slow down replay speed by a constant factor."))
+    to speed up or slow down replay speed by a constant factor."))
 
 (defmethod schedule-event :around ((strategy speed-adjustment-mixin)
                                    (event    t)
@@ -417,14 +423,15 @@ to speed up or slow down replay speed by a constant factor."))
                 :documentation
                 "Stores a list of adjustments of the form
 
-  (TIMESTAMP NEW-VALUE)
+                   (TIMESTAMP NEW-VALUE)
 
-where TIMESTAMP is a keyword designating a timestamp and NEW-VALUE
-specifies the new value. Currently, NEW-VALUE can be the symbol :NOW
-or a `local-time:timestamp' object."))
+                 where TIMESTAMP is a keyword designating a timestamp
+                 and NEW-VALUE specifies the new value. Currently,
+                 NEW-VALUE can be the symbol :NOW or a
+                 `local-time:timestamp' object."))
   (:documentation
    "This mixin class adds the ability to adjust event timestamps
-during replay."))
+    during replay."))
 
 (defmethod shared-initialize :after ((instance   timestamp-adjustment-mixin)
                                      (slot-names t)
@@ -482,14 +489,16 @@ during replay."))
              :initform nil
              :documentation
              "Stores available commands as an alist of items of the
-form (NAME . IMPLEMENTING-FUNCTION)."))
+              form
+
+                (NAME . IMPLEMENTING-FUNCTION)."))
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that depend on some kind of external driver to control iteration
-through the sequential data. Instances store a list of available
-commands which are available for invocation by the external driver
-mechanism. The `replay' method basically retrieves subsequent commands
-and executes them until termination is requested."))
+    that depend on some kind of external driver to control iteration
+    through the sequential data. Instances store a list of available
+    commands which are available for invocation by the external driver
+    mechanism. The `replay' method basically retrieves subsequent
+    commands and executes them until termination is requested."))
 
 (defmethod find-command ((strategy external-driver-mixin)
                          (name     string)

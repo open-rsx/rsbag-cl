@@ -20,7 +20,7 @@
    :entries (missing-required-initarg 'timestamps :entries))
   (:documentation
    "Instances of this class are sequence of `local-time:timestamp'
-instances that produced lazily."))
+    instances that produced lazily."))
 
 #+sbcl
 (defmethod sequence:length ((timestamps timestamps))
@@ -42,30 +42,30 @@ instances that produced lazily."))
               :reader   index-channel
               :documentation
               "Stores the id of the channel to which this index
-belongs.")
+               belongs.")
    (entries   :type     vector
               :accessor index-entries
               :documentation
               "Stores the actual timestamp -> offset mapping. The
-storage is sorted and interleaved of the form
+               storage is sorted and interleaved of the form
 
-  TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
+                 TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
 
-.")
+               .")
    (stream    :initarg  :stream
               :type     stream
               :reader   index-stream
               :documentation
               "Stores the stream to which the data of this index
-should be written when flushing.")
+               should be written when flushing.")
    (sorted-to :initarg  :sorted-to
               :type     (or integer null)
               :accessor %index-sorted-to
               :initform 0
               :documentation
               "Stores the index into the entries vector up to which
-entries are sorted. The value nil indicates that entries are not
-sorted."))
+               entries are sorted. The value nil indicates that
+               entries are not sorted."))
   (:default-initargs
    :channel        (missing-required-initarg 'index :channel)
    :stream         (missing-required-initarg 'index :stream)
@@ -76,7 +76,7 @@ sorted."))
                                         :limit    most-positive-fixnum))
   (:documentation
    "Instances of this class store mappings of indices and timestamps
-of entries to corresponding file offsets for one channel."))
+    of entries to corresponding file offsets for one channel."))
 
 (defmethod initialize-instance :after ((instance index)
                                        &key

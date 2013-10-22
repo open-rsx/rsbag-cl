@@ -10,8 +10,8 @@
 
 (deftype direction ()
   "Values of this type are used to indicate whether a bag should be
-opened for reading, writing or both."
-  '(member :input :output :io))
+   opened for reading, writing or both."
+   '(member :input :output :io))
 
 (deftype if-does-not-exist-policy ()
   "Possible actions to execute if a requested object does not exist."
@@ -19,24 +19,24 @@ opened for reading, writing or both."
 
 (deftype if-exists-policy ()
   "Possible actions to execute if an object should be stored in
-location that is already occupied."
+   location that is already occupied."
   '(member :error :supersede))
 
 ;;; Transformation specifications
 
 (deftype transform-spec/default ()
   "This transform specification causes the default transformation to
-be applied."
+   be applied."
   'null)
 
 (deftype transform-spec/augment ()
   "This transform specification causes supplied arguments to be
-appended when the default transformation is constructed."
+   appended when the default transformation is constructed."
   '(cons (eql &from-source) list))
 
 (deftype transform-spec/full ()
   "This transform specification cases the a specific transform to be
-constructed with supplied arguments without automatic derivation."
+   constructed with supplied arguments without automatic derivation."
   '(cons (and symbol (not (eql &from-source))) list))
 
 (deftype transform-spec ()

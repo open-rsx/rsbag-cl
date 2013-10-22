@@ -10,10 +10,10 @@
   ()
   (:documentation
    "This class is intended to be mixed into sequence classes that
-cannot provide `sequence:elt' directly but can provide
-iterators. Subclasses inherit a method on `sequence:elt' that
-positions an iterator on the requested index and retrieves the element
-from it."))
+    cannot provide `sequence:elt' directly but can provide
+    iterators. Subclasses inherit a method on `sequence:elt' that
+    positions an iterator on the requested index and retrieves the
+    element from it."))
 
 (defmethod sequence:elt ((view  elt-via-iterator-mixin)
                          (index integer))

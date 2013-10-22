@@ -13,27 +13,27 @@
              :reader   connection-bag
              :documentation
              "Stores the bag object that is connected to event sources
-or sinks.")
+              or sinks.")
    (channels :initarg  :channels
              :type     list
              :accessor connection-channels
              :initform '()
              :documentation
              "Stores the bag channels that are connected to event
-sources or sinks by the connection.")
+              sources or sinks by the connection.")
    (endpoint :initarg  :endpoint
              :reader   connection-endpoint
              :documentation
              "Stores the endpoint that is connected to a bag
-channel."))
+              channel."))
   (:default-initargs
    :bag      (missing-required-initarg 'channel-connection :bag)
    :endpoint (missing-required-initarg 'channel-connection :endpoint))
   (:documentation
    "Instances of this class represent the connections being
-established when individual channels of bags are used as data sources
-or sinks and connected to event sources or sinks such as RSB
-participants."))
+    established when individual channels of bags are used as data
+    sources or sinks and connected to event sources or sinks such as
+    functions or RSB participants."))
 
 (defmethod close ((connection channel-connection)
                   &key abort)
@@ -45,7 +45,7 @@ participants."))
   ()
   (:documentation
    "A `channel-connection' subclass in which the sink is a RSB
-participant."))
+    participant."))
 
 (defmethod shared-initialize :after ((instance   participant-channel-connection)
                                      (slot-names t)
@@ -72,8 +72,8 @@ participant."))
               :initform :create
               :documentation
               "Stores the key of the event timestamp that should be
-used to index events in the associated channel. Defaults to the create
-timestamp.")
+               used to index events in the associated
+               channel. Defaults to the create timestamp.")
    (strategy  :initarg  :strategy
               :reader   connection-strategy
               :documentation
@@ -82,8 +82,8 @@ timestamp.")
    :strategy (missing-required-initarg 'recording-channel-connection :strategy))
   (:documentation
    "Instances of this represent class represent connections being
-established between RSB listeners and bag channels when RSB events are
-recorded into bag channels."))
+    established between RSB listeners and bag channels when RSB events
+    are recorded into bag channels."))
 
 (defmethod initialize-instance :after ((instance recording-channel-connection)
                                        &key

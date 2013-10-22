@@ -11,13 +11,14 @@
          :accessor %channel-lock
          :documentation
          "The lock that is used to synchronize accesses to the
-channel. Usually points to a lock owned by the containing bag."))
+          channel. Usually points to a lock owned by the containing
+          bag."))
   (:default-initargs
    :lock (required-argument :lock))
   (:documentation
    "Instances of this channel class can be safely used from multiple
-threads. Callers have to be prepared to encounter increased latencies
-in comparison to the single-threaded case."))
+    threads. Callers have to be prepared to encounter increased
+    latencies in comparison to the single-threaded case."))
 
 (macrolet
     ((define-synchronized-method (name args)

@@ -14,13 +14,13 @@
               :reader   backend-direction
               :documentation
               "Stores the direction with which the backend has been
-opened."))
+               opened."))
   (:default-initargs
    :direction (missing-required-initarg 'direction-mixin :direction))
   (:documentation
    "This class is intended to be mixed into backend classes that have
-to keep track of the direction for which the data source has been
-opened."))
+    to keep track of the direction for which the data source has been
+    opened."))
 
 (defmethod flush :around ((backend direction-mixin)
                           (buffer  t))
@@ -35,12 +35,12 @@ opened."))
            :type     stream
            :documentation
            "Stores the stream which contains the data read and written
-by the backend."))
+            by the backend."))
   (:default-initargs
    :stream (missing-required-initarg 'stream-mixin :stream))
   (:documentation
    "This class is intended to be mixed into backend classes which
-read/write data from/to a stream."))
+    read/write data from/to a stream."))
 
 (defmethod close ((backend stream-mixin)
                   &key &allow-other-keys)
@@ -57,10 +57,11 @@ read/write data from/to a stream."))
              :initform nil
              :documentation
              "Stores the location to which the backend object is
-connected. Can be NIL is such a location is not known."))
+              connected. Can be NIL is such a location is not
+              known."))
   (:documentation
    "This mixin allows remembering the location to which
-a (e.g. stream-based) backend object is connected."))
+    a (e.g. stream-based) backend object is connected."))
 
 ;;; `buffering-writer-mixin' mixin class
 
@@ -69,18 +70,18 @@ a (e.g. stream-based) backend object is connected."))
                    :initform nil
                    :documentation
                    "Stores a buffer which is flushed when `flush?' is
-non-nil.")
+                    non-nil.")
    (flush-strategy :initarg  :flush-strategy
                    :accessor backend-flush-strategy
                    :documentation
                    "Stores a strategy that is used to determine
-whether the current buffer should be flushed."))
+                    whether the current buffer should be flushed."))
   (:default-initargs
    :flush-strategy (missing-required-initarg
                     'buffering-writer-mixin :flush-strategy))
   (:documentation
    "This class is intended to be mixed into backend classes that
-buffer added entries before writing them to disk."))
+    buffer added entries before writing them to disk."))
 
 (defmethod shared-initialize :after ((instance   buffering-writer-mixin)
                                      (slot-names t)
@@ -101,7 +102,7 @@ buffer added entries before writing them to disk."))
                              (index   t)
                              (entry   t))
   "After adding an entry, check whether the buffer has to be flushed
-and potentially do it."
+   and potentially do it."
   (let+ (((&accessors-r/o (buffer   backend-buffer)
                           (strategy backend-flush-strategy)) backend))
     (when (flush? strategy backend buffer)
@@ -131,24 +132,26 @@ and potentially do it."
 
 (defvar *async?* t
   "Indicates whether an async operation should be performed and
-especially to disallow async operations under certain conditions.")
+   especially to disallow async operations under certain conditions.")
 
 (defclass async-double-buffered-writer-mixin ()
   ((back-buffer   :accessor back-buffer
                   :initform nil
                   :documentation
                   "Stores a buffer which can be used by the backend
-while an associated buffer is being written back. The value changes
-when the buffers swap roles.")
+                   while an associated buffer is being written
+                   back. The value changes when the buffers swap
+                   roles.")
    (writer        :accessor %writer
                   :initform nil
                   :documentation
                   "When non-nil, stores a future object which
-eventually return the result of async write-back operation."))
+                   eventually return the result of async write-back
+                   operation."))
   (:documentation
    "This class transparently adds to buffer-based backend classes the
-ability to write buffers asynchronously to other operations performed
-by the backend."))
+    ability to write buffers asynchronously to other operations
+    performed by the backend."))
 
 (defmethod shared-initialize :after ((instance   async-double-buffered-writer-mixin)
                                      (slot-names t)
@@ -209,11 +212,11 @@ by the backend."))
                     :initform nil
                     :documentation
                     "Stores the most recent time at which the
-associated buffer has been flushed."))
+                     associated buffer has been flushed."))
   (:documentation
    "This class can be mixed into backend class which should expose the
-most recent times at which their associated buffers have been
-flushed."))
+    most recent times at which their associated buffers have been
+    flushed."))
 
 (defmethod buffer-property ((backend last-write-time-mixin)
                             (buffer  t)

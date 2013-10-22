@@ -112,4 +112,4 @@
 
   (:documentation
    "This package contains functions and classes that enable the
-recording and playback of RSB events into/from rsbag log files."))
+    recording and playback of RSB events into/from rsbag log files."))

@@ -12,7 +12,8 @@
                              &optional
                              (buffer (nibbles:make-octet-vector length)))
   "Create a `simple-octet-vector' (unless BUFFER is supplied) of
-length LENGTH and read LENGTH from STREAM into it. Return the buffer."
+   length LENGTH and read LENGTH from STREAM into it. Return the
+   buffer."
   (let ((read (read-sequence buffer stream)))
     (unless (= read length)
       (cerror "Continue with incomplete block"

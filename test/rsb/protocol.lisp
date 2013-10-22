@@ -91,7 +91,7 @@
 (addtest (bag->events-root
           :documentation
           "Ensure that events replayed via RSB by `bag->events' get
-the configured prefix scope.")
+           the configured prefix scope.")
   prefix-scope
 
   (ensure-cases (prefix)

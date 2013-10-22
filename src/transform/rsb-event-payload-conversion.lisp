@@ -11,14 +11,15 @@
               :accessor transform-converter
               :documentation
               "Stores the converter that should be used
-to (de)serialize payloads when (de)serializing events."))
+               to (de)serialize payloads when (de)serializing
+               events."))
   (:default-initargs
    :converter (missing-required-initarg
                'rsb-event/payload-conversion :converter))
   (:documentation
    "Instances of this transform class (de)serialize RSB events from/to
-octet vectors like `rsb-event' but additionally (de)serialize
-contained payloads using a specified converter."))
+    octet vectors like `rsb-event' but additionally (de)serialize
+    contained payloads using a specified converter."))
 
 (defmethod encode ((transform     rsb-event/payload-conversion)
                    (domain-object rsb:event))

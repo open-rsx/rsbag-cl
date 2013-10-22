@@ -12,7 +12,7 @@
               :reader   channel-bag
               :documentation
               "Stores the bag instance in which this channel is
-contained.")
+               contained.")
    (name      :initarg  :name
               :type     string
               :reader   channel-name
@@ -24,7 +24,7 @@ contained.")
               :initform nil
               :documentation
               "Stores a transformation that should be applied to
-entries when they are retrieved or stored.")
+               entries when they are retrieved or stored.")
    (id        :initarg  :id
               :reader   %channel-id
               :documentation
@@ -33,15 +33,16 @@ entries when they are retrieved or stored.")
               :reader   %channel-backend
               :documentation
               "Stores a reference to the backend object which
-implements access to the bag to which this channel belongs."))
+               implements access to the bag to which this channel
+               belongs."))
   (:default-initargs
    :bag     (required-argument :bag)
    :name    (required-argument :name)
    :id      (required-argument :id)
    :backend (required-argument :backend))
   (:documentation
-   "Instances of this class represent time-series of homogeneous
-data items."))
+   "Instances of this class represent time-series of homogeneous data
+    items."))
 
 (defmethod channel-timestamps ((channel channel))
   (let+ (((&accessors-r/o (id      %channel-id)
@@ -56,7 +57,7 @@ data items."))
 #+sbcl
 (defmethod channel-items ((channel channel))
   "Return an instance of `channel-items' which presents pairs of
-timestamps and entries."
+   timestamps and entries."
   (make-instance 'channel-items
                  :channel channel))
 
@@ -177,12 +178,12 @@ timestamps and entries."
    (timestamps :accessor %channel-items-timestamps
                :documentation
                "Stores the sequence of associated timestamps for the
-entries of the channel."))
+                entries of the channel."))
   (:default-initargs
    :channel (required-argument :channel))
   (:documentation
    "Instances of this class can be used to access the timestamps and
-associated entries of a channel."))
+    associated entries of a channel."))
 
 #+sbcl
 (defmethod shared-initialize :after ((instance   channel-items)

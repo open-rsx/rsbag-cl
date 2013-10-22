@@ -19,7 +19,8 @@
                     :accessor %file-channels
                     :documentation
                     "Stores information of the channels present in the
-file. Entries are of the form (ID NAME META-DATA).")
+                     file. Entries are of the form (ID NAME
+                     META-DATA).")
    (indices         :type     hash-table
                     :reader   %file-indices
                     :initform (make-hash-table :test #'eq)
@@ -30,20 +31,20 @@ file. Entries are of the form (ID NAME META-DATA).")
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
-new channel.")
+                     new channel.")
    (next-chunk-id   :type     non-negative-integer
                     :accessor %file-next-chunk-id
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
-new chunk."))
+                     new chunk."))
   (:default-initargs
    :flush-strategy (make-flush-strategy :property-limit
                                         :property :length/bytes
                                         :limit    (expt 2 25)))
   (:documentation
    "Instances of this class represent files using the TIDE log file
-format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
+    format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defmethod shared-initialize :after ((instance   file)
                                      (slot-names t)
@@ -289,7 +290,7 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 
 (defun decode-type (type)
   "Decode the channel type string TYPE as nil, a keyword of a list of
-type information."
+   type information."
   (cond
     ((emptyp type)
      nil)

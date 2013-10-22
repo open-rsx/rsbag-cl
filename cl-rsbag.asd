@@ -43,13 +43,13 @@
                      (revision? t)
                      commit?)
   "Return a version of the form (MAJOR MINOR [REVISION [COMMIT]])
-where REVISION and COMMIT are optional.
+   where REVISION and COMMIT are optional.
 
-REVISION? controls whether REVISION should be included. Default
-behavior is to include REVISION.
+   REVISION? controls whether REVISION should be included. Default
+   behavior is to include REVISION.
 
-COMMIT? controls whether COMMIT should be included. Default behavior
-is to not include COMMIT."
+   COMMIT? controls whether COMMIT should be included. Default
+   behavior is to not include COMMIT."
   (append (list +version-major+ +version-minor+)
           (when revision? (list +version-revision+))
           (when (and commit? +version-commit+)
@@ -60,10 +60,10 @@ is to not include COMMIT."
                        revision?
                        commit?)
   "Return a version string of the form
-\"MAJOR.MINOR[.REVISION[-.COMMIT]]\" where REVISION and COMMIT are
-optional.
+   \"MAJOR.MINOR[.REVISION[-.COMMIT]]\" where REVISION and COMMIT are
+   optional.
 
-See `version/list' for details on keyword parameters."
+   See `version/list' for details on keyword parameters."
   (declare (ignore revision? commit?))
   (format nil "~{~A.~A~^.~A~^-~A~}" (apply #'version/list args)))
 
@@ -86,7 +86,7 @@ See `version/list' for details on keyword parameters."
 (defun serialization-version/string ()
   "Return a version string of the form \"MAJOR.MINOR\".
 
-See `serialization-version/list' for details."
+   See `serialization-version/list' for details."
   (format nil "~{~A.~A~}" (serialization-version/list)))
 
 ;;; System definition

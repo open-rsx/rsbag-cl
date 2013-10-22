@@ -14,12 +14,12 @@
               :reader   view-sequences
               :documentation
               "Stores the list of sequences from the view aggregates
-data."))
+               data."))
   (:default-initargs
    :sequences (missing-required-initarg 'multi-sequence-view-mixin :sequences))
   (:documentation
    "This class is intended to be mixed into view classes that
-aggregate data from multiple sequences."))
+    aggregate data from multiple sequences."))
 
 (defmethod print-object ((object multi-sequence-view-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -33,7 +33,7 @@ aggregate data from multiple sequences."))
               :reader   %iterator-iterators
               :documentation
               "Stores iterators that represent sequence-specific
-iteration states.")
+               iteration states.")
    (index     :initarg  :index
               :type     non-negative-integer
               :accessor %iterator-index
@@ -44,7 +44,8 @@ iteration states.")
    :iterators (missing-required-initarg 'multi-sequence-iterator-mixin :iterators))
   (:documentation
    "This class is intended to be mixed into iterator classes that
-represent the state of iterations which span multiple sequences."))
+    represent the state of iterations which span multiple
+    sequences."))
 
 (defmethod sequence:iterator-step :after ((sequence sequence)
                                           (iterator multi-sequence-iterator-mixin)

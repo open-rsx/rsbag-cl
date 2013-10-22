@@ -25,7 +25,7 @@
    (server   :accessor %strategy-server
              :documentation
              "Stores the server that exposes the replay control
-methods to clients.")
+              methods to clients.")
    (queue    :type     lparallel.queue:queue
              :reader   strategy-%queue
              :initform (lparallel.queue:make-queue)
@@ -35,52 +35,56 @@ methods to clients.")
    :uri (missing-required-initarg 'remote-controlled :uri))
   (:documentation
    "This strategy exposes replay control commands via an RPC
-server. Clients invoke the methods to control the replay. At least the
-following commands are available:
+    server. Clients invoke the methods to control the replay. At least
+    the following commands are available:
 
-length(): uint64
+    length(): uint64
 
-  Return the length of the sequence of all events.
+      Return the length of the sequence of all events.
 
-relativelength(): uint64
+    relativelength(): uint64
 
-  Return the length of the replayed (sub-)sequence of all events.
+      Return the length of the replayed (sub-)sequence of all events.
 
-index(): uint64
+    index(): uint64
 
-  Return the current position in the replayed sequence.
+      Return the current position in the replayed sequence.
 
-relativeindex(): uint64
+    relativeindex(): uint64
 
-  Return the current position relative to the start of the replayed (sub-)sequence.
+      Return the current position relative to the start of the
+      replayed (sub-)sequence.
 
-next(): uint64
+    next(): uint64
 
-  Move the replay cursor to the next entry, return new index.
+      Move the replay cursor to the next entry, return new index.
 
-previous(): uint64
+    previous(): uint64
 
-  Move the replay cursor to the previous entry, return new index.
+      Move the replay cursor to the previous entry, return new index.
 
-seek(new-position: uint64): void
+    seek(new-position: uint64): void
 
-  Position the replay cursor at the supplied entry index.
+      Position the replay cursor at the supplied entry index.
 
-emit(): void
+    emit(): void
 
-  Publish the entry at which the replay cursor is currently positioned.
+      Publish the entry at which the replay cursor is currently
+      positioned.
 
-emitandnext(): uint64
+    emitandnext(): uint64
 
-  Publish the entry at which the replay cursor is currently positioned, advance to the next entry, return new index.
+      Publish the entry at which the replay cursor is currently
+      positioned, advance to the next entry, return new index.
 
-get(): bytes
+    get(): bytes
 
-  Return the entry at which the replay cursor is currently positioned. Do not emit or change anything.
+      Return the entry at which the replay cursor is currently
+      positioned. Do not emit or change anything.
 
-quit(): void
+    quit(): void
 
-  Terminate the replay."))
+      Terminate the replay."))
 
 (defmethod (setf %strategy-commands) :after ((new-value list)
                                              (strategy  remote-controlled))

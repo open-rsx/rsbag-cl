@@ -11,7 +11,7 @@
                      &key &allow-other-keys)
                     &body body)
   "Execute BODY with VAR bound to a bag object for the data source
-SOURCE. ARGS are passed to `open-bag'."
+   SOURCE. ARGS are passed to `open-bag'."
   (check-type var symbol "a symbol")
 
   `(let ((,var (open-bag ,source ,@args)))

@@ -10,12 +10,12 @@
                                    &key
                                    (slot-name name))
   "Define a class `plist-NAME-mixin' which manages a plist in a
-slot. Define the following accessors along with the class:
-+ `NAME-count' :: Return number of items.
-+ `NAME-keys' :: Return item keys.
-+ `NAME-values' :: Return item values.
-+ `NAME-plist' :: Return items as plist.
-+ `NAME-alist' :: Return items as alist."
+   slot. Define the following accessors along with the class:
+   + `NAME-count' :: Return number of items.
+   + `NAME-keys' :: Return item keys.
+   + `NAME-values' :: Return item values.
+   + `NAME-plist' :: Return items as plist.
+   + `NAME-alist' :: Return items as alist."
   (let+ ((class-name (symbolicate "PLIST-" name "-MIXIN"))
          (initarg    (make-keyword slot-name))
          ((count-name keys-name values-name plist-name alist-name)
@@ -33,7 +33,8 @@ slot. Define the following accessors along with the class:
                                name)))
          (:documentation
           "This mixin adds storage for a plist of items and associated
-accessors. See `define-plist-data-mixin' for a description."))
+           accessors. See `define-plist-data-mixin' for a
+           description."))
 
        (defgeneric ,count-name (object)
          (:method ((object ,class-name))

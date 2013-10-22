@@ -13,11 +13,11 @@
              :reader   %informer-injector-informer
              :documentation
              "Stores the informer that should be associated with the
-channel."))
+              channel."))
   (:documentation
    "Instance of this helper class inject a given object (usually an
-`rsb:informer' instance) into each element of the underlying
-sequence."))
+    `rsb:informer' instance) into each element of the underlying
+    sequence."))
 
 (defmethod sequence:elt ((sequence informer-injector)
                          (index    integer))
@@ -37,8 +37,8 @@ sequence."))
 ;;; Utility functions
 
 (defun %make-progress-reporter (sequence callback)
-  "Return a function with two parameters that calls CALLBACK in the
-appropriate way if CALLBACK is non-nil"
+  "Return a function of two parameters that calls CALLBACK in the
+   appropriate way if CALLBACK is non-nil."
   (when callback
     (let ((start 0)
           (end   (1- (length sequence))))

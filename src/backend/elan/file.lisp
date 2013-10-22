@@ -17,40 +17,43 @@
                     :initform nil
                     :documentation
                     "Stores information of the channels (or tiers,
-rather) present in the file. Entries are of the form
+                     rather) present in the file. Entries are of the
+                     form
 
-  (ID NAME META-DATA)
+                       (ID NAME META-DATA)
 
-where ID is the numeric id of the channel, NAME is the name as string
-and META-DATA is a plist of additional data associated to the
-channel.")
+                     where ID is the numeric id of the channel, NAME
+                     is the name as string and META-DATA is a plist of
+                     additional data associated to the channel.")
    (data            :type     hash-table
                     :reader   %file-data
                     :initform (make-hash-table :test #'eq)
                     :documentation
                     "Maps channel ids to channel data. Each entry of a
-channel is of the form
+                     channel is of the form
 
-  (START END DATUM)
+                       (START END DATUM)
 
-where START and END are the start and end timestamps respectively and
-DATUM is the (string) datum of the entry.")
+                     where START and END are the start and end
+                     timestamps respectively and DATUM is the (string)
+                     datum of the entry.")
    (document        :type     stp:document
                     :accessor %file-document
                     :documentation
                     "Stores the `stp:document' instance which contains
-the DOM representation of the file. The document is not updated
-continuously but only on write-back.")
+                     the DOM representation of the file. The document
+                     is not updated continuously but only on
+                     write-back.")
    (next-channel-id :type     non-negative-integer
                     :accessor %file-next-channel-id
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
-new channel."))
+                     new channel."))
   (:documentation
    "Instances of this class represent Elan eaf-files. All data is
-serialized and written or read and deserialized when the file is
-written or read respectively."))
+    serialized and written or read and deserialized when the file is
+    written or read respectively."))
 
 (defmethod shared-initialize :after ((instance   file)
                                      (slot-names t)

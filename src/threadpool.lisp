@@ -24,7 +24,7 @@
 
 (defmacro with-threadpool (&body body)
   "Execute BODY such that created tasks use the rsbag threadpool and
-errors are transferred."
+   errors are transferred."
   `(let ((lparallel:*kernel* *threadpool*))
      (lparallel:task-handler-bind ((error #'lparallel:invoke-transfer-error))
        ,@body)))

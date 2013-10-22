@@ -13,21 +13,21 @@
              :reader   connection-bag
              :documentation
              "Stores the bag object that is connected to RSB
-participants as a data source or sink.")
+              participants as a data source or sink.")
    (channels :initarg  :channels
              :type     list
              :reader   connection-channels
              :initform nil
              :documentation
              "Stores a list of channel connections for channels of the
-bag that are connected to RSB participants as data sources or
-sinks."))
+              bag that are connected to RSB participants as data
+              sources or sinks."))
   (:default-initargs
    :bag (missing-required-initarg 'bag-connection :bag))
   (:documentation
    "Instances of this class represent the connections being
-established when channels of bags are used as data sources or sinks of
-RSB participants. "))
+    established when channels of bags are used as data sources or
+    sinks of RSB participants. "))
 
 (defmethod shared-initialize :after ((instance   bag-connection)
                                      (slot-names t)
@@ -67,13 +67,13 @@ RSB participants. "))
              :reader    connection-strategy
              :documentation
              "Stores the strategy that is used for replaying events
-from the associated bag of the connection."))
+              from the associated bag of the connection."))
   (:default-initargs
    :strategy (missing-required-initarg 'replay-bag-connection :strategy))
   (:documentation
    "Instances of this class associated an event replay strategy, a
-source bag and `rsb:informer' instances to collaboratively replay the
-events from the bag."))
+    source bag and `rsb:informer' instances to collaboratively replay
+    the events from the bag."))
 
 (defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
                                                          (object    replay-bag-connection))

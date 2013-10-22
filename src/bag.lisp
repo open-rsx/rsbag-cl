@@ -16,28 +16,29 @@
               :reader   %bag-backend
               :documentation
               "Stores an object which is responsible for accessing the
-stream associated to this bag.")
+               stream associated to this bag.")
    (transform :initarg  :transform
               :type     transform-spec
               :reader   bag-transform
               :initform '(&from-source)
               :documentation
               "Stores a specification for transformations that should
-be associated with channels of the bag. See type `transform-spec'.")
+               be associated with channels of the bag. See type
+               `transform-spec'.")
    (channels  :type     hash-table
               :reader   %bag-channels
               :initform (make-hash-table :test #'equal)
               :documentation
               "Stores a mapping of channel names to `channel'
-instances."))
+               instances."))
   (:default-initargs
    :direction (missing-required-initarg 'bag :direction)
    :backend   (missing-required-initarg 'bag :backend))
   (:documentation
    "Instances of this class represent a log file. A log file consists
-of named channels which can be retrieved using the `bag-channels' and
-`bag-channel' methods and modified using the `(setf bag-channel)'
-method."))
+    of named channels which can be retrieved using the `bag-channels'
+    and `bag-channel' methods and modified using the `(setf
+    bag-channel)' method."))
 
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
@@ -180,25 +181,26 @@ method."))
                                     id
                                     spec)
   "Use SPEC and, optionally the :type entry of META-DATA to determine
-the appropriate transform for the channel designated by NAME.
+   the appropriate transform for the channel designated by NAME.
 
-SPEC can be of the following types:
+   SPEC can be of the following types:
 
-  `transform-spec/default'
+     `transform-spec/default'
 
-    Use the :type entry of META-DATA to determine the appropriate
-    transform.
+       Use the :type entry of META-DATA to determine the appropriate
+       transform.
 
-  `transform-spec/augment'
+     `transform-spec/augment'
 
-    Append to the :type entry of META-DATA the remainder of SPEC. This
-    will instantiate the transform class specified by the :type entry,
-    but append initargs given in SPEC.
+       Append to the :type entry of META-DATA the remainder of
+       SPEC. This will instantiate the transform class specified by
+       the :type entry, but append initargs given in SPEC.
 
-  `transform-spec/full'
+     `transform-spec/full'
 
-    Use the contents of SPEC as class name and initargs to instantiate
-    the transform class. Ignore :type entry of META-DATA."
+       Use the contents of SPEC as class name and initargs to
+       instantiate the transform class. Ignore :type entry of
+       META-DATA."
   (declare (ignore id))
 
   (with-condition-translation

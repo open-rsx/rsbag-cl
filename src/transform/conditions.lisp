@@ -11,7 +11,7 @@
               :reader   transform-error-transform
               :documentation
               "Stores the transform instance that was used in the
-failed transform operation."))
+               failed transform operation."))
   (:report
    (lambda (condition stream)
      (format stream "~@<A transformation involving the transform ~A ~
@@ -19,7 +19,7 @@ failed transform operation."))
              (transform-error-transform condition))))
   (:documentation
    "Errors of this condition class and its subclasses are signaled
-when a transform fails."))
+    when a transform fails."))
 
 (define-condition encoding-error (transform-error
                                   chainable-condition)
@@ -27,7 +27,7 @@ when a transform fails."))
                   :reader   transform-error-domain-object
                   :documentation
                   "Stores the domain object the encoding of which
-failed."))
+                   failed."))
   (:report
    (lambda (condition stream)
      (let ((*print-length* (or *print-length* 16)))
@@ -39,7 +39,7 @@ failed."))
                condition))))
   (:documentation
    "This error is signaled when the encoding of a domain object for
-storage in bag fails."))
+    storage in bag fails."))
 
 (define-condition decoding-error (transform-error
                                   chainable-condition)
@@ -58,4 +58,4 @@ storage in bag fails."))
                condition))))
   (:documentation
    "This error is signaled when the decoding of data, usually
-retrieved from a bag, fails."))
+    retrieved from a bag, fails."))

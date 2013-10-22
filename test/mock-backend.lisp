@@ -14,19 +14,20 @@
              :documentation
              "List of mock-channel data of the form
 
-  (TIMESTAMPS ENTRIES ID NAME META-DATA)
+                (TIMESTAMPS ENTRIES ID NAME META-DATA)
 
-where
+              where
 
-TIMESTAMPS is a list of `local-time:timestamp' objects,
+              TIMESTAMPS is a list of `local-time:timestamp' objects,
 
-ENTRIES is a list of raw entries,
+              ENTRIES is a list of raw entries,
 
-ID is the integer id of the channel,
+              ID is the integer id of the channel,
 
-NAME is a string naming the channel,
+              NAME is a string naming the channel,
 
-and META-DATA is a plist containing the meta-data for the channel.")))
+              and META-DATA is a plist containing the meta-data for
+              the channel.")))
 
 (defmethod close ((stream mock-backend) &key abort)
   (declare (ignore abort)))
@@ -73,15 +74,15 @@ and META-DATA is a plist containing the meta-data for the channel.")))
 
 (defmacro with-mock-backend ((backend-var) (&body content) &body body)
   "Execute BODY with BACKEND-VAR bound to a `mock-backend' instance
-filled with CONTENT."
+   filled with CONTENT."
   `(let ((,backend-var (make-instance 'mock-backend
                                       :channels (list ,@content))))
      ,@body))
 
 (defmacro with-mock-bag ((bag-var &rest initargs) (&body content) &body body)
   "Execute BODY with BAG-VAR bound to a `bag' instance backed by a
-`mock-backend' instance filled with CONTENT. INITARGS are passed to
-the constructed `bag' instance."
+   `mock-backend' instance filled with CONTENT. INITARGS are passed to
+   the constructed `bag' instance."
   (with-gensyms (backend-var)
     `(with-mock-backend (,backend-var) (,@content)
        (let ((,bag-var (make-instance 'bag

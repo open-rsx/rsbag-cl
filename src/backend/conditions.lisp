@@ -18,7 +18,7 @@
              (log-file-error-source condition))))
   (:documentation
    "Errors of this class and subclasses are signaled when operations
-involving log files fail."))
+    involving log files fail."))
 
 (define-condition invalid-file-structure (simple-error
                                           log-file-error)
@@ -31,4 +31,4 @@ involving log files fail."))
              condition)))
   (:documentation
    "This error is signaled if an invalid file structure is encountered
-while reading a log file."))
+    while reading a log file."))

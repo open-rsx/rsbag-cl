@@ -126,4 +126,4 @@
 
   (:documentation
    "This package contains supporting infrastructure and replay
-strategy classes."))
+    strategy classes."))

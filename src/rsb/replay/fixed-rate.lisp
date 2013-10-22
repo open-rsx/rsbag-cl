@@ -22,10 +22,10 @@
           :initform .1
           :documentation
           "Stores the fixed delay in seconds between publishing
-subsequent events."))
+           subsequent events."))
   (:documentation
    "This strategy replays events in the order they were recorded and,
-as precisely as possible, with a specified fixed rate."))
+    as precisely as possible, with a specified fixed rate."))
 
 (defmethod shared-initialize :before ((instance   fixed-rate)
                                       (slot-names t)
