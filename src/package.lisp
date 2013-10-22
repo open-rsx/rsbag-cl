@@ -107,6 +107,9 @@
 
   ;; Convenience macros
   (:export
+   #:call-with-open-bag
+   #:with-open-bag
+
    #:with-bag)
 
   ;; Package management macros
