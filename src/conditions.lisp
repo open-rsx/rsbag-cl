@@ -22,7 +22,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<Failed to open bag in source ~
-                     ~A.~/more-conditions::maybe-print-cause/~@:>"
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
              (open-error-source condition)
              condition)))
   (:default-initargs
@@ -91,7 +91,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<Could not open channel ~S in bag
-                     ~A~/more-conditions::maybe-print-cause/~@:>"
+                     ~A~/more-conditions:maybe-print-cause/~@:>"
              (channel-error-channel condition)
              (bag-error-bag         condition)
              condition)))

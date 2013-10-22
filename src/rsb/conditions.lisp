@@ -39,7 +39,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<Event ~A could not be stored in ~
-                     ~A.~/more-conditions::maybe-print-cause/~@:>"
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
              (connection-error-event      condition)
              (connection-error-connection condition)
              condition)))
@@ -70,7 +70,7 @@
    (lambda (condition stream)
      (format stream "~@<Failed to retrieve next event from ~A for ~
                      replay according to strategy ~
-                     ~A~/more-conditions::maybe-print-cause/~@:>"
+                     ~A~/more-conditions:maybe-print-cause/~@:>"
              (connection-error-connection condition)
              (connection-error-strategy   condition)
              condition)))

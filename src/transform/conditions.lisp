@@ -33,7 +33,7 @@
      (let ((*print-length* (or *print-length* 16)))
        (format stream "~@<The domain object ~S could not be encoded by ~
                        the transform ~
-                       ~A.~/more-conditions::maybe-print-cause/~@:>"
+                       ~A.~/more-conditions:maybe-print-cause/~@:>"
                (transform-error-domain-object condition)
                (transform-error-transform     condition)
                condition))))
@@ -52,7 +52,7 @@
      (let ((*print-length* (or *print-length* 16)))
        (format stream "~@<The encoded value ~S could not be decoded by ~
                        the transform ~
-                       ~A.~/more-conditions::maybe-print-cause/~@:>"
+                       ~A.~/more-conditions:maybe-print-cause/~@:>"
                (transform-error-encoded   condition)
                (transform-error-transform condition)
                condition))))

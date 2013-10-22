@@ -26,7 +26,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<Invalid file structure encountered in ~
-                     ~A~/more-conditions::maybe-print-explanation/~@:>"
+                     ~A~/more-conditions:maybe-print-explanation/~@:>"
              (log-file-error-source condition)
              condition)))
   (:documentation
