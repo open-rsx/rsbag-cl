@@ -33,3 +33,56 @@ errors are transferred."
 ;; be stopped and restarted when saving an image. See reloading.lisp.
 (unless *threadpool*
   (start-threadpool))
+
+;;; Executor
+
+(defclass serial-executor ()
+  ((queue   :reader   executor-%queue
+            :initform (lparallel.queue:make-queue))
+   (channel :reader   executor-%channel
+            :initform (with-threadpool
+                        (lparallel:make-channel))
+            :documentation
+            ""))
+  (:documentation
+   "TODO(jmoringe): document"))
+
+(defmethod shared-initialize :after ((instance   serial-executor)
+                                     (slot-names t)
+                                     &key)
+  (lparallel.queue:push-queue/no-lock
+   t (lparallel.kernel::channel-queue (executor-%channel instance))))
+
+(defmethod dispose ((executor serial-executor) &key abort)
+  (unless abort
+    (let+ (((&accessors-r/o (channel executor-%channel)
+                            (queue   executor-%queue)) executor))
+      (with-threadpool
+        (iter (for token next (lparallel:receive-result channel))
+              (until (lparallel.queue:queue-empty-p queue))
+              (lparallel.queue:push-queue
+               token (lparallel.kernel::channel-queue channel)))))))
+
+(defmethod executor-submit ((executor serial-executor)
+                            (task     function))
+  (with-threadpool
+    (let+ (((&accessors-r/o (queue   executor-%queue)
+                            (channel executor-%channel)) executor)
+           (empty? (lparallel.queue:with-locked-queue queue
+                     (prog1
+                         (lparallel.queue:queue-empty-p/no-lock queue)
+                       (lparallel.queue:push-queue/no-lock task queue))))
+           ((&labels work ()
+              (let+ ((token (lparallel:receive-result channel))
+                     ((&values task empty?)
+                      (lparallel.queue:with-locked-queue queue
+                        (values
+                         (lparallel.queue:pop-queue/no-lock queue)
+                         (lparallel.queue:queue-empty-p/no-lock queue)))))
+                (funcall task)
+                (unless empty?
+                  (lparallel:submit-task channel #'work))
+                token))))
+      (when empty?
+        (lparallel:submit-task channel #'work))
+      (values))))

@@ -223,7 +223,8 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
    ;; the number of entries. Correct this before writing the chunk.
    (unless (zerop count)
      (setf count (length entries))
-     (pack buffer stream)
+     (rsbag.backend::foo-write (stream stream)
+       (pack buffer stream))
 
      ;; For the sake of conservative garbage collectors, we
      ;; dereference as much as possible here. On SBCL we even garbage
@@ -248,14 +249,15 @@ format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
 ;;; Utility functions
 
 (defun maybe-write-header (stream)
-  (when (zerop (file-length stream))
-    (pack (make-instance 'tide
-                         :version-major +format-version-major+
-                         :version-minor +format-version-minor+
-                         :num-channels  0
-                         :num-chunks    0)
-          stream)
-    (file-position stream 0)))
+  (rsbag.backend::foo-write (stream stream)
+    (when (zerop (file-length stream))
+      (pack (make-instance 'tide
+                           :version-major +format-version-major+
+                           :version-minor +format-version-minor+
+                           :num-channels  0
+                           :num-chunks    0)
+            stream)
+      (file-position stream 0))))
 
 (defun make-channel (chan)
   (list (chan-id chan)

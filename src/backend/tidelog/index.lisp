@@ -53,7 +53,7 @@ storage is sorted and interleaved of the form
 
 .")
    (stream    :initarg  :stream
-              :type     stream
+              ;; :type     stream
               :reader   index-stream
               :documentation
               "Stores the stream to which the data of this index
@@ -152,7 +152,8 @@ of entries to corresponding file offsets for one channel."))
   ;; If we have anything to write, write it and reset fill pointers so
   ;; we can start filling the buffer again.
   (unless (zerop (indx-count buffer))
-    (pack buffer (index-stream index))))
+    (rsbag.backend::foo-write (stream (index-stream index))
+      (pack buffer stream))))
 
 (defmethod buffer-property ((backend index)
                             (buffer  indx)
