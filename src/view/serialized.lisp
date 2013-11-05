@@ -56,7 +56,7 @@
   (lambda (sequence iterator limit from-end)
     (unless (sequence:iterator-endp sequence iterator limit from-end)
       (sequence:elt
-       (rsbag::%channel-items-timestamps sequence)
+       (rsbag::channel-items-%timestamps sequence)
        (sequence:iterator-index sequence iterator)))))
 
 ;;; `serialized' class
@@ -120,7 +120,7 @@
 
 (defclass serialized-iterator (multi-sequence-iterator-mixin)
   ((current :initarg  :current
-            :accessor %iterator-current
+            :accessor iterator-%current
             :documentation
             "Stores the iterator that holds the current element and
              has to be stepped in order to step in the serialized
@@ -133,14 +133,14 @@
                                      (slot-names t)
                                      &key
                                      compare)
-  (setf (%iterator-current instance)
-        (%iterator-for-forward-step (%iterator-iterators instance) compare)))
+  (setf (iterator-%current instance)
+        (%iterator-for-forward-step (iterator-%iterators instance) compare)))
 
 (defmethod sequence:iterator-endp ((sequence serialized)
                                    (iterator serialized-iterator)
                                    (limit    t)
                                    (from-end t))
-  (or (null (first (%iterator-current iterator)))
+  (or (null (first (iterator-%current iterator)))
       (call-next-method)))
 
 (defmethod sequence:iterator-step ((sequence serialized)
@@ -148,22 +148,22 @@
                                    (from-end t))
   (let+ (((&accessors-r/o (compare view-compare)
                           (key     view-key)) sequence)
-         ((&accessors-r/o (iterators %iterator-iterators)) iterator))
+         ((&accessors-r/o (iterators iterator-%iterators)) iterator))
     (declare (type function compare key))
     ;; Step the appropriate sub-iterator (depending on forward
     ;; vs. backward step), then find and store the next sub-iterator.
     (%iterator-step (if from-end
                         (%iterator-for-backward-step iterators key compare)
-                        (%iterator-current iterator))
+                        (iterator-%current iterator))
                     key from-end)
-    (setf (%iterator-current iterator)
+    (setf (iterator-%current iterator)
           (%iterator-for-forward-step iterators compare)))
   iterator)
 
 (defmethod sequence:iterator-element ((sequence serialized)
                                       (iterator serialized-iterator))
   (let+ (((&accessors-r/o
-           ((&ign sequence* iterator* &rest &ign) %iterator-current)) iterator))
+           ((&ign sequence* iterator* &rest &ign) iterator-%current)) iterator))
     (sequence:iterator-element sequence* iterator*)))
 
 ;;; Utility functions

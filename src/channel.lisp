@@ -26,11 +26,11 @@
               "Stores a transformation that should be applied to
                entries when they are retrieved or stored.")
    (id        :initarg  :id
-              :reader   %channel-id
+              :reader   channel-%id
               :documentation
               "Stores the id of the channel.")
    (backend   :initarg  :backend
-              :reader   %channel-backend
+              :reader   channel-%backend
               :documentation
               "Stores a reference to the backend object which
                implements access to the bag to which this channel
@@ -45,8 +45,8 @@
     items."))
 
 (defmethod channel-timestamps ((channel channel))
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (rsbag.backend:get-timestamps backend id)))
 
 #+sbcl
@@ -69,8 +69,8 @@
                   (transform        (channel-transform channel)))
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel)
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel)
          (raw (or (rsbag.backend:get-entry backend id index)
                   (ecase if-does-not-exist
                     (:error (error 'no-such-entry
@@ -88,8 +88,8 @@
                   if-does-not-exist)
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (or (rsbag.backend:get-entry backend id timestamp)
         (ecase if-does-not-exist
           (:error (error 'no-such-entry
@@ -117,8 +117,8 @@
   (when (eq if-exists :supersede)
     (error "Superseding entries is not supported yet"))
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel)
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel)
          (raw (if transform
                   (rsbag.transform:encode transform new-value)
                   new-value)))
@@ -147,8 +147,8 @@
 
 #+sbcl
 (defmethod sequence:length ((channel channel))
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (rsbag.backend:get-num-entries backend id)))
 
 #+sbcl
@@ -172,10 +172,10 @@
 (defclass channel-items (standard-object
                          sequence)
   ((channel    :initarg  :channel
-               :reader   %channel-items-channel
+               :reader   channel-items-%channel
                :documentation
                "Stores the channel the items of which are used.")
-   (timestamps :accessor %channel-items-timestamps
+   (timestamps :accessor channel-items-%timestamps
                :documentation
                "Stores the sequence of associated timestamps for the
                 entries of the channel."))
@@ -190,16 +190,16 @@
                                      (slot-names t)
                                      &key
                                      channel)
-  (setf (%channel-items-timestamps instance)
+  (setf (channel-items-%timestamps instance)
         (channel-timestamps channel)))
 
 #+sbcl
 (defmethod sequence:length ((items channel-items))
-  (length (%channel-items-channel items)))
+  (length (channel-items-%channel items)))
 
 #+sbcl
 (defmethod sequence:elt ((items channel-items)
                          (index integer))
-  (let+ (((&accessors-r/o (channel    %channel-items-channel)
-                          (timestamps %channel-items-timestamps)) items))
+  (let+ (((&accessors-r/o (channel    channel-items-%channel)
+                          (timestamps channel-items-%timestamps)) items))
     (list (elt timestamps index) (elt channel index))))

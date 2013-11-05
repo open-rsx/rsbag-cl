@@ -60,7 +60,7 @@
                should be written when flushing.")
    (sorted-to :initarg  :sorted-to
               :type     (or integer null)
-              :accessor %index-sorted-to
+              :accessor index-%sorted-to
               :initform 0
               :documentation
               "Stores the index into the entries vector up to which
@@ -104,7 +104,7 @@
                       (chunk-id  integer))
   (let+ (((&accessors-r/o (buffer    backend-buffer)
                           (entries   index-entries)
-                          (sorted-to %index-sorted-to)) index))
+                          (sorted-to index-%sorted-to)) index))
     ;; Add to entries.
     (vector-push-extend timestamp entries)
     (vector-push-extend offset    entries)
@@ -120,7 +120,7 @@
 
     ;; Update sorted state.
     (when sorted-to
-      (setf (%index-sorted-to index)
+      (setf (index-%sorted-to index)
             (when (> timestamp sorted-to)
               timestamp)))))
 
@@ -142,7 +142,7 @@
                          (buffer indx))
   ;; If some timestamps have been inserted out of order, sort the
   ;; entire index block now.
-  (unless (%index-sorted-to index)
+  (unless (index-%sorted-to index)
     (warn "~@<Sorting index block due to out-of-order ~
            insertions.~@:>")
     (let ((entries (indx-entries buffer)))

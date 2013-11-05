@@ -16,24 +16,24 @@
                 last-write-time-mixin)
   ((channels        :type     list
                     :reader   get-channels
-                    :accessor %file-channels
+                    :accessor file-%channels
                     :documentation
                     "Stores information of the channels present in the
                      file. Entries are of the form (ID NAME
                      META-DATA).")
    (indices         :type     hash-table
-                    :reader   %file-indices
+                    :reader   file-%indices
                     :initform (make-hash-table :test #'eq)
                     :documentation
                     "Maps channel ids to index objects.")
    (next-channel-id :type     non-negative-integer
-                    :accessor %file-next-channel-id
+                    :accessor file-%next-channel-id
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
                      new channel.")
    (next-chunk-id   :type     non-negative-integer
-                    :accessor %file-next-chunk-id
+                    :accessor file-%next-chunk-id
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
@@ -59,11 +59,13 @@
   (let+ (((&accessors (stream          backend-stream)
                       (direction       backend-direction)
                       (buffer          backend-buffer)
-                      (channels        %file-channels)
-                      (indices         %file-indices)
-                      (next-channel-id %file-next-channel-id)
-                      (next-chunk-id   %file-next-chunk-id)) instance)
-         ((&values chans indxs chnks) (scan stream :tide)))
+                      (channels        file-%channels)
+                      (indices         file-%indices)
+                      (next-channel-id file-%next-channel-id)
+                      (next-chunk-id   file-%next-chunk-id)) instance)
+         ((&values chans indxs chnks)
+          (when (member direction '(:input :io))
+            (scan stream :tide))))
 
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks           (sort (coerce chnks 'vector) #'<
@@ -105,24 +107,25 @@
 
 (defmethod close ((file file)
                   &key &allow-other-keys)
-  (map nil #'close (hash-table-values (%file-indices file)))
+  (map nil #'close (hash-table-values (file-%indices file)))
   (when (next-method-p)
     (call-next-method)))
 
 (defmethod make-channel-id ((file file)
                             (name string))
   (prog1
-      (%file-next-channel-id file)
-    (incf (%file-next-channel-id file))))
+      (file-%next-channel-id file)
+    (incf (file-%next-channel-id file))))
 
 (defmethod put-channel ((file      file)
                         (channel   integer)
                         (name      string)
                         (meta-data list))
-  (let+ (((&accessors (stream    backend-stream)
-                      (direction backend-direction)
-                      (channels  %file-channels)
-                      (indices   %file-indices)) file)
+  (let+ (((&accessors (stream         backend-stream)
+                      (direction      backend-direction)
+                      (channels       file-%channels)
+                      (indices        file-%indices)
+                      (flush-strategy backend-flush-strategy)) file)
          ((&plist-r/o (type          :type)
                       (source-name   :source-name   "")
                       (source-config :source-config "")
@@ -145,14 +148,14 @@
 
 (defmethod get-num-entries ((file    file)
                             (channel integer))
-  (index-num-entries (gethash channel (%file-indices file))))
+  (index-num-entries (gethash channel (file-%indices file))))
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))
   #+sbcl
   (make-instance 'timestamps
                  :entries (index-entries
-                           (gethash channel (%file-indices file))))
+                           (gethash channel (file-%indices file))))
   #-sbcl
   #.(error "Not implemented."))
 
@@ -161,7 +164,7 @@
                       (timestamp local-time:timestamp)
                       (entry     simple-array))
   (let+ (((&accessors-r/o (buffer  backend-buffer)
-                          (indices %file-indices)) file)
+                          (indices file-%indices)) file)
          (timestamp* (timestamp->uint64 timestamp))
          (size       (length entry))
          (entry      (make-instance 'chunk-entry
@@ -186,7 +189,7 @@
                       (channel integer)
                       (index   integer))
   (let+ (((&accessors (stream backend-stream)) file)
-         (index1 (gethash channel (%file-indices file))) ; TODO(jmoringe): make a method?
+         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
          (offset (index-offset index1 index))
          (length (prog2
                      (file-position stream (+ offset 12))
@@ -205,7 +208,7 @@
 
 (defmethod make-buffer ((file     file)
                         (previous chnk))
-  (let+ (((&accessors (next-chunk-id %file-next-chunk-id)) file))
+  (let+ (((&accessors (next-chunk-id file-%next-chunk-id)) file))
     (reinitialize-instance previous
                            :chunk-id (incf next-chunk-id)
                            :start    (1- (ash 1 64))

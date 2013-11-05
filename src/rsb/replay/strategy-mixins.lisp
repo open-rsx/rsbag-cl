@@ -65,7 +65,7 @@
 (defclass bounds-mixin ()
   ((start-index :initarg  :start-index
                 :type     (or null non-negative-integer)
-                :accessor %strategy-start-index
+                :accessor strategy-%start-index
                 :writer   (setf strategy-start-index) ; reader is defined below
                 :initform nil
                 :documentation
@@ -93,12 +93,12 @@
     (check-ordered-indices start-index end-index)))
 
 (defmethod strategy-start-index ((strategy bounds-mixin))
-  (or (%strategy-start-index strategy) 0))
+  (or (strategy-%start-index strategy) 0))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
-  (when-let ((start-index (%strategy-start-index strategy))
+  (when-let ((start-index (strategy-%start-index strategy))
              (end-index   (strategy-end-index    strategy)))
     (check-ordered-indices start-index end-index)))
 
@@ -156,7 +156,7 @@
                            &key &allow-other-keys)
   (let+ (((&accessors-r/o (bag connection-bag)) connection)
          ((&accessors (start-time  strategy-start-time)
-                      (start-index %strategy-start-index)
+                      (start-index strategy-%start-index)
                       (end-time    strategy-end-time)
                       (end-index   strategy-end-index)) strategy)
          (sequence    (make-view connection strategy
@@ -485,7 +485,7 @@
 (defclass external-driver-mixin (sequential-mixin)
   ((commands :type     list
              :reader   strategy-commands
-             :accessor %strategy-commands
+             :accessor strategy-%commands
              :initform nil
              :documentation
              "Stores available commands as an alist of items of the
@@ -614,7 +614,7 @@
          ((&flet terminate ()
             (setf terminate? t))))
 
-    (setf (%strategy-commands strategy)
+    (setf (strategy-%commands strategy)
           (make-commands strategy sequence
                          :length    #'length*
                          :step      #'step*

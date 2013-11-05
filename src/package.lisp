@@ -91,8 +91,8 @@
    #:channel-meta-data
    #:channel-transform
 
-   #:%channel-id
-   #:%channel-backend
+   #:channel-%id
+   #:channel-%backend
 
    #:channel-timestamps
    #:channel-entries

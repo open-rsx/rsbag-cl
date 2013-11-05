@@ -8,7 +8,7 @@
 
 (defclass synchronized-channel (channel)
   ((lock :initarg  :lock
-         :accessor %channel-lock
+         :accessor channel-%lock
          :documentation
          "The lock that is used to synchronize accesses to the
           channel. Usually points to a lock owned by the containing
@@ -23,7 +23,7 @@
 (macrolet
     ((define-synchronized-method (name args)
        `(defmethod ,name :around ,args
-                   (bt:with-lock-held ((%channel-lock channel))
+                   (bt:with-lock-held ((channel-%lock channel))
                      (call-next-method)))))
   (define-synchronized-method
       channel-timestamps ((channel synchronized-channel)))

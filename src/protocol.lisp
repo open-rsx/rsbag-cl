@@ -184,11 +184,11 @@
     values are nil or an object implementing the transform protocol
     specified in rsbag.transform."))
 
-;;; Bag behind-the-scenes protocol ;)
-
-(defgeneric %channel-class (bag)
+(defgeneric bag-channel-class (bag)
   (:documentation
    "Return the channel class used by BAG."))
+
+;;; Bag behind-the-scenes protocol ;)
 
 (defgeneric %make-channel (bag name meta-data transform
                            &rest args

@@ -9,7 +9,7 @@
 (defclass mock-backend ()
   ((channels :initarg  :channels
              :type     list
-             :accessor %backend-channels
+             :accessor backend-%channels
              :initform nil
              :documentation
              "List of mock-channel data of the form
@@ -36,17 +36,17 @@
   nil)
 
 (defmethod rsbag.backend:get-channels ((backend mock-backend))
-  (mapcar (curry #'nthcdr 2) (%backend-channels backend)))
+  (mapcar (curry #'nthcdr 2) (backend-%channels backend)))
 
 (defmethod rsbag.backend:make-channel-id ((backend mock-backend)
                                           (channel t))
-  (length (%backend-channels backend)))
+  (length (backend-%channels backend)))
 
 (defmethod rsbag.backend:put-channel ((backend   mock-backend)
                                       (channel   integer)
                                       (name      string)
                                       (meta-data list))
-  (appendf (%backend-channels backend)
+  (appendf (backend-%channels backend)
            (list (list nil nil channel name meta-data))))
 
 (defmethod rsbag.backend:get-num-entries ((backend mock-backend)
@@ -55,18 +55,18 @@
 
 (defmethod rsbag.backend:get-timestamps ((backend mock-backend)
                                          (channel integer))
-  (first (nth channel (%backend-channels backend))))
+  (first (nth channel (backend-%channels backend))))
 
 (defmethod rsbag.backend:get-entry ((backend mock-backend)
                                     (channel integer)
                                     (index   integer))
-  (nth index (second (nth channel (%backend-channels backend)))))
+  (nth index (second (nth channel (backend-%channels backend)))))
 
 (defmethod rsbag.backend:put-entry ((backend mock-backend)
                                     (channel integer)
                                     (index   local-time:timestamp)
                                     (entry   t))
-  (let ((channel (nth channel (%backend-channels backend))))
+  (let ((channel (nth channel (backend-%channels backend))))
     (appendf (first channel) (list index))
     (appendf (second channel) (list entry))))
 

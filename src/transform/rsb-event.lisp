@@ -32,7 +32,7 @@
                 :documentation
                 "Stores the associated wire-schema of (de)serialized
                  events.")
-   (holder      :reader   %transform-holder
+   (holder      :reader   transform-%holder
                 :initform (make-instance 'rsb.protocol:notification)
                 :documentation
                 "Stores a data-holder instance that is reused
@@ -71,7 +71,7 @@
                 wire-schema))))))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (let+ (((&accessors-r/o (holder %transform-holder)) transform)
+  (let+ (((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
                           (causes    rsb.protocol:notification-causes)) holder)
@@ -139,7 +139,7 @@
             (cons (uuid:byte-array-to-uuid
                    (rsb.protocol:event-id-sender-id id))
                   (rsb.protocol:event-id-sequence-number id))))
-         ((&accessors-r/o (holder %transform-holder)) transform)
+         ((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
                           (causes    rsb.protocol:notification-causes)) holder)

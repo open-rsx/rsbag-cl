@@ -52,7 +52,7 @@
                     a list of arguments that is passed to the
                     serialization during instantiation.")
    (implementation :initarg  :implementation
-                   :accessor %transform-implementation
+                   :accessor transform-%implementation
                    :initform nil
                    :documentation
                    "Stores a transform instance which implements the
@@ -62,7 +62,7 @@
                     produces an error.")
    (problems       :initarg  :problems
                    :type     list
-                   :accessor %transform-problems
+                   :accessor transform-%problems
                    :initform nil
                    :documentation
                    "Stores a list of problems encountered when trying
@@ -83,8 +83,8 @@
 
 (defmethod next-implementation! ((transform rsb-event/version-detection))
   (let+ (((&accessors (candidates     transform-candidates)
-                      (implementation %transform-implementation)
-                      (problems       %transform-problems))
+                      (implementation transform-%implementation)
+                      (problems       transform-%problems))
           transform))
     (tagbody
      :start
@@ -100,7 +100,7 @@
              (setf implementation (apply #'make-transform candidate))))))))
 
 (defmethod transform-implementation ((transform rsb-event/version-detection))
-  (or (%transform-implementation transform)
+  (or (transform-%implementation transform)
       (next-implementation! transform)))
 
 (macrolet
@@ -108,7 +108,7 @@
        `(defmethod ,name ((transform rsb-event/version-detection)
                           ,@args)
           (let+ (((&accessors (implementation transform-implementation)
-                              (problems       %transform-problems))
+                              (problems       transform-%problems))
                   transform))
             (tagbody
              :start

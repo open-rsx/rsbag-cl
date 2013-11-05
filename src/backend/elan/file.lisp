@@ -13,7 +13,7 @@
                 direction-mixin)
   ((channels        :type     list
                     :reader   get-channels
-                    :accessor %file-channels
+                    :accessor file-%channels
                     :initform nil
                     :documentation
                     "Stores information of the channels (or tiers,
@@ -26,7 +26,7 @@
                      is the name as string and META-DATA is a plist of
                      additional data associated to the channel.")
    (data            :type     hash-table
-                    :reader   %file-data
+                    :reader   file-%data
                     :initform (make-hash-table :test #'eq)
                     :documentation
                     "Maps channel ids to channel data. Each entry of a
@@ -38,14 +38,14 @@
                      timestamps respectively and DATUM is the (string)
                      datum of the entry.")
    (document        :type     stp:document
-                    :accessor %file-document
+                    :accessor file-%document
                     :documentation
                     "Stores the `stp:document' instance which contains
                      the DOM representation of the file. The document
                      is not updated continuously but only on
                      write-back.")
    (next-channel-id :type     non-negative-integer
-                    :accessor %file-next-channel-id
+                    :accessor file-%next-channel-id
                     :initform 0
                     :documentation
                     "Stores the id that will be assigned to the next
@@ -60,10 +60,10 @@
                                      &key)
   (let+ (((&accessors (direction       backend-direction)
                       (stream          backend-stream)
-                      (document        %file-document)
-                      (channels        %file-channels)
-                      (data            %file-data)
-                      (next-channel-id %file-next-channel-id)) instance)
+                      (document        file-%document)
+                      (channels        file-%channels)
+                      (data            file-%data)
+                      (next-channel-id file-%next-channel-id)) instance)
          ((date urls time-slots tiers)
           (cond
             ;; Data is available - parse as XML document.
@@ -86,7 +86,7 @@
          ((&flet resolve (id)
             (cdr (assoc id time-slots :test #'string=)))))
 
-    (setf (%file-document instance) document) ; TODO(jmoringe):
+    (setf (file-%document instance) document) ; TODO(jmoringe):
 
     ;; Add video channels.
     (iter (for url each urls :with-index i)
@@ -112,9 +112,9 @@
   "TODO(jmoringe): document"
   (when (member (backend-direction file) '(:output :io))
     (let+ (((&accessors-r/o (stream   backend-stream)
-                            (document %file-document)
-                            (channels %file-channels)
-                            (data     %file-data)) file)
+                            (document file-%document)
+                            (channels file-%channels)
+                            (data     file-%data)) file)
            (time-slots           (make-hash-table :test #'eql))
            (current-time-slot-id 0)
            ((&flet time-slot (timestamp)
@@ -142,15 +142,15 @@
 (defmethod make-channel-id ((backend file)
                             (name    string))
   (prog1
-      (%file-next-channel-id backend)
-    (incf (%file-next-channel-id backend))))
+      (file-%next-channel-id backend)
+    (incf (file-%next-channel-id backend))))
 
 (defmethod put-channel ((backend   file)
                         (channel   integer)
                         (name      string)
                         (meta-data list))
   (let+ (((&plist-r/o (type :type :utf-8-string)) meta-data)
-         ((&accessors (channels %file-channels)) backend))
+         ((&accessors (channels file-%channels)) backend))
     (unless (eq type :utf-8-string)
       (error "~@<Cannot handle channel type ~S; only ~S is supported.~@:>"
              type :utf-8-string))
@@ -161,18 +161,18 @@
 
 (defmethod get-num-entries ((file    file)
                             (channel integer))
-  (length (gethash channel (%file-data file))))
+  (length (gethash channel (file-%data file))))
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))
   (map 'list (compose #'millisecs->timestamp #'car)
-       (gethash channel (%file-data file))))
+       (gethash channel (file-%data file))))
 
 (defmethod put-entry ((file      file)
                       (channel   integer)
                       (timestamp local-time:timestamp)
                       (entry     string))
-  (let+ (((&accessors-r/o (data  %file-data)) file)
+  (let+ (((&accessors-r/o (data  file-%data)) file)
          (timestamp* (timestamp->millisecs timestamp)))
     (push (list timestamp* timestamp* entry)
           (gethash channel data))))
@@ -180,7 +180,7 @@
 (defmethod get-entry ((file    file)
                       (channel integer)
                       (index   integer))
-  (third (nth index (gethash channel (%file-data file)))))
+  (third (nth index (gethash channel (file-%data file)))))
 
 ;;; Utility functions
 

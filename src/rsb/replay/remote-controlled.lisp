@@ -22,7 +22,7 @@
                              timestamp-adjustment-mixin
                              uri-mixin)
   ((rsb::uri :accessor strategy-control-uri)
-   (server   :accessor %strategy-server
+   (server   :accessor strategy-%server
              :documentation
              "Stores the server that exposes the replay control
               methods to clients.")
@@ -86,10 +86,10 @@
 
       Terminate the replay."))
 
-(defmethod (setf %strategy-commands) :after ((new-value list)
+(defmethod (setf strategy-%commands) :after ((new-value list)
                                              (strategy  remote-controlled))
   "Create methods in the RPC server for the elements of NEW-VALUE."
-  (let+ (((&accessors-r/o (server %strategy-server)) strategy)
+  (let+ (((&accessors-r/o (server strategy-%server)) strategy)
          ((&flet make-command (function request future)
             (lambda ()
               (handler-case
@@ -133,7 +133,7 @@
                    (strategy   remote-controlled)
                    &key &allow-other-keys)
   (let+ (((&accessors (uri    strategy-control-uri)
-                      (server %strategy-server)) strategy))
+                      (server strategy-%server)) strategy))
     (with-local-server (server* uri)
       (setf server server*)
       (call-next-method))))
