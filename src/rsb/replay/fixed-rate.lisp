@@ -30,19 +30,18 @@
 (defmethod shared-initialize :before ((instance   fixed-rate)
                                       (slot-names t)
                                       &key
-                                        delay
-                                        rate)
+                                      delay
+                                      rate)
   (cond
     ((and (null delay) (null rate))
-     (required-argument :delay-or-rate))
+     (missing-required-initarg 'fixed-rate :delay-xor-rate))
     ((and delay rate)
-     (error "~@<The initargs ~S and ~S are mutually exclusive.~@:>"
-            :delay :rate))))
+     (incompatible-initargs 'fixed-rate :delay delay :rate rate))))
 
 (defmethod shared-initialize :after ((instance   fixed-rate)
                                      (slot-names t)
                                      &key
-                                       rate)
+                                     rate)
   (when rate
     (setf (strategy-rate instance) rate)))
 

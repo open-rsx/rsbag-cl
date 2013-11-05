@@ -419,7 +419,7 @@
 (defclass timestamp-adjustment-mixin ()
   ((adjustments :type     list
                 :accessor strategy-adjustments
-                :initform nil
+                :initform '()
                 :documentation
                 "Stores a list of adjustments of the form
 
@@ -436,7 +436,7 @@
 (defmethod shared-initialize :after ((instance   timestamp-adjustment-mixin)
                                      (slot-names t)
                                      &key
-                                     (adjustments nil adjustments-supplied?))
+                                     (adjustments '() adjustments-supplied?))
   (when adjustments-supplied?
     (setf (strategy-adjustments instance) adjustments)))
 
@@ -486,7 +486,7 @@
   ((commands :type     list
              :reader   strategy-commands
              :accessor strategy-%commands
-             :initform nil
+             :initform '()
              :documentation
              "Stores available commands as an alist of items of the
               form

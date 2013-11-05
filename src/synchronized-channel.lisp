@@ -14,7 +14,7 @@
           channel. Usually points to a lock owned by the containing
           bag."))
   (:default-initargs
-   :lock (required-argument :lock))
+   :lock (missing-required-initarg 'synchronized-channel :lock))
   (:documentation
    "Instances of this channel class can be safely used from multiple
     threads. Callers have to be prepared to encounter increased

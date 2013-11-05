@@ -10,7 +10,7 @@
   ((channels :initarg  :channels
              :type     list
              :accessor backend-%channels
-             :initform nil
+             :initform '()
              :documentation
              "List of mock-channel data of the form
 

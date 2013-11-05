@@ -119,8 +119,7 @@
 ;;; `serialized-iterator' class
 
 (defclass serialized-iterator (multi-sequence-iterator-mixin)
-  ((current :initarg  :current
-            :accessor iterator-%current
+  ((current :accessor iterator-%current
             :documentation
             "Stores the iterator that holds the current element and
              has to be stepped in order to step in the serialized

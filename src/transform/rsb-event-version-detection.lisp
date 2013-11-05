@@ -60,10 +60,9 @@
                     the first instance has been constructed. The
                     instance is replaced by the next candidate when it
                     produces an error.")
-   (problems       :initarg  :problems
-                   :type     list
+   (problems       :type     list
                    :accessor transform-%problems
-                   :initform nil
+                   :initform '()
                    :documentation
                    "Stores a list of problems encountered when trying
                     serialization versions. Elements are of the form

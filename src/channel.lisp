@@ -36,10 +36,10 @@
                implements access to the bag to which this channel
                belongs."))
   (:default-initargs
-   :bag     (required-argument :bag)
-   :name    (required-argument :name)
-   :id      (required-argument :id)
-   :backend (required-argument :backend))
+   :bag     (missing-required-initarg 'channel :bag)
+   :name    (missing-required-initarg 'channel :name)
+   :id      (missing-required-initarg 'channel :id)
+   :backend (missing-required-initarg 'channel :backend))
   (:documentation
    "Instances of this class represent time-series of homogeneous data
     items."))
@@ -180,7 +180,7 @@
                "Stores the sequence of associated timestamps for the
                 entries of the channel."))
   (:default-initargs
-   :channel (required-argument :channel))
+   :channel (missing-required-initarg 'channel-items :channel))
   (:documentation
    "Instances of this class can be used to access the timestamps and
     associated entries of a channel."))

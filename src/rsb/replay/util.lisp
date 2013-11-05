@@ -14,6 +14,8 @@
              :documentation
              "Stores the informer that should be associated with the
               channel."))
+  (:default-initargs
+   :informer (missing-required-initarg 'informer-injector :informer))
   (:documentation
    "Instance of this helper class inject a given object (usually an
     `rsb:informer' instance) into each element of the underlying
