@@ -98,3 +98,20 @@
                    name))))))
 
 (define-plist-data-mixin meta-data)
+
+;;; Printing utilities
+
+(defun print-direction (stream direction &optional colon? at?)
+  (declare (ignore colon? at?))
+  (format stream "~:[-~;r~]~:[-~;w~]"
+          (member direction '(:input :io))
+          (member direction '(:output :io))))
+
+(defun print-location (stream location &optional colon? at?)
+  (declare (ignore colon? at?))
+  (format stream "~:[N/A~;~:*~S~]"
+          (typecase location
+            (pathname (format nil "~A.~A"
+                              (pathname-name location)
+                              (pathname-type location)))
+            (t        location))))

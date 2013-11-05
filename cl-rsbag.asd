@@ -120,6 +120,8 @@
                                :depends-on ("package"))
                               (:file       "conditions"
                                :depends-on ("package"))
+                              (:file       "util"
+                               :depends-on ("package"))
                               (:file       "versioned-packages"
                                :depends-on ("package"))
                               (:file       "threadpool"
@@ -158,10 +160,8 @@
                  :depends-on ("src/early" "backend" "transform")
                  :components ((:file       "protocol")
 
-                              (:file       "util")
-
                               (:file       "channel"
-                               :depends-on ("protocol" "util"))
+                               :depends-on ("protocol"))
                               (:file       "bag"
                                :depends-on ("protocol" "channel"))
 

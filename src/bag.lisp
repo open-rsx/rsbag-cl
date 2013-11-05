@@ -118,18 +118,10 @@
 (defmethod print-object ((object bag) stream)
   (let+ (((&accessors-r/o (location  bag-location)
                           (direction bag-direction)
-                          (channels  bag-%channels)) object)
-         (location/short (typecase location
-                           (pathname (format nil "~A.~A"
-                                             (pathname-name location)
-                                             (pathname-type location)))
-                           (t        location))))
+                          (channels  bag-%channels)) object))
     (print-unreadable-object (object stream :type t :identity t)
-      (format stream "~:[N/A~;~:*~S~] ~:[-~;r~]~:[-~;w~] (~D)"
-              location/short
-              (member direction '(:input :io))
-              (member direction '(:output :io))
-              (hash-table-count channels)))))
+      (format stream "~/rsbag:print-location/ ~/rsbag:print-direction/ (~D)"
+              location direction (hash-table-count channels)))))
 
 ;;; Time range protocol
 
