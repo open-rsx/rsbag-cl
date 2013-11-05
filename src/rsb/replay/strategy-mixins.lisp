@@ -113,7 +113,8 @@
 (defclass time-bounds-mixin (bounds-mixin)
   ((start-time :initarg  :start-time
                :type     range-boundary/timestamp
-               :accessor strategy-start-time
+               :reader   strategy-start-time
+               :accessor strategy-%start-time
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should start
@@ -122,7 +123,8 @@
                 event.")
    (end-time   :initarg  :end-time
                :type     range-boundary/timestamp
-               :accessor strategy-end-time
+               :reader   strategy-end-time
+               :accessor strategy-%end-time
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should stop
@@ -148,68 +150,94 @@
                            :end-index end-index
                            :end-time  end-time))
 
+  ;; This check may do nothing when both times are supplied but one is
+  ;; a real and one is a timestamp. Therefore, the times are checked
+  ;; again in the :before method on `replay'.
   (when (and start-time-supplied? end-time-supplied?)
-    (check-ordered-timestamps start-time end-time)))
+    (check-ordered-times start-time end-time)))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   time-bounds-mixin)
                            &key &allow-other-keys)
   (let+ (((&accessors-r/o (bag connection-bag)) connection)
-         ((&accessors (start-time  strategy-start-time)
-                      (start-index strategy-%start-index)
-                      (end-time    strategy-end-time)
+         ((&accessors (start-time  strategy-%start-time)
+                      (start-index strategy-start-index)
+                      (end-time    strategy-%end-time)
                       (end-index   strategy-end-index)) strategy)
-         (sequence    (make-view connection strategy
-                                 :selector #'channel-timestamps))
-         ((&labels timestamp->index (timestamp)
+         (sequence            (make-view connection strategy
+                                         :selector #'channel-timestamps))
+         (sequence-start-time (unless (emptyp sequence)
+                                (first-elt sequence)))
+         (sequence-end-time   (unless (emptyp sequence)
+                                (last-elt sequence)))
+         ((&labels index-difference (index timestamp)
+            (let ((index-timestamp (elt sequence index)))
+              (values (abs (local-time:timestamp-difference
+                            timestamp index-timestamp))
+                      index-timestamp))))
+         ((&labels timestamp->index (timestamp name)
+            (log:info "~@<Mapping requested ~A ~A to index (this can ~
+                       take a moment)~@:>"
+                      name timestamp) ; TODO use progress
             (etypecase timestamp
               (real
                (timestamp->index
                 (local-time:adjust-timestamp
-                    (if (minusp timestamp) (end bag) (rsbag:start bag))
-                  (:offset :sec  (floor timestamp))
-                  (:offset :nsec (mod (floor timestamp 1/1000000000)
-                                      1000000000)))))
+                 (if (minusp timestamp)
+                     sequence-end-time
+                     sequence-start-time)
+                 (:offset :sec  (floor timestamp))
+                 (:offset :nsec (mod (floor timestamp 1/1000000000)
+                                     1000000000)))
+                name))
               (local-time:timestamp
-               (values
-                (or (position timestamp sequence
-                              :test #'local-time:timestamp<=)
-                    (error "~@<Could not find requested timestamp ~A in bag ~
-                            ~A (with temporal range [~A, ~A]).~@:>"
-                           timestamp (connection-bag connection)
-                           (rsbag:start bag) (end bag)))
-                timestamp)))))
-         ((&flet set-index (timestamp setter name)
-            (log:info "~@<Mapping requested ~A ~A to index (this can take a moment)~@:>"
-                      name timestamp)
-            (let+ (((&values index timestamp) (timestamp->index timestamp))
-                   (effective  (elt sequence index))
-                   (difference (abs (local-time:timestamp-difference
-                                     timestamp effective))))
-              (funcall setter index)
+               (if-let ((index (when (local-time:timestamp<=
+                                      sequence-start-time
+                                      timestamp
+                                      sequence-end-time)
+                                 (position timestamp sequence
+                                           :test #'local-time:timestamp<=))))
+                 (values
+                  (if (and (plusp index)
+                           (< (index-difference (1- index) timestamp)
+                              (index-difference index      timestamp)))
+                      (1- index)
+                      index)
+                  timestamp)
+                 (error "~@<Could not find requested timestamp ~A in ~
+                         bag ~A (with temporal range [~A, ~A]).~@:>"
+                        timestamp (connection-bag connection)
+                        sequence-start-time sequence-end-time))))))
+         ((&flet check-index (index timestamp name)
+            (let+ (((&values difference effective)
+                    (index-difference index timestamp)))
               (log:info "~@<Mapped requested ~A ~A to index ~:D (at ~
                          time ~A, ~,6F seconds difference)~@:>"
                         name timestamp index effective difference)
               (when (> difference 1)
-                (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
+                (warn "~@<Mapped ~A ~A is rather far (~F second~:P) from ~
                        requested ~A ~A~@:>"
                       name effective difference name timestamp))))))
-    (when start-time
-      (if (and (rsbag:start bag) (end bag))
-          (set-index start-time
-                     (lambda (value) (setf start-index value))
-                     "start time")
-          (warn "~@<Bag ~A does not have start and end times; ignoring ~
-                 requested start time ~A~@:>"
-                bag start-time)))
-    (when end-time
-      (if (and (rsbag:start bag) (end bag))
-          (set-index end-time
-                     (lambda (value) (setf end-index value))
-                     "end time")
-          (warn "~@<Bag ~A does not have start and end times; ignoring ~
-                 requested end time ~A~@:>"
-                bag end-time)))))
+    (cond
+      ((not start-time))
+      ((and sequence-start-time sequence-end-time)
+       (multiple-value-setq (start-index start-time)
+         (timestamp->index start-time "start time"))
+       (check-index start-index start-time "start time"))
+      (t
+       (warn "~@<Bag ~A does not have start and end times; ignoring ~
+              requested start time ~A~@:>"
+             bag start-time)))
+    (cond
+      ((not end-time))
+      ((and sequence-start-time sequence-end-time)
+       (multiple-value-setq (end-index end-time)
+         (timestamp->index end-time "end time"))
+       (check-index end-index end-time "end time"))
+      (t
+       (warn "~@<Bag ~A does not have start and end times; ignoring ~
+              requested end time ~A~@:>"
+             bag end-time)))))
 
 ;;; `view-creation-mixin' mixin class
 
@@ -638,9 +666,16 @@
             than index ~:D.~@:>"
            later earlier)))
 
-(defun check-ordered-timestamps (earlier later)
+(defun check-ordered-times (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
-  (unless (local-time:timestamp< earlier later)
-    (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
-            later than timestamp ~A.~@:>"
-           later earlier)))
+  (cond
+    ((and (realp earlier) (realp later) (not (< earlier later)))
+     (error "~@<Invalid relation of times: relative times ~,3F is not ~
+             later than relative time ~,3F.~@:>"
+            later earlier))
+    ((and (typep earlier 'local-time:timestamp)
+          (typep later 'local-time:timestamp)
+          (not (local-time:timestamp< earlier later)))
+     (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
+             later than timestamp ~A.~@:>"
+            later earlier))))
