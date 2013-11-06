@@ -35,7 +35,12 @@
            :type     stream
            :documentation
            "Stores the stream which contains the data read and written
-            by the backend."))
+            by the backend.")
+   (lock   :reader   backend-lock
+           :initform (bt:make-lock "Stream lock")
+           :documentation
+           "Stores a lock protecting the stream against concurrent
+            access."))
   (:default-initargs
    :stream (missing-required-initarg 'stream-mixin :stream))
   (:documentation

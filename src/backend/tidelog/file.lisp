@@ -107,7 +107,8 @@
 
 (defmethod close ((file file)
                   &key &allow-other-keys)
-  (map nil #'close (hash-table-values (file-%indices file)))
+  (bt:with-lock-held ((rsbag.backend::backend-lock file))
+    (map nil #'close (hash-table-values (file-%indices file))))
   (when (next-method-p)
     (call-next-method)))
 
@@ -144,7 +145,8 @@
     (setf (gethash channel indices)
           (make-index channel nil nil stream direction))
 
-    (pack channel1 stream)))
+    (bt:with-lock-held ((rsbag.backend::backend-lock file))
+      (pack channel1 stream))))
 
 (defmethod get-num-entries ((file    file)
                             (channel integer))
@@ -188,16 +190,17 @@
 (defmethod get-entry ((file    file)
                       (channel integer)
                       (index   integer))
-  (let+ (((&accessors (stream backend-stream)) file)
-         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
-         (offset (index-offset index1 index))
-         (length (prog2
-                     (file-position stream (+ offset 12))
-                     (nibbles:read-ub32/le stream)
-                   (file-position stream offset)))
-         (entry  (allocate-instance (find-class 'chunk-entry)))) ; TODO(jmoringe): keep instead of reallocating?
-    (unpack (read-chunk-of-length (+ 16 length) stream) entry)
-    (chunk-entry-entry entry)))
+  (bt:with-lock-held ((rsbag.backend::backend-lock file))
+    (let+ (((&accessors (stream backend-stream)) file)
+           (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
+           (offset (index-offset index1 index))
+           (length (prog2
+                       (file-position stream (+ offset 12))
+                       (nibbles:read-ub32/le stream)
+                     (file-position stream offset)))
+           (entry  (allocate-instance (find-class 'chunk-entry)))) ; TODO(jmoringe): keep instead of reallocating?
+      (unpack (read-chunk-of-length (+ 16 length) stream) entry)
+      (chunk-entry-entry entry))))
 
 ;;; Buffering
 
@@ -220,24 +223,25 @@
 
 (defmethod write-buffer ((file   file)
                          (buffer chnk))
-  (let+ (((&accessors-r/o (stream backend-stream)) file)
-         ((&accessors     (count   chnk-count)
-                          (entries chnk-entries)) buffer))
-   ;; We abused chnk-count to store the size of the chunk instead of
-   ;; the number of entries. Correct this before writing the chunk.
-   (unless (zerop count)
-     (setf count (length entries))
-     (pack buffer stream)
+  (bt:with-lock-held ((rsbag.backend::backend-lock file))
+    (let+ (((&accessors-r/o (stream backend-stream)) file)
+           ((&accessors     (count   chnk-count)
+                            (entries chnk-entries)) buffer))
+      ;; We abused chnk-count to store the size of the chunk instead of
+      ;; the number of entries. Correct this before writing the chunk.
+      (unless (zerop count)
+        (setf count (length entries))
+        (pack buffer stream)
 
-     ;; For the sake of conservative garbage collectors, we
-     ;; dereference as much as possible here. On SBCL we even garbage
-     ;; collect explicitly.
-     (map-into entries
-               (lambda (entry)
-                 (setf (chunk-entry-entry entry) (nibbles:octet-vector))
-                 nil)
-               entries)
-     #+sbcl (sb-ext:gc))))
+        ;; For the sake of conservative garbage collectors, we
+        ;; dereference as much as possible here. On SBCL we even garbage
+        ;; collect explicitly.
+        (map-into entries
+                  (lambda (entry)
+                    (setf (chunk-entry-entry entry) (nibbles:octet-vector))
+                    nil)
+                  entries)
+        #+sbcl (sb-ext:gc)))))
 
 (defmethod buffer-property ((backend file)
                             (buffer  chnk)
