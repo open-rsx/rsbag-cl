@@ -79,31 +79,43 @@
           channels        (map 'list #'make-channel chans))
     (setf (chnk-chunk-id buffer) next-chunk-id)
 
-    ;; Verify presence of indices.
-    (unless (and complete? (or (emptyp chnks) (not (emptyp indxs))))
-      (restart-case
-          ;; The `progn' prevents our restarts from being only
-          ;; applicable to the specific condition signaled here. See
-          ;; remark about (restart-case (error ...)) in CLHS on
-          ;; `restart-case'.
-          (progn (error "~@<Read ~:D chunk~:P, but no indices.~@:>"
-                        (length chnks)))
-        (continue (&optional condition)
-          :report (lambda (stream)
-                    (format stream "~@<Regenerate indices.~@:>"))
-          (declare (ignore condition))
-          (setf indxs (reconstruct-indices stream chnks)))
-        (use-value (new-indxs)
-          :report (lambda (stream)
-                    (format stream "~@<Use the supplied value as ~
-                                    list of indices and ~
-                                    continue.~@:>"))
-          (setf indxs new-indxs))))
-
-    ;; Create indices for all channels.
-    (iter (for (id name meta-data) in channels)
-          (setf (gethash id indices)
-                (make-index id indxs chnks stream direction)))))
+    ;; Verify presence of indices and construct index objects.
+    (iter (with reconstructed? = nil)
+          (restart-case
+              (if (or (not complete?) (and (not (emptyp chnks)) (emptyp indxs)))
+                  (error "~@<Incomplete indices; read ~:D chunk~:P and ~
+                          ~:D ~:*~[indices~;index~:;indices~].~@:>"
+                         (length chnks) (length indxs))
+                  ;; Create `index' instances for each channel. If
+                  ;; this fails, we can regenerate indices and retry
+                  ;; via one of the restarts.
+                  (return
+                    (iter (for (id name meta-data) in channels)
+                          (setf (gethash id indices)
+                                (make-index id indxs chnks stream direction)))))
+            (continue (&optional condition)
+              :report (lambda (stream)
+                        (format stream "~@<Regenerate indices.~@:>"))
+              :test   (lambda (condition)            ; avoid infinite retries
+                        (declare (ignore condition))
+                        (not reconstructed?))
+              (declare (ignore condition))
+              (setf reconstructed? t                 ; detect infinite retries
+                    complete?      t
+                    indxs          (reconstruct-indices stream chnks))
+              (iter (for indx in indxs)
+                    (let ((channel-id (indx-channel-id indx)))
+                      (unless (find channel-id channels :test #'= :key #'first)
+                        (push (list channel-id
+                                    (format nil "reconstructed~D" channel-id)
+                                    (list :type '(:rsb-event-0.9 :bytes))) ; TODO just bytes
+                              channels)))))
+            (use-value (new-indxs)
+              :report (lambda (stream)
+                        (format stream "~@<Use the supplied value as ~
+                                        list of indices and ~
+                                        continue.~@:>"))
+              (setf indxs new-indxs))))))
 
 (defmethod close ((file file)
                   &key &allow-other-keys)

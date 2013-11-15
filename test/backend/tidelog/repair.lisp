@@ -8,6 +8,25 @@
 
 (addtest (backend-tidelog-root
           :documentation
+          "Smoke test for the `reconstruct-indices' function.")
+  reconstruct-indices/smoke
+
+  (ensure-cases (input chunks expected)
+      `(((,@(tide-block)
+          ,@(valid-chnk-block
+             :count 1 :content `(,@(chunk-entry))))
+         ((0 . 22))
+         ((0 1))))
+
+    (let ((stream (apply #'octet-streamify input)))
+      (ensure-same (mapcar (lambda (indx)
+                             (list (indx-channel-id indx)
+                                   (indx-count indx)))
+                           (reconstruct-indices stream chunks))
+                   expected))))
+
+(addtest (backend-tidelog-root
+          :documentation
           "Smoke test for the `find-next-block' function.")
   find-next-block/smoke
 

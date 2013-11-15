@@ -19,12 +19,17 @@
   (:import-from #:rsbag.backend.tidelog
    #:byte-pattern->block-class
 
+   #:reconstruct-indices
+
    #:find-next-block
 
    #:+format-version-major+
    #:+format-version-minor+
 
    #:scan ; TODO remove when exported
+
+   #:indx-channel-id
+   #:indx-count
    )
 
   (:export
@@ -51,6 +56,9 @@
     `(:chnk (:ub64le ,(+ 25 content-size)) (:ub32le ,id) (:ub32le ,count)
       (:ub64le 0) (:ub64le 0) 0
       ,@content)))
+
+(defun chunk-entry ()
+  `((:ub32le 0) (:ub64le 0) (:ub32le 1) 0))
 
 (defparameter +invalid-chnk-block+
   `(:chnk (:ub64le ,(ash 1 63)) (:ub32le 0)))
