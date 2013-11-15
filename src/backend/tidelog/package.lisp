@@ -22,7 +22,10 @@
 
    #:tidelog-file-error
 
-   #:invalid-tidelog-structure)
+   #:invalid-tidelog-structure
+
+   #:no-such-block-class-error
+   #:no-such-block-class-error-tag)
 
   (:documentation
    "This package contains a backend for the TIDE log file format as

@@ -15,8 +15,13 @@
 
    #:rsbag.test)
 
+  ;; Root test suite
   (:export
    #:backend-root)
+
+  ;; Test utilities
+  (:export
+   #:octetify)
 
   (:documentation
    "This package contains unit tests for the backend module"))
@@ -27,3 +32,14 @@
   ()
   (:documentation
    "Root unit test suite for the backend module."))
+
+;;; Test utilities
+
+(defun octetify (&rest things)
+  (labels ((one (thing)
+             (etypecase thing
+               (keyword       (one (string thing)))
+               (string        (map 'nibbles:octet-vector #'char-code thing))
+               (sequence      (coerce thing 'nibbles:octet-vector))
+               (nibbles:octet (nibbles:octet-vector thing)))))
+    (apply #'concatenate 'nibbles:octet-vector (mapcar #'one things))))

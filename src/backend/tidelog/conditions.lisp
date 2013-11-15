@@ -25,3 +25,25 @@
   (:documentation
    "This error is signaled if an invalid file structure is encountered
     while processing a TIDE log file."))
+
+(define-condition no-such-block-class-error (tidelog-condition
+                                             error)
+  ((tag :initarg :tag
+        :type    nibbles:octet-vector
+        :reader  no-such-block-class-error-tag
+        :documentation
+        "Stores the unknown block type tag as an `octet-vector'."))
+  (:default-initargs
+   :tag (missing-required-initarg 'no-such-block-class-error :tag))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Unknown block tag~:@_~
+                     ~<| ~@;~17/rsbag:print-hexdump/~:>~@:_~
+                     . Known block tags are: ~{~A~^, ~:_~}.~:>"
+             (list (no-such-block-class-error-tag condition))
+             (mapcar #'class-name (hash-table-values
+                                   *byte-pattern->block-class*)))))
+  (:documentation
+   "This error is signaled when an attempt is made to map a byte
+    pattern which does not correspond to a block type to a block
+    class."))

@@ -55,14 +55,13 @@
   (declare (ignore start))
 
   (let+ ((offset (file-position source))
-         ((&values name length) (unpack source :block-header))
-         (name (intern name #.*package*)))
+         ((&values class length) (unpack source :block-header)))
     (values
      offset
-     (case name
-       ((chan indx)
+     (case (class-name class)
+       ((type1 chan indx)
         (unpack (read-chunk-of-length length source)
-                (allocate-instance (find-class name))))
+                (allocate-instance class)))
        (chnk
         (prog1
             (nibbles:read-ub32/le source)
@@ -100,22 +99,16 @@
         ((error (lambda (condition)
                   (error "~@<Could not decode header~:@_~
                           ~<| ~/rsbag:print-hexdump/~:>~:@_~
-                          at stream position ~
-                          ~/rsbag.backend:print-offset/: ~A.~@:>"
-                         (list header) (file-position source) condition))))
-      (values (sb-ext:octets-to-string header
-                                       :external-format :ascii
-                                       :start           0
-                                       :end             4)
+                          ~A~:>"
+                         (list header) condition))))
+      (values (byte-pattern->block-class (subseq header 0 4))
               (nibbles:ub64ref/le header 4)))))
 
 (defmethod unpack ((source stream) (object (eql :block))
                    &optional start)
   (declare (ignore start))
 
-  (let+ (((&values name length) (unpack source :block-header))
-         (name  (find-symbol name #.*package*)) ; TODO(jmoringe): bottleneck
-         (class (find-class name)))
+  (let+ (((&values class length) (unpack source :block-header)))
     (when (> (+ (file-position source) length) (file-length source))
       (cerror "Try to read the block anyway"
               "~@<Bounds [~/rsbag.backend:print-offset/, ~
@@ -123,9 +116,9 @@
                outside bounds [~/rsbag.backend:print-offset/, ~
                ~/rsbag.backend:print-offset/[ of ~A.~@:>"
               (file-position source) (+ (file-position source) length)
-              name
+              (class-name class)
               0 (file-length source) source))
-    (unpack (read-chunk-of-length (if (eq name 'tide) 10 length) source)  ; TODO(jmoringe): hack
+    (unpack (read-chunk-of-length (if (eq (class-name class) 'tide) 10 length) source) ; TODO(jmoringe): hack
             (allocate-instance class))))
 
 ;;; Packing

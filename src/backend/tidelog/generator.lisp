@@ -8,10 +8,14 @@
 
 ;;; Class generator
 
-(defun specs->class (name specs &key documentation toplevel?)
+(defun specs->class (name specs
+                     &key
+                     documentation
+                     toplevel?
+                     (tag-name (string name)))
   (let ((tag `(load-time-value
                (sb-ext:string-to-octets
-                ,(string name) :external-format :ascii))))
+                ,tag-name :external-format :ascii))))
     `(progn
        (defclass ,name ()
          (,@(mapcar (curry #'spec->slot name) specs))
@@ -21,7 +25,11 @@
            `((defmethod tag ((class (eql (find-class ',name))))
                ,tag)
              (defmethod tag ((object ,name))
-               (tag (class-of object))))))))
+               (tag (class-of object)))
+
+             (let* ((class (find-class ',name))
+                    (tag   (tag class)))
+              (setf (gethash tag *byte-pattern->block-class*) class)))))))
 
 (defun spec->slot (class-name spec)
   (let+ (((name type &key documentation) spec)

@@ -25,10 +25,10 @@
   :components  ((:module     "tidelog"
                  :pathname   "src/backend/tidelog"
                  :components ((:file       "package")
-                              (:file       "conditions"
-                               :depends-on ("package"))
                               (:file       "variables"
                                :depends-on ("package"))
+                              (:file       "conditions"
+                               :depends-on ("package" "variables"))
                               (:file       "util"
                                :depends-on ("package"))
 
@@ -50,4 +50,29 @@
                                                       "spec" "io"))
 
                               (:file       "repair"
-                               :depends-on ("package" "spec" "io"))))))
+                               :depends-on ("package" "spec" "io")))))
+
+  :in-order-to ((test-op (test-op :rsbag-tidelog-test))))
+
+(defsystem :rsbag-tidelog-test
+  :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :version     #.(cl-rsbag-system:version/string)
+  :license     "LGPLv3; see COPYING file for details."
+  :description "Unit tests for the rsbag-tidelog system."
+  :depends-on  ((:version :lift          "1.7.1")
+
+                (:version :rsbag-tidelog #.(cl-rsbag-system:version/string :commit? t))
+
+                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string :commit? t)))
+  :components  ((:module     "tidelog"
+                 :pathname   "test/backend/tidelog"
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "io")))))
+
+(defmethod perform ((op     test-op)
+                    (system (eql (find-system :rsbag-tidelog-test))))
+  (funcall (find-symbol "RUN-TESTS" :lift)
+           :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
+                            "lift-tidelog.config")))
