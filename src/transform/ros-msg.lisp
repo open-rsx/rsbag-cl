@@ -23,7 +23,7 @@
            "")
    (format :initarg  :format
            :type     (or null string)
-           :reader transform-%format
+           :reader   transform-%format
            :documentation
            ""))
   (:default-initargs
