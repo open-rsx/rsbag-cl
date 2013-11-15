@@ -54,8 +54,8 @@
 (addtest (rsbag.backend.async-double-buffered-writer
           :documentation
           "Make sure that that the async write-back of
-`async-double-buffered-writer' write everything and in the correct
-order.")
+           `async-double-buffered-writer' write everything and in the
+           correct order.")
   write-back/smoke
 
   (ensure-cases (data)
@@ -80,8 +80,8 @@ order.")
 (addtest (rsbag.backend.async-double-buffered-writer
           :documentation
           "Make sure that the next operation after a failed async
-write-back of `async-double-buffered-writer' operation signals the
-error.")
+           write-back of `async-double-buffered-writer' operation
+           signals the error.")
   write-back/conditions
 
   (macrolet

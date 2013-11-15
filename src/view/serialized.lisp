@@ -34,15 +34,15 @@
 
 (defmethod %make-key-function ((sequence sequence))
   "When SEQUENCE is just a `sequence', we assume it consists of
-timestamps."
+   timestamps."
   (lambda (sequence iterator limit from-end)
     (unless (sequence:iterator-endp sequence iterator limit from-end)
       (sequence:iterator-element sequence iterator))))
 
 (defmethod %make-key-function ((sequence channel))
   "When SEQUENCE is a `channel', we can use timestamps as keys by
-using the index of the iterator and looking up the corresponding
-timestamp in `channel-timestamps'."
+   using the index of the iterator and looking up the corresponding
+   timestamp in `channel-timestamps'."
   (lambda (sequence iterator limit from-end)
     (unless (sequence:iterator-endp sequence iterator limit from-end)
       (sequence:elt
@@ -51,12 +51,12 @@ timestamp in `channel-timestamps'."
 
 (defmethod %make-key-function ((sequence channel-items))
   "When SEQUENCE is of type `channel-items', we can use the index of
-the iterator and look up the corresponding timestamp in the timestamp
-sequence."
+   the iterator and look up the corresponding timestamp in the
+   timestamp sequence."
   (lambda (sequence iterator limit from-end)
     (unless (sequence:iterator-endp sequence iterator limit from-end)
       (sequence:elt
-       (rsbag::%channel-items-timestamps sequence)
+       (rsbag::channel-items-%timestamps sequence)
        (sequence:iterator-index sequence iterator)))))
 
 ;;; `serialized' class
@@ -70,20 +70,21 @@ sequence."
             :initform #'local-time:timestamp<
             :documentation
             "Stores a function that is used to compare keys extracted
-from iterator states in order to decide which iterator has to be
-stepped.")
+             from iterator states in order to decide which iterator
+             has to be stepped.")
    (key     :initarg  :key
             :type     function
             :accessor view-key
             :documentation
             "Stores a function that extracts keys from iterator states
-which are used to decide which iterator has to be stepped."))
+             which are used to decide which iterator has to be
+             stepped."))
   (:default-initargs
    :key (missing-required-initarg 'serialized :key))
   (:documentation
    "Instances of this class provide the data of multiple channels as a
-single sequence in which items from different channels are serialized
-according to their timestamps."))
+    single sequence in which items from different channels are
+    serialized according to their timestamps."))
 
 (defmethod sequence:length ((view serialized))
   ;; The number of events is the sums of the numbers of events of
@@ -118,27 +119,27 @@ according to their timestamps."))
 ;;; `serialized-iterator' class
 
 (defclass serialized-iterator (multi-sequence-iterator-mixin)
-  ((current :initarg  :current
-            :accessor %iterator-current
+  ((current :accessor iterator-%current
             :documentation
             "Stores the iterator that holds the current element and
-has to be stepped in order to step in the serialized view."))
+             has to be stepped in order to step in the serialized
+             view."))
   (:documentation
    "Instances of this class perform iterations through sequences that
-are serialized views on multiple sequences."))
+    are serialized views on multiple sequences."))
 
 (defmethod shared-initialize :after ((instance   serialized-iterator)
                                      (slot-names t)
                                      &key
                                      compare)
-  (setf (%iterator-current instance)
-        (%iterator-for-forward-step (%iterator-iterators instance) compare)))
+  (setf (iterator-%current instance)
+        (%iterator-for-forward-step (iterator-%iterators instance) compare)))
 
 (defmethod sequence:iterator-endp ((sequence serialized)
                                    (iterator serialized-iterator)
                                    (limit    t)
                                    (from-end t))
-  (or (null (first (%iterator-current iterator)))
+  (or (null (first (iterator-%current iterator)))
       (call-next-method)))
 
 (defmethod sequence:iterator-step ((sequence serialized)
@@ -146,22 +147,22 @@ are serialized views on multiple sequences."))
                                    (from-end t))
   (let+ (((&accessors-r/o (compare view-compare)
                           (key     view-key)) sequence)
-         ((&accessors-r/o (iterators %iterator-iterators)) iterator))
+         ((&accessors-r/o (iterators iterator-%iterators)) iterator))
     (declare (type function compare key))
     ;; Step the appropriate sub-iterator (depending on forward
     ;; vs. backward step), then find and store the next sub-iterator.
     (%iterator-step (if from-end
                         (%iterator-for-backward-step iterators key compare)
-                        (%iterator-current iterator))
+                        (iterator-%current iterator))
                     key from-end)
-    (setf (%iterator-current iterator)
+    (setf (iterator-%current iterator)
           (%iterator-for-forward-step iterators compare)))
   iterator)
 
 (defmethod sequence:iterator-element ((sequence serialized)
                                       (iterator serialized-iterator))
   (let+ (((&accessors-r/o
-           ((&ign sequence* iterator* &rest &ign) %iterator-current)) iterator))
+           ((&ign sequence* iterator* &rest &ign) iterator-%current)) iterator))
     (sequence:iterator-element sequence* iterator*)))
 
 ;;; Utility functions
@@ -171,8 +172,7 @@ are serialized views on multiple sequences."))
 
 (defun+ %iterator-step ((&whole state &ign sequence iterator &ign from-end*) key from-end)
   "Destructively perform a step with iterator STATE and update its
-sorting key using KEY.
-Return the modified STATE."
+   sorting key using KEY. Return the modified STATE."
   ;; Update the iterator and its sorting key.
   (setf (third state) (sequence:iterator-step
                        sequence iterator (xor from-end from-end*))
@@ -199,7 +199,7 @@ Return the modified STATE."
 
 (defun %iterator-for-forward-step (iterators compare)
   "Return the iterator in ITERATORS that should be used to retrieve
-the next element of the serialized sequence or nil."
+   the next element of the serialized sequence or nil."
   (when iterators
     (reduce (rcurry #'%iterator-min compare) iterators)))
 
@@ -208,7 +208,7 @@ the next element of the serialized sequence or nil."
 
 (defun %iterator-for-backward-step (iterators key compare)
   "Return the iterator in ITERATORS that should be used to retrieve
-the previous element of the serialized sequence of nil."
+   the previous element of the serialized sequence of nil."
   (let+ (((&flet cannot-step-back? (iterator)
             (when-let ((index (sequence:iterator-index
                                (second iterator) (third iterator))))

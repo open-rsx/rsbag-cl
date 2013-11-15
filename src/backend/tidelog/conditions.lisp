@@ -10,18 +10,18 @@
   ()
   (:documentation
    "This condition class serves as a superclass for TIDELOG-related
-condition classes."))
+    condition classes."))
 
 (define-condition tidelog-file-error (log-file-error
                                       tidelog-condition)
   ()
   (:documentation
    "Errors of this class and subclasses are signaled when operations
-involving TIDE log files fail."))
+    involving TIDE log files fail."))
 
 (define-condition invalid-tidelog-structure (invalid-file-structure
                                              tidelog-condition)
   ()
   (:documentation
    "This error is signaled if an invalid file structure is encountered
-while processing a TIDE log file."))
+    while processing a TIDE log file."))

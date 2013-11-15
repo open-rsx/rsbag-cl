@@ -31,17 +31,17 @@
                 :reader   transform-wire-schema
                 :documentation
                 "Stores the associated wire-schema of (de)serialized
-events.")
-   (holder      :reader   %transform-holder
+                 events.")
+   (holder      :reader   transform-%holder
                 :initform (make-instance 'rsb.protocol:notification)
                 :documentation
                 "Stores a data-holder instance that is reused
-during (de)serialization for efficiency reasons."))
+                 during (de)serialization for efficiency reasons."))
   (:default-initargs
    :wire-schema (missing-required-initarg 'rsb-event :wire-schema))
   (:documentation
    "Instances of this transform class (de)serialize RSB events from/to
-octet vectors without (de)serializing payloads."))
+    octet vectors without (de)serializing payloads."))
 
 (defmethod transform-name ((transform rsb-event))
   (list +rsb-schema-name+ (transform-wire-schema transform)))
@@ -71,7 +71,7 @@ octet vectors without (de)serializing payloads."))
                 wire-schema))))))
 
 (defmethod encode ((transform rsb-event) (domain-object rsb:event))
-  (let+ (((&accessors-r/o (holder %transform-holder)) transform)
+  (let+ (((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
                           (causes    rsb.protocol:notification-causes)) holder)
@@ -139,7 +139,7 @@ octet vectors without (de)serializing payloads."))
             (cons (uuid:byte-array-to-uuid
                    (rsb.protocol:event-id-sender-id id))
                   (rsb.protocol:event-id-sequence-number id))))
-         ((&accessors-r/o (holder %transform-holder)) transform)
+         ((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
                           (causes    rsb.protocol:notification-causes)) holder)
@@ -203,18 +203,18 @@ octet vectors without (de)serializing payloads."))
     (setf (readtable-case readtable) :invert)
     readtable)
   "This readtable is used to print and read keywords. The goal is to
-get a natural mapping between Lisp keywords and corresponding strings
-for most cases.")
+   get a natural mapping between Lisp keywords and corresponding
+   strings for most cases.")
 
 (defun timestamp->unix-microseconds (timestamp)
   "Convert the `local-time:timestamp' instance TIMESTAMP into an
-integer which counts the number of microseconds since UNIX epoch."
+   integer which counts the number of microseconds since UNIX epoch."
   (+ (* 1000000 (local-time:timestamp-to-unix timestamp))
      (* 1       (local-time:timestamp-microsecond timestamp))))
 
 (defun unix-microseconds->timestamp (unix-microseconds)
   "Convert UNIX-MICROSECONDS to an instance of
-`local-time:timestamp'."
+   `local-time:timestamp'."
   (let+ (((&values unix-seconds microseconds)
           (floor unix-microseconds 1000000)))
     (local-time:unix-to-timestamp

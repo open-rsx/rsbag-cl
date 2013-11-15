@@ -17,7 +17,7 @@
              :accessor flush-strategy-property
              :documentation
              "Stores the name of the buffer property based on whose
-value the flushing decision should be made.")
+              value the flushing decision should be made.")
    (limit    :initarg  :limit
              :type     real
              :accessor flush-strategy-limit
@@ -28,7 +28,7 @@ value the flushing decision should be made.")
    :limit    (missing-required-initarg 'property-limit :limit))
   (:documentation
    "This strategy causes a buffer to be flushed every time a specified
-property violates a given limit."))
+    property violates a given limit."))
 
 (defmethod shared-initialize :before ((instance   property-limit)
                                       (slot-names t)
@@ -66,10 +66,11 @@ property violates a given limit."))
              :initform nil
              :documentation
              "A list of child strategies which are consulted to
-produce a decision."))
+              produce a decision."))
   (:documentation
    "This class is intended to be mixed into flush strategy classes
-which produce their decisions by consulting subordinate strategies."))
+    which produce their decisions by consulting subordinate
+    strategies."))
 
 (defmethod print-object ((object composite-flush-strategy-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)

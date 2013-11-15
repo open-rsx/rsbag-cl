@@ -14,12 +14,12 @@
               :reader   view-sequences
               :documentation
               "Stores the list of sequences from the view aggregates
-data."))
+               data."))
   (:default-initargs
    :sequences (missing-required-initarg 'multi-sequence-view-mixin :sequences))
   (:documentation
    "This class is intended to be mixed into view classes that
-aggregate data from multiple sequences."))
+    aggregate data from multiple sequences."))
 
 (defmethod print-object ((object multi-sequence-view-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -30,13 +30,13 @@ aggregate data from multiple sequences."))
 (defclass multi-sequence-iterator-mixin ()
   ((iterators :initarg  :iterators
               :type     list
-              :reader   %iterator-iterators
+              :reader   iterator-%iterators
               :documentation
               "Stores iterators that represent sequence-specific
-iteration states.")
+               iteration states.")
    (index     :initarg  :index
               :type     non-negative-integer
-              :accessor %iterator-index
+              :accessor iterator-%index
               :initform 0
               :documentation
               "Stores the current index of the iteration."))
@@ -44,23 +44,24 @@ iteration states.")
    :iterators (missing-required-initarg 'multi-sequence-iterator-mixin :iterators))
   (:documentation
    "This class is intended to be mixed into iterator classes that
-represent the state of iterations which span multiple sequences."))
+    represent the state of iterations which span multiple
+    sequences."))
 
 (defmethod sequence:iterator-step :after ((sequence sequence)
                                           (iterator multi-sequence-iterator-mixin)
                                           (from-end t))
-  (incf (%iterator-index iterator) (if from-end -1 1)))
+  (incf (iterator-%index iterator) (if from-end -1 1)))
 
 (defmethod sequence:iterator-endp ((sequence sequence)
                                    (iterator multi-sequence-iterator-mixin)
                                    (limit    t)
                                    (from-end t))
-  (= (%iterator-index iterator) limit))
+  (= (iterator-%index iterator) limit))
 
 (defmethod sequence:iterator-index ((sequence sequence)
                                     (iterator multi-sequence-iterator-mixin))
-  (%iterator-index iterator))
+  (iterator-%index iterator))
 
 (defmethod print-object ((object multi-sequence-iterator-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~D" (%iterator-index object))))
+    (format stream "~D" (iterator-%index object))))

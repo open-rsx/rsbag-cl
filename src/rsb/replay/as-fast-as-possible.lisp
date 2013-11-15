@@ -17,6 +17,6 @@
   ()
   (:documentation
    "This strategy replays events in the order they were recorded, but
-as fast as possible. Consequently, recorded timestamps are only used
-to establish the playback order of events, but not for any kind of
-replay timing."))
+    as fast as possible. Consequently, recorded timestamps are only
+    used to establish the playback order of events, but not for any
+    kind of replay timing."))

@@ -18,7 +18,7 @@
                      :initform *query-io*
                      :documentation
                      "Stores the bi-directional stream that is used
-for user interaction.")
+                      for user interaction.")
    (previous-command :initarg  :previous-command
                      :type     (or null function)
                      :accessor strategy-previous-command
@@ -27,7 +27,7 @@ for user interaction.")
                      "Stores the previously invoked command or nil."))
   (:documentation
    "This strategy allows controlling the replay process interactively
-by means of textual commands."))
+    by means of textual commands."))
 
 (defmethod next-command ((strategy interactive))
   (let+ (((&accessors-r/o (commands strategy-commands)

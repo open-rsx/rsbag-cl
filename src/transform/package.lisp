@@ -51,4 +51,4 @@
 
   (:documentation
    "This package contains the transformation protocol and
-infrastructure used in cl-rsbag."))
+    infrastructure used in cl-rsbag."))

@@ -10,7 +10,7 @@
   ()
   (:documentation
    "This calls is intended to be mixed into all rsbag-related error
-condition classes."))
+    condition classes."))
 
 (define-condition open-error (rsbag-error
                               chainable-condition)
@@ -18,30 +18,30 @@ condition classes."))
            :reader   open-error-source
            :documentation
            "Stores the source from which the bag could not be
-opened."))
+            opened."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Failed to open bag in source ~
-                     ~A.~/more-conditions::maybe-print-cause/~@:>"
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
              (open-error-source condition)
              condition)))
   (:default-initargs
    :source (missing-required-initarg 'open-error :source))
   (:documentation
    "This error is signaled if a bag, stored in a specific source,
-cannot be opened."))
+    cannot be opened."))
 
 (define-condition bag-error (rsbag-error)
   ((bag :initarg  :bag
         :reader   bag-error-bag
         :documentation
         "The bag instance in the context of which the error
-occurred."))
+         occurred."))
   (:default-initargs
    :bag (missing-required-initarg 'bag-error :bag))
   (:documentation
    "Subclasses of this class are signaled when an error can be
-associated to a specific bag."))
+    associated to a specific bag."))
 
 (define-condition no-such-channel (bag-error)
   ((name :initarg  :name
@@ -59,7 +59,7 @@ associated to a specific bag."))
    :name (missing-required-initarg 'no-such-channel :name))
   (:documentation
    "This error is signaled when a requested channel does not exist
-within a bag an cannot or may not be created."))
+    within a bag an cannot or may not be created."))
 
 (define-condition read-only-bag (bag-error)
   ()
@@ -71,19 +71,19 @@ within a bag an cannot or may not be created."))
                bag (bag-direction bag)))))
   (:documentation
    "This error is signaled when an attempt is made to write to a bag
-that has not been opened for output."))
+    that has not been opened for output."))
 
 (define-condition channel-error (bag-error)
   ((channel :initarg  :channel
             :reader   channel-error-channel
             :documentation
             "Stores the channel in the context of which the error
-occurred."))
+             occurred."))
   (:default-initargs
    :channel (missing-required-initarg 'channel-error :channel))
   (:documentation
    "Subclasses of this class are signaled when an error can be
-associated to a specific channel within a bag."))
+    associated to a specific channel within a bag."))
 
 (define-condition channel-open-error (channel-error
                                       chainable-condition)
@@ -91,13 +91,13 @@ associated to a specific channel within a bag."))
   (:report
    (lambda (condition stream)
      (format stream "~@<Could not open channel ~S in bag
-                     ~A~/more-conditions::maybe-print-cause/~@:>"
+                     ~A~/more-conditions:maybe-print-cause/~@:>"
              (channel-error-channel condition)
              (bag-error-bag         condition)
              condition)))
   (:documentation
    "This error is signaled when an existing channel cannot be
-opened."))
+    opened."))
 
 (define-condition channel-exists (channel-error)
   ()
@@ -106,17 +106,16 @@ opened."))
      (format stream "~@<The channel ~A already exists in bag ~A.~@:>"
              (channel-error-channel condition)
              (bag-error-bag         condition))))
-
   (:documentation
    "This error is signaled when a channel cannot be created because it
-already exists."))
+    already exists."))
 
 (define-condition no-such-entry (channel-error)
   ((key :initarg  :key
         :reader   no-such-entry-key
         :documentation
         "Stores the key for which no entry could be found in the
-channel and bag in question."))
+         channel and bag in question."))
   (:report
    (lambda (condition stream)
      (format stream "~@<No entry could be found for key ~S in the ~
@@ -128,4 +127,4 @@ channel and bag in question."))
    :key (missing-required-initarg 'no-such-entry :key))
   (:documentation
    "This error is signaled if a specified entry cannot be found in a
-channel."))
+    channel."))

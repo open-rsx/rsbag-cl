@@ -14,8 +14,8 @@
    :error-policy #'log-error)
   (:documentation
    "This mixin class provides a method on `replay' that arranges for
-the next `replay' methods to be called with error handling based on
-the installed error policy."))
+    the next `replay' methods to be called with error handling based
+    on the installed error policy."))
 
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   error-policy-mixin)
@@ -29,7 +29,7 @@ the installed error policy."))
   ()
   (:documentation
    "This mixin class add the establishing of continue and log restarts
-around the actual work of the `replay' method."))
+    around the actual work of the `replay' method."))
 
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   replay-restart-mixin)
@@ -65,23 +65,24 @@ around the actual work of the `replay' method."))
 (defclass bounds-mixin ()
   ((start-index :initarg  :start-index
                 :type     (or null non-negative-integer)
-                :accessor %strategy-start-index
+                :accessor strategy-%start-index
                 :writer   (setf strategy-start-index) ; reader is defined below
                 :initform nil
                 :documentation
                 "Stores the index of the event at which the replay
-should start or nil if the replay should just start at the first
-event.")
+                 should start or nil if the replay should just start
+                 at the first event.")
    (end-index   :initarg  :end-index
                 :type     (or null non-negative-integer)
                 :accessor strategy-end-index
                 :initform nil
                 :documentation
                 "Stores the index after the event at which the replay
-should stop or nil if the replay should end at the final event."))
+                 should stop or nil if the replay should end at the
+                 final event."))
   (:documentation
    "Provides start-index and end-index slots, some consistency checks
-on there values and a method on `print-object'."))
+    on there values and a method on `print-object'."))
 
 (defmethod shared-initialize :before ((instance   bounds-mixin)
                                       (slot-names t)
@@ -92,12 +93,12 @@ on there values and a method on `print-object'."))
     (check-ordered-indices start-index end-index)))
 
 (defmethod strategy-start-index ((strategy bounds-mixin))
-  (or (%strategy-start-index strategy) 0))
+  (or (strategy-%start-index strategy) 0))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
-  (when-let ((start-index (%strategy-start-index strategy))
+  (when-let ((start-index (strategy-%start-index strategy))
              (end-index   (strategy-end-index    strategy)))
     (check-ordered-indices start-index end-index)))
 
@@ -112,22 +113,26 @@ on there values and a method on `print-object'."))
 (defclass time-bounds-mixin (bounds-mixin)
   ((start-time :initarg  :start-time
                :type     range-boundary/timestamp
-               :accessor strategy-start-time
+               :reader   strategy-start-time
+               :accessor strategy-%start-time
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should start
-or nil if the replay should not start at a specific time but at an
-specific index or just at the first event.")
+                or nil if the replay should not start at a specific
+                time but at an specific index or just at the first
+                event.")
    (end-time   :initarg  :end-time
                :type     range-boundary/timestamp
-               :accessor strategy-end-time
+               :reader   strategy-end-time
+               :accessor strategy-%end-time
                :initform nil
                :documentation
                "Stores the timestamp at which the replay should stop
-or nil if the replay should not stop at a specific time."))
+                or nil if the replay should not stop at a specific
+                time."))
   (:documentation
    "This mixin class adds start-time and end-time slots and
-translation of their values into indices before replay."))
+    translation of their values into indices before replay."))
 
 (defmethod shared-initialize :before ((instance   time-bounds-mixin)
                                       (slot-names t)
@@ -145,68 +150,94 @@ translation of their values into indices before replay."))
                            :end-index end-index
                            :end-time  end-time))
 
+  ;; This check may do nothing when both times are supplied but one is
+  ;; a real and one is a timestamp. Therefore, the times are checked
+  ;; again in the :before method on `replay'.
   (when (and start-time-supplied? end-time-supplied?)
-    (check-ordered-timestamps start-time end-time)))
+    (check-ordered-times start-time end-time)))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   time-bounds-mixin)
                            &key &allow-other-keys)
   (let+ (((&accessors-r/o (bag connection-bag)) connection)
-         ((&accessors (start-time  strategy-start-time)
-                      (start-index %strategy-start-index)
-                      (end-time    strategy-end-time)
+         ((&accessors (start-time  strategy-%start-time)
+                      (start-index strategy-start-index)
+                      (end-time    strategy-%end-time)
                       (end-index   strategy-end-index)) strategy)
-         (sequence    (make-view connection strategy
-                                 :selector #'channel-timestamps))
-         ((&labels timestamp->index (timestamp)
+         (sequence            (make-view connection strategy
+                                         :selector #'channel-timestamps))
+         (sequence-start-time (unless (emptyp sequence)
+                                (first-elt sequence)))
+         (sequence-end-time   (unless (emptyp sequence)
+                                (last-elt sequence)))
+         ((&labels index-difference (index timestamp)
+            (let ((index-timestamp (elt sequence index)))
+              (values (abs (local-time:timestamp-difference
+                            timestamp index-timestamp))
+                      index-timestamp))))
+         ((&labels timestamp->index (timestamp name)
+            (log:info "~@<Mapping requested ~A ~A to index (this can ~
+                       take a moment)~@:>"
+                      name timestamp) ; TODO use progress
             (etypecase timestamp
               (real
                (timestamp->index
                 (local-time:adjust-timestamp
-                    (if (minusp timestamp) (end bag) (rsbag:start bag))
-                  (:offset :sec  (floor timestamp))
-                  (:offset :nsec (mod (floor timestamp 1/1000000000)
-                                      1000000000)))))
+                 (if (minusp timestamp)
+                     sequence-end-time
+                     sequence-start-time)
+                 (:offset :sec  (floor timestamp))
+                 (:offset :nsec (mod (floor timestamp 1/1000000000)
+                                     1000000000)))
+                name))
               (local-time:timestamp
-               (values
-                (or (position timestamp sequence
-                              :test #'local-time:timestamp<=)
-                    (error "~@<Could not find requested timestamp ~A in bag ~
-                            ~A (with temporal range [~A, ~A]).~@:>"
-                           timestamp (connection-bag connection)
-                           (rsbag:start bag) (end bag)))
-                timestamp)))))
-         ((&flet set-index (timestamp setter name)
-            (log:info "~@<Mapping requested ~A ~A to index (this can take a moment)~@:>"
-                      name timestamp)
-            (let+ (((&values index timestamp) (timestamp->index timestamp))
-                   (effective  (elt sequence index))
-                   (difference (abs (local-time:timestamp-difference
-                                     timestamp effective))))
-              (funcall setter index)
+               (if-let ((index (when (local-time:timestamp<=
+                                      sequence-start-time
+                                      timestamp
+                                      sequence-end-time)
+                                 (position timestamp sequence
+                                           :test #'local-time:timestamp<=))))
+                 (values
+                  (if (and (plusp index)
+                           (< (index-difference (1- index) timestamp)
+                              (index-difference index      timestamp)))
+                      (1- index)
+                      index)
+                  timestamp)
+                 (error "~@<Could not find requested timestamp ~A in ~
+                         bag ~A (with temporal range [~A, ~A]).~@:>"
+                        timestamp (connection-bag connection)
+                        sequence-start-time sequence-end-time))))))
+         ((&flet check-index (index timestamp name)
+            (let+ (((&values difference effective)
+                    (index-difference index timestamp)))
               (log:info "~@<Mapped requested ~A ~A to index ~:D (at ~
                          time ~A, ~,6F seconds difference)~@:>"
                         name timestamp index effective difference)
               (when (> difference 1)
-                (warn "~@<Mapped ~A ~A is rather far (~A seconds) from ~
+                (warn "~@<Mapped ~A ~A is rather far (~F second~:P) from ~
                        requested ~A ~A~@:>"
                       name effective difference name timestamp))))))
-    (when start-time
-      (if (and (rsbag:start bag) (end bag))
-          (set-index start-time
-                     (lambda (value) (setf start-index value))
-                     "start time")
-          (warn "~@<Bag ~A does not have start and end times; ignoring ~
-                 requested start time ~A~@:>"
-                bag start-time)))
-    (when end-time
-      (if (and (rsbag:start bag) (end bag))
-          (set-index end-time
-                     (lambda (value) (setf end-index value))
-                     "end time")
-          (warn "~@<Bag ~A does not have start and end times; ignoring ~
-                 requested end time ~A~@:>"
-                bag end-time)))))
+    (cond
+      ((not start-time))
+      ((and sequence-start-time sequence-end-time)
+       (multiple-value-setq (start-index start-time)
+         (timestamp->index start-time "start time"))
+       (check-index start-index start-time "start time"))
+      (t
+       (warn "~@<Bag ~A does not have start and end times; ignoring ~
+              requested start time ~A~@:>"
+             bag start-time)))
+    (cond
+      ((not end-time))
+      ((and sequence-start-time sequence-end-time)
+       (multiple-value-setq (end-index end-time)
+         (timestamp->index end-time "end time"))
+       (check-index end-index end-time "end time"))
+      (t
+       (warn "~@<Bag ~A does not have start and end times; ignoring ~
+              requested end time ~A~@:>"
+             bag end-time)))))
 
 ;;; `view-creation-mixin' mixin class
 
@@ -214,10 +245,10 @@ translation of their values into indices before replay."))
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that have to construct a view sequence for multiple channels. The
-generic function `make-view' can be used to customize this
-behavior. The method for `view-creation-mixin' creates a
-serialized view of events across channels."))
+    that have to construct a view sequence for multiple channels. The
+    generic function `make-view' can be used to customize this
+    behavior. The method for `view-creation-mixin' creates a
+    serialized view of events across channels."))
 
 (defmethod make-view ((connection replay-bag-connection)
                       (strategy   view-creation-mixin)
@@ -236,10 +267,10 @@ serialized view of events across channels."))
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that essentially process all events in a sequential manner. The method
-on `replay' for `sequential-mixin' creates a sequence via `make-view'
-and processes all elements of the sequence by sequential calls to
-`process-event'."))
+    that essentially process all events in a sequential manner. The
+    method on `replay' for `sequential-mixin' creates a sequence via
+    `make-view' and processes all elements of the sequence by
+    sequential calls to `process-event'."))
 
 (defmethod replay ((connection replay-bag-connection)
                    (strategy   sequential-mixin)
@@ -272,7 +303,7 @@ and processes all elements of the sequence by sequential calls to
                           (event              (eql :skip))
                           (sink               t))
   "Error recovery behaviors may inject the value :skip for EVENT. The
-default behavior is just ignoring the failed event. "
+   default behavior is just ignoring the failed event. "
   (values))
 
 (defmethod process-event ((connection         replay-bag-connection)
@@ -282,7 +313,7 @@ default behavior is just ignoring the failed event. "
                           (event              t)
                           (sink               t))
   "The default behavior consists in sending EVENT via SINK which is
-assumed to be an `rsb:informer'."
+   assumed to be an `rsb:informer'."
   (send sink event :unchecked? t))
 
 (defmethod process-event ((connection         replay-bag-connection)
@@ -292,7 +323,7 @@ assumed to be an `rsb:informer'."
                           (event              t)
                           (sink               function))
   "The default behavior for a function SINK consists in calling SINK
-with EVENT."
+   with EVENT."
   (funcall sink event))
 
 ;;; `timed-replay-mixin' mixin class
@@ -300,8 +331,8 @@ with EVENT."
 (defclass timed-replay-mixin (sequential-mixin)
   ()
   (:documentation
-   "This class is intended to be mixed into replay strategy
-classes which perform time-based scheduling of replayed events."))
+   "This class is intended to be mixed into replay strategy classes
+    which perform time-based scheduling of replayed events."))
 
 (defmethod process-event :before ((connection         replay-bag-connection)
                                   (strategy           timed-replay-mixin)
@@ -310,7 +341,7 @@ classes which perform time-based scheduling of replayed events."))
                                   (event              t)
                                   (sink               t))
   "Delay the publishing of EVENT for the amount of time computed by
-`schedule-event'."
+   `schedule-event'."
   (let ((amount (schedule-event strategy event previous-timestamp timestamp)))
     (when (plusp amount)
       (sleep amount))))
@@ -323,19 +354,22 @@ classes which perform time-based scheduling of replayed events."))
                    :initform nil
                    :documentation
                    "Stores the previously scheduled delay to estimate
-the difference between the scheduled and actual delay. This can become
-negative when the previous wait executed too slowly.")
+                    the difference between the scheduled and actual
+                    delay. This can become negative when the previous
+                    wait executed too slowly.")
    (previous-call  :type     (or null local-time:timestamp)
                    :accessor strategy-previous-call
                    :initform nil
                    :documentation
                    "Stores a timestamp for the previous call to
-`schedule-event' to estimate how much time actually (as opposed to the
-scheduled time) passed between the previous and the current call."))
+                    `schedule-event' to estimate how much time
+                    actually (as opposed to the scheduled time) passed
+                    between the previous and the current call."))
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that compute an ideal delay between successive events and need to have
-this delay adjusted to compensate for processing latencies."))
+    that compute an ideal delay between successive events and need to
+    have this delay adjusted to compensate for processing
+    latencies."))
 
 (defmethod schedule-event :around ((strategy delay-correcting-mixin)
                                    (event    t)
@@ -377,8 +411,8 @@ this delay adjusted to compensate for processing latencies."))
               "Maximum delay between adjacent events in seconds."))
   (:documentation
    "This mixin class adds to timed replay strategy classes the ability
-to limit the delays between adjacent events to a particular
-maximum."))
+    to limit the delays between adjacent events to a particular
+    maximum."))
 
 (defmethod schedule-event :around ((strategy delay-limiting-mixin)
                                    (event    t)
@@ -397,10 +431,10 @@ maximum."))
           :initform 1
           :documentation
           "Stores the speed factor that should be applied to the
-results of scheduling events."))
+           results of scheduling events."))
   (:documentation
    "This mixin class adds to timed replay strategy classes the ability
-to speed up or slow down replay speed by a constant factor."))
+    to speed up or slow down replay speed by a constant factor."))
 
 (defmethod schedule-event :around ((strategy speed-adjustment-mixin)
                                    (event    t)
@@ -413,23 +447,24 @@ to speed up or slow down replay speed by a constant factor."))
 (defclass timestamp-adjustment-mixin ()
   ((adjustments :type     list
                 :accessor strategy-adjustments
-                :initform nil
+                :initform '()
                 :documentation
                 "Stores a list of adjustments of the form
 
-  (TIMESTAMP NEW-VALUE)
+                   (TIMESTAMP NEW-VALUE)
 
-where TIMESTAMP is a keyword designating a timestamp and NEW-VALUE
-specifies the new value. Currently, NEW-VALUE can be the symbol :NOW
-or a `local-time:timestamp' object."))
+                 where TIMESTAMP is a keyword designating a timestamp
+                 and NEW-VALUE specifies the new value. Currently,
+                 NEW-VALUE can be the symbol :NOW or a
+                 `local-time:timestamp' object."))
   (:documentation
    "This mixin class adds the ability to adjust event timestamps
-during replay."))
+    during replay."))
 
 (defmethod shared-initialize :after ((instance   timestamp-adjustment-mixin)
                                      (slot-names t)
                                      &key
-                                     (adjustments nil adjustments-supplied?))
+                                     (adjustments '() adjustments-supplied?))
   (when adjustments-supplied?
     (setf (strategy-adjustments instance) adjustments)))
 
@@ -478,18 +513,20 @@ during replay."))
 (defclass external-driver-mixin (sequential-mixin)
   ((commands :type     list
              :reader   strategy-commands
-             :accessor %strategy-commands
-             :initform nil
+             :accessor strategy-%commands
+             :initform '()
              :documentation
              "Stores available commands as an alist of items of the
-form (NAME . IMPLEMENTING-FUNCTION)."))
+              form
+
+                (NAME . IMPLEMENTING-FUNCTION)."))
   (:documentation
    "This class is intended to be mixed into replay strategy classes
-that depend on some kind of external driver to control iteration
-through the sequential data. Instances store a list of available
-commands which are available for invocation by the external driver
-mechanism. The `replay' method basically retrieves subsequent commands
-and executes them until termination is requested."))
+    that depend on some kind of external driver to control iteration
+    through the sequential data. Instances store a list of available
+    commands which are available for invocation by the external driver
+    mechanism. The `replay' method basically retrieves subsequent
+    commands and executes them until termination is requested."))
 
 (defmethod find-command ((strategy external-driver-mixin)
                          (name     string)
@@ -605,7 +642,7 @@ and executes them until termination is requested."))
          ((&flet terminate ()
             (setf terminate? t))))
 
-    (setf (%strategy-commands strategy)
+    (setf (strategy-%commands strategy)
           (make-commands strategy sequence
                          :length    #'length*
                          :step      #'step*
@@ -629,9 +666,16 @@ and executes them until termination is requested."))
             than index ~:D.~@:>"
            later earlier)))
 
-(defun check-ordered-timestamps (earlier later)
+(defun check-ordered-times (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
-  (unless (local-time:timestamp< earlier later)
-    (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
-            later than timestamp ~A.~@:>"
-           later earlier)))
+  (cond
+    ((and (realp earlier) (realp later) (not (< earlier later)))
+     (error "~@<Invalid relation of times: relative times ~,3F is not ~
+             later than relative time ~,3F.~@:>"
+            later earlier))
+    ((and (typep earlier 'local-time:timestamp)
+          (typep later 'local-time:timestamp)
+          (not (local-time:timestamp< earlier later)))
+     (error "~@<Invalid relation of timestamps: timestamp ~A is not ~
+             later than timestamp ~A.~@:>"
+            later earlier))))

@@ -15,7 +15,7 @@
 (defgeneric transform-format (transform)
   (:documentation
    "Return an object describing the encoding performed by
-TRANSFORM."))
+    TRANSFORM."))
 
 (defgeneric encode (transform domain-object)
   (:documentation
@@ -24,19 +24,19 @@ TRANSFORM."))
 (defgeneric decode (transform data)
   (:documentation
    "Decode DATA using TRANSFORM and return the decoded
-domain-object."))
+    domain-object."))
 
 ;;; Default behavior
 
 (defmethod transform-name ((transform standard-object))
   "Default behavior is to use the class name of TRANSFORM to identify
-TRANSFORM."
-  (nth-value 0 (make-keyword (class-name (class-of transform)))))
+   TRANSFORM."
+  (nth-value 0  (make-keyword (class-name (class-of transform)))))
 
 (defmethod encode :around ((transform     t)
                            (domain-object t))
   "Establish a use-value restart and wrap arbitrary conditions in an
-`encoding-error' instance."
+   `encoding-error' instance."
   (with-condition-translation
       (((error encoding-error)
         :transform     transform
@@ -58,7 +58,7 @@ TRANSFORM."
 (defmethod decode :around ((transform t)
                            (data      t))
   "Establish a use-value restart and wrap arbitrary conditions in a
-`decoding-error' instance."
+   `decoding-error' instance."
   (with-condition-translation
       (((error decoding-error)
         :transform transform
@@ -81,14 +81,14 @@ TRANSFORM."
 
 (dynamic-classes:define-findable-class-family transform
     "This class family consists of transformations that are applied to
-entries prior to serializing/after deserializing them to/from bag
-channels.")
+     entries prior to serializing/after deserializing them to/from bag
+     channels.")
 
 (defgeneric make-transform (spec
                             &rest args)
   (:documentation
    "Make and return an instance of the transform class designated by
-SPEC passing ARGS to the constructed instance."))
+    SPEC passing ARGS to the constructed instance."))
 
 (defmethod make-transform ((spec symbol)
                            &rest args)
@@ -97,7 +97,7 @@ SPEC passing ARGS to the constructed instance."))
 (defmethod make-transform ((spec (eql :utf-8-string))
                            &rest args)
   "Return nil for SPEC :utf-8-string since no transform is necessary
-in this case."
+   in this case."
   (declare (ignore args))
 
   nil)

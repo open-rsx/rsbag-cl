@@ -10,19 +10,21 @@
 
 (defclass informer-injector (channel-items)
   ((informer :initarg  :informer
-             :reader   %informer-injector-informer
+             :reader   informer-injector-%informer
              :documentation
              "Stores the informer that should be associated with the
-channel."))
+              channel."))
+  (:default-initargs
+   :informer (missing-required-initarg 'informer-injector :informer))
   (:documentation
    "Instance of this helper class inject a given object (usually an
-`rsb:informer' instance) into each element of the underlying
-sequence."))
+    `rsb:informer' instance) into each element of the underlying
+    sequence."))
 
 (defmethod sequence:elt ((sequence informer-injector)
                          (index    integer))
   (append (call-next-method)
-          (list (%informer-injector-informer sequence))))
+          (list (informer-injector-%informer sequence))))
 
 (defun inject-informer (channel connection)
   ;; Find the channel-connection for CHANNEL in CONNECTION, extract
@@ -37,8 +39,8 @@ sequence."))
 ;;; Utility functions
 
 (defun %make-progress-reporter (sequence callback)
-  "Return a function with two parameters that calls CALLBACK in the
-appropriate way if CALLBACK is non-nil"
+  "Return a function of two parameters that calls CALLBACK in the
+   appropriate way if CALLBACK is non-nil."
   (when callback
     (let ((start 0)
           (end   (1- (length sequence))))

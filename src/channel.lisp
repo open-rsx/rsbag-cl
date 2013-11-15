@@ -12,7 +12,7 @@
               :reader   channel-bag
               :documentation
               "Stores the bag instance in which this channel is
-contained.")
+               contained.")
    (name      :initarg  :name
               :type     string
               :reader   channel-name
@@ -24,28 +24,29 @@ contained.")
               :initform nil
               :documentation
               "Stores a transformation that should be applied to
-entries when they are retrieved or stored.")
+               entries when they are retrieved or stored.")
    (id        :initarg  :id
-              :reader   %channel-id
+              :reader   channel-%id
               :documentation
               "Stores the id of the channel.")
    (backend   :initarg  :backend
-              :reader   %channel-backend
+              :reader   channel-%backend
               :documentation
               "Stores a reference to the backend object which
-implements access to the bag to which this channel belongs."))
+               implements access to the bag to which this channel
+               belongs."))
   (:default-initargs
-   :bag     (required-argument :bag)
-   :name    (required-argument :name)
-   :id      (required-argument :id)
-   :backend (required-argument :backend))
+   :bag     (missing-required-initarg 'channel :bag)
+   :name    (missing-required-initarg 'channel :name)
+   :id      (missing-required-initarg 'channel :id)
+   :backend (missing-required-initarg 'channel :backend))
   (:documentation
-   "Instances of this class represent time-series of homogeneous
-data items."))
+   "Instances of this class represent time-series of homogeneous data
+    items."))
 
 (defmethod channel-timestamps ((channel channel))
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (rsbag.backend:get-timestamps backend id)))
 
 #+sbcl
@@ -56,7 +57,7 @@ data items."))
 #+sbcl
 (defmethod channel-items ((channel channel))
   "Return an instance of `channel-items' which presents pairs of
-timestamps and entries."
+   timestamps and entries."
   (make-instance 'channel-items
                  :channel channel))
 
@@ -68,8 +69,8 @@ timestamps and entries."
                   (transform        (channel-transform channel)))
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel)
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel)
          (raw (or (rsbag.backend:get-entry backend id index)
                   (ecase if-does-not-exist
                     (:error (error 'no-such-entry
@@ -87,8 +88,8 @@ timestamps and entries."
                   if-does-not-exist)
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (or (rsbag.backend:get-entry backend id timestamp)
         (ecase if-does-not-exist
           (:error (error 'no-such-entry
@@ -116,8 +117,8 @@ timestamps and entries."
   (when (eq if-exists :supersede)
     (error "Superseding entries is not supported yet"))
 
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel)
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel)
          (raw (if transform
                   (rsbag.transform:encode transform new-value)
                   new-value)))
@@ -146,8 +147,8 @@ timestamps and entries."
 
 #+sbcl
 (defmethod sequence:length ((channel channel))
-  (let+ (((&accessors-r/o (id      %channel-id)
-                          (backend %channel-backend)) channel))
+  (let+ (((&accessors-r/o (id      channel-%id)
+                          (backend channel-%backend)) channel))
     (rsbag.backend:get-num-entries backend id)))
 
 #+sbcl
@@ -171,34 +172,34 @@ timestamps and entries."
 (defclass channel-items (standard-object
                          sequence)
   ((channel    :initarg  :channel
-               :reader   %channel-items-channel
+               :reader   channel-items-%channel
                :documentation
                "Stores the channel the items of which are used.")
-   (timestamps :accessor %channel-items-timestamps
+   (timestamps :accessor channel-items-%timestamps
                :documentation
                "Stores the sequence of associated timestamps for the
-entries of the channel."))
+                entries of the channel."))
   (:default-initargs
-   :channel (required-argument :channel))
+   :channel (missing-required-initarg 'channel-items :channel))
   (:documentation
    "Instances of this class can be used to access the timestamps and
-associated entries of a channel."))
+    associated entries of a channel."))
 
 #+sbcl
 (defmethod shared-initialize :after ((instance   channel-items)
                                      (slot-names t)
                                      &key
                                      channel)
-  (setf (%channel-items-timestamps instance)
+  (setf (channel-items-%timestamps instance)
         (channel-timestamps channel)))
 
 #+sbcl
 (defmethod sequence:length ((items channel-items))
-  (length (%channel-items-channel items)))
+  (length (channel-items-%channel items)))
 
 #+sbcl
 (defmethod sequence:elt ((items channel-items)
                          (index integer))
-  (let+ (((&accessors-r/o (channel    %channel-items-channel)
-                          (timestamps %channel-items-timestamps)) items))
+  (let+ (((&accessors-r/o (channel    channel-items-%channel)
+                          (timestamps channel-items-%timestamps)) items))
     (list (elt timestamps index) (elt channel index))))

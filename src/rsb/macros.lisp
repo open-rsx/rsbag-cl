@@ -8,8 +8,8 @@
 
 (defmacro with-open-connection ((var connection-form) &body body)
   "Execute BODY with VAR bound to the connection object that is the
-result of evaluating CONNECTION-FORM. Ensure that the connection is
-properly closed."
+   result of evaluating CONNECTION-FORM. Ensure that the connection is
+   properly closed."
   `(with-open-stream (,var ,connection-form)
      ,@body))
 
@@ -25,8 +25,8 @@ properly closed."
                              &allow-other-keys)
                             &body body)
   "Execute BODY with VAR bound to a connection that is the result of
-applying `events->bag' to SOURCE, DEST and ARGS. Ensure that the
-resulting connection is properly closed."
+   applying `events->bag' to SOURCE, DEST and ARGS. Ensure that the
+   resulting connection is properly closed."
   (declare (ignore transports filters timestamp backend bag-class
                    channel-strategy))
   `(with-open-connection (,var (events->bag ,source, dest ,@args))
@@ -46,8 +46,8 @@ resulting connection is properly closed."
                              &allow-other-keys)
                             &body body)
   "Execute BODY with VAR bound to a connection that is the result of
-applying `bag->events' to SOURCE, DEST and ARGS. Ensure that the
-resulting connection is properly closed."
+   applying `bag->events' to SOURCE, DEST and ARGS. Ensure that the
+   resulting connection is properly closed."
   (declare (ignore backend bag-class replay-strategy
                    start-time start-index end-time end-index
                    channels))

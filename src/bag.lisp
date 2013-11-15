@@ -13,38 +13,40 @@
               :documentation
               "Stores the direction of the bag.")
    (backend   :initarg  :backend
-              :reader   %bag-backend
+              :reader   bag-%backend
               :documentation
               "Stores an object which is responsible for accessing the
-stream associated to this bag.")
+               stream associated to this bag.")
    (transform :initarg  :transform
               :type     transform-spec
               :reader   bag-transform
+              :accessor bag-%transform
               :initform '(&from-source)
               :documentation
               "Stores a specification for transformations that should
-be associated with channels of the bag. See type `transform-spec'.")
+               be associated with channels of the bag. See type
+               `transform-spec'.")
    (channels  :type     hash-table
-              :reader   %bag-channels
+              :reader   bag-%channels
               :initform (make-hash-table :test #'equal)
               :documentation
               "Stores a mapping of channel names to `channel'
-instances."))
+               instances."))
   (:default-initargs
    :direction (missing-required-initarg 'bag :direction)
    :backend   (missing-required-initarg 'bag :backend))
   (:documentation
    "Instances of this class represent a log file. A log file consists
-of named channels which can be retrieved using the `bag-channels' and
-`bag-channel' methods and modified using the `(setf bag-channel)'
-method."))
+    of named channels which can be retrieved using the `bag-channels'
+    and `bag-channel' methods and modified using the `(setf
+    bag-channel)' method."))
 
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
                                      &key)
-  (let+ (((&accessors-r/o (backend   %bag-backend)
-                          (transform bag-transform)
-                          (channels  %bag-channels)) instance)
+  (let+ (((&accessors-r/o (backend   bag-%backend)
+                          (transform bag-%transform)
+                          (channels  bag-%channels)) instance)
          ((&flet make-transform (name meta-data id)
             (%make-channel-transform instance name meta-data
                                      :id   id
@@ -57,18 +59,18 @@ method."))
 
 (defmethod close ((bag bag)
                   &key &allow-other-keys)
-  (close (%bag-backend bag)))
+  (close (bag-%backend bag)))
 
 (defmethod bag-location ((bag bag))
-  (rsbag.backend:backend-location (%bag-backend bag)))
+  (rsbag.backend:backend-location (bag-%backend bag)))
 
 (defmethod bag-channels ((bag bag))
-  (hash-table-values (%bag-channels bag)))
+  (hash-table-values (bag-%channels bag)))
 
 (defmethod bag-channel ((bag bag) (name string)
                         &key
                         (if-does-not-exist :error))
-  (or (gethash name (%bag-channels bag))
+  (or (gethash name (bag-%channels bag))
       (ecase if-does-not-exist
         (:error (error 'no-such-channel
                        :bag  bag
@@ -92,7 +94,7 @@ method."))
                                            bag name new-value
                                            :spec (bag-transform bag))))
   ;; If a channel named NAME already exists, apply IF-EXISTS policy.
-  (when-let ((channel (gethash name (%bag-channels bag))))
+  (when-let ((channel (gethash name (bag-%channels bag))))
     (ecase if-exists
       (:error     (error 'channel-exists
                          :bag     bag
@@ -102,32 +104,24 @@ method."))
   ;; If NEW-VALUE does not have a type, but TRANSFORM is non-nil,
   ;; augment the meta-data with TRANSFORM's type. Make a channel
   ;; instance and store it.
-  (let+ (((&accessors-r/o (channels %bag-channels)
-                          (backend  %bag-backend)) bag)
+  (let+ (((&accessors-r/o (channels bag-%channels)
+                          (backend  bag-%backend)) bag)
          (meta-data (if (and transform (not (getf new-value :type)))
                         (append (list :type (rsbag.transform:transform-name transform))
                                 new-value)
                         new-value))
          (channel   (%make-channel bag name meta-data transform)))
     (rsbag.backend:put-channel
-     backend (%channel-id channel) name meta-data)
+     backend (channel-%id channel) name meta-data)
     (setf (gethash name channels) channel)))
 
 (defmethod print-object ((object bag) stream)
   (let+ (((&accessors-r/o (location  bag-location)
                           (direction bag-direction)
-                          (channels  %bag-channels)) object)
-         (location/short (typecase location
-                           (pathname (format nil "~A.~A"
-                                             (pathname-name location)
-                                             (pathname-type location)))
-                           (t        location))))
+                          (channels  bag-%channels)) object))
     (print-unreadable-object (object stream :type t :identity t)
-      (format stream "~:[N/A~;~:*~S~] ~:[-~;r~]~:[-~;w~] (~D)"
-              location/short
-              (member direction '(:input :io))
-              (member direction '(:output :io))
-              (hash-table-count channels)))))
+      (format stream "~/rsbag:print-location/ ~/rsbag:print-direction/ (~D)"
+              location direction (hash-table-count channels)))))
 
 ;;; Time range protocol
 
@@ -147,7 +141,7 @@ method."))
 
 ;;;
 
-(defmethod %channel-class ((bag bag))
+(defmethod bag-channel-class ((bag bag))
   (find-class 'channel))
 
 (defmethod %make-channel ((bag       bag)
@@ -157,8 +151,8 @@ method."))
                           &rest args
                           &key
                           id)
-  (let+ (((&accessors-r/o (backend       %bag-backend)
-                          (channel-class %channel-class)) bag))
+  (let+ (((&accessors-r/o (backend       bag-%backend)
+                          (channel-class bag-channel-class)) bag))
     (with-condition-translation
         (((error channel-open-error)
           :bag     bag
@@ -180,25 +174,26 @@ method."))
                                     id
                                     spec)
   "Use SPEC and, optionally the :type entry of META-DATA to determine
-the appropriate transform for the channel designated by NAME.
+   the appropriate transform for the channel designated by NAME.
 
-SPEC can be of the following types:
+   SPEC can be of the following types:
 
-  `transform-spec/default'
+     `transform-spec/default'
 
-    Use the :type entry of META-DATA to determine the appropriate
-    transform.
+       Use the :type entry of META-DATA to determine the appropriate
+       transform.
 
-  `transform-spec/augment'
+     `transform-spec/augment'
 
-    Append to the :type entry of META-DATA the remainder of SPEC. This
-    will instantiate the transform class specified by the :type entry,
-    but append initargs given in SPEC.
+       Append to the :type entry of META-DATA the remainder of
+       SPEC. This will instantiate the transform class specified by
+       the :type entry, but append initargs given in SPEC.
 
-  `transform-spec/full'
+     `transform-spec/full'
 
-    Use the contents of SPEC as class name and initargs to instantiate
-    the transform class. Ignore :type entry of META-DATA."
+       Use the contents of SPEC as class name and initargs to
+       instantiate the transform class. Ignore :type entry of
+       META-DATA."
   (declare (ignore id))
 
   (with-condition-translation

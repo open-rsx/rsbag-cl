@@ -8,8 +8,8 @@
 
 (defconstant +format-version-major+ 0
   "Major version of the TIDE log file format supported by this
-backend.")
+   backend.")
 
 (defconstant +format-version-minor+ 0
   "Minor version of the TIDE log file format supported by this
-backend.")
+   backend.")

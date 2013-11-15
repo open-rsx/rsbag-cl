@@ -8,7 +8,7 @@
 
 (defun enable-restart-threadpool ()
   "Make sure that the rsbag threadpool is shutdown when saving a core
-and restarted when loading a core."
+   and restarted when loading a core."
   #+sbcl (progn
            (pushnew 'stop-threadpool  sb-ext:*save-hooks*)
            (pushnew 'start-threadpool sb-ext:*init-hooks*))

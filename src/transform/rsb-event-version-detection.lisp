@@ -8,13 +8,13 @@
 
 (defvar *serialization-versions* (list +rsb-schema-name+)
   "List of symbols designating RSB event serialization
-versions. Serializations are tried in the specified order until one
-succeeds.")
+   versions. Serializations are tried in the specified order until one
+   succeeds.")
 
 (defgeneric next-implementation! (transform)
   (:documentation
    "Instantiate and install the next candidate serialization
-implementation (if any) in TRANSFORM."))
+    implementation (if any) in TRANSFORM."))
 
 (defmethod make-transform ((spec (eql :|rsb-event|))
                            &rest args)
@@ -28,7 +28,7 @@ implementation (if any) in TRANSFORM."))
 (defmethod make-transform ((spec (eql :rsb-event))
                            &rest args)
   "Return an instance of `rsb-event/version-detection' which passes
-ARGS to candidate serialization implementations."
+   ARGS to candidate serialization implementations."
   (log:info "~@<Forced to use auto-detection of event serialization ~
              format; version ~S with arguments ~{~S~^, ~}.~@:>"
             spec args)
@@ -43,45 +43,47 @@ ARGS to candidate serialization implementations."
                    :type     list
                    :documentation
                    "Stores a list of candidate transformations that
-should be tried when encoding or decoding entries. Each candidate is
-of the form
+                    should be tried when encoding or decoding
+                    entries. Each candidate is of the form
 
-  (SPEC . ARGS)
+                      (SPEC . ARGS)
 
-where SPEC designates a serialization and ARGS is a list of arguments
-that is passed to the serialization during instantiation.")
+                    where SPEC designates a serialization and ARGS is
+                    a list of arguments that is passed to the
+                    serialization during instantiation.")
    (implementation :initarg  :implementation
-                   :accessor %transform-implementation
+                   :accessor transform-%implementation
                    :initform nil
                    :documentation
                    "Stores a transform instance which implements the
-serialization currently being tried or nil before the first instance
-has been constructed. The instance is replaced by the next candidate
-when it produces an error.")
-   (problems       :initarg  :problems
-                   :type     list
-                   :accessor %transform-problems
-                   :initform nil
+                    serialization currently being tried or nil before
+                    the first instance has been constructed. The
+                    instance is replaced by the next candidate when it
+                    produces an error.")
+   (problems       :type     list
+                   :accessor transform-%problems
+                   :initform '()
                    :documentation
                    "Stores a list of problems encountered when trying
-serialization versions. Elements are of the form
+                    serialization versions. Elements are of the form
 
-  (ACTION IMPLEMENTATION CONDITION)
+                      (ACTION IMPLEMENTATION CONDITION)
 
-where ACTION is one of the keywords :INSTANTIATE and :USE."))
+                    where ACTION is one of the keywords :INSTANTIATE
+                    and :USE."))
   (:default-initargs
    :candidates (missing-required-initarg
                 'rsb-event/version-detection :candidates))
   (:documentation
    "Instances of this transform class try to encode and decode events
-by dispatching the encoding or decoding task to a sequence of
-subsequent serialization implementations until one of those
-succeeds."))
+    by dispatching the encoding or decoding task to a sequence of
+    subsequent serialization implementations until one of those
+    succeeds."))
 
 (defmethod next-implementation! ((transform rsb-event/version-detection))
   (let+ (((&accessors (candidates     transform-candidates)
-                      (implementation %transform-implementation)
-                      (problems       %transform-problems))
+                      (implementation transform-%implementation)
+                      (problems       transform-%problems))
           transform))
     (tagbody
      :start
@@ -97,7 +99,7 @@ succeeds."))
              (setf implementation (apply #'make-transform candidate))))))))
 
 (defmethod transform-implementation ((transform rsb-event/version-detection))
-  (or (%transform-implementation transform)
+  (or (transform-%implementation transform)
       (next-implementation! transform)))
 
 (macrolet
@@ -105,7 +107,7 @@ succeeds."))
        `(defmethod ,name ((transform rsb-event/version-detection)
                           ,@args)
           (let+ (((&accessors (implementation transform-implementation)
-                              (problems       %transform-problems))
+                              (problems       transform-%problems))
                   transform))
             (tagbody
              :start

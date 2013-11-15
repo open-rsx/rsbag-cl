@@ -43,7 +43,7 @@
 (addtest (serialized-root
           :documentation
           "Test constructing `serialized' view instances using
-`make-serialized-view'.")
+           `make-serialized-view'.")
   construction
 
   (ensure-cases (sequences expected-length)
@@ -58,7 +58,7 @@
 (addtest (serialized-root
           :documentation
           "Test forward and backward iteration on a serialized view on
-multiple random sequences.")
+           multiple random sequences.")
   iterator
 
   (let+ (((&flet make-random-sequence ()

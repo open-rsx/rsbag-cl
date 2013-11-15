@@ -100,4 +100,4 @@
 
   (:documentation
    "This package contains protocol and implementation aids for file
-format backends for cl-rsbag."))
+    format backends for cl-rsbag."))

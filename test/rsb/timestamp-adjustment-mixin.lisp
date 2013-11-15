@@ -10,7 +10,7 @@
   ()
   (:documentation
    "Test suite for the `timestamp-adjustment-mixin' replay strategy
-class."))
+    class."))
 
 (addtest (timestamp-adjustment-mixin-root
           :documentation

@@ -192,13 +192,13 @@
 (defun %make-playback-uri (channel-name base-uri)
   "Return two values:
 
-1. An URI that is the result of merging CHANNEL-NAME and BASE-URI. In
-   the returned URI, normalize the path component of BASE-URI and
-   preserve query component of BASE-URI, if present.
+   1. An URI that is the result of merging CHANNEL-NAME and
+      BASE-URI. In the returned URI, normalize the path component of
+      BASE-URI and preserve query component of BASE-URI, if present.
 
-2. A `scope' or `nil' that is the prefix-`scope' implied by
-   BASE-URI. `nil' is returned when BASE-URI does not imply prefix
-   scope."
+   2. A `scope' or `nil' that is the prefix-`scope' implied by
+      BASE-URI. `nil' is returned when BASE-URI does not imply prefix
+      scope."
   (let ((base-uri (puri:copy-uri base-uri)))
     ;; If BASE-URI has a path, ensure it ends with "/" to prevent
     ;; `puri:merge-uri' from acting differently depending on whether
@@ -217,11 +217,11 @@
 
 (defun %make-scope-transform (scope type)
   "Return a transform object which adds SCOPE as a prefix scope to the
-scopes of transformed events if TYPE is of the form
+   scopes of transformed events if TYPE is of the form
 
-  (RSB-EVENT* WIRE-SCHEMA)
+     (RSB-EVENT* WIRE-SCHEMA)
 
-."
+   ."
   (when (and scope
              (typep type '(cons keyword))
              (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))

@@ -28,7 +28,10 @@
 
   (:documentation
    "This module contains functions and classes that implement
-views (as subclasses of `cl:sequence') on data stored in
-bags. Currently, the following views are available:
-+ serialized :: aggregate the data of multiple channels, serializing
-                items using their timestamps."))
+    views (as subclasses of `cl:sequence') on data stored in
+    bags. Currently, the following views are available:
+
+    serialized
+
+      aggregate the data of multiple channels, serializing items using
+      their timestamps."))

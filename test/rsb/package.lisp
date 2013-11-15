@@ -51,12 +51,12 @@
      &body
      cases)
   "Define a smoke test case for class CLASS in test suite `SUITE-NAME'
-with CASES. Each element of CASES has to be of the form
+   with CASES. Each element of CASES has to be of the form
 
-  (INITARGS EXPECTED)
+     (INITARGS EXPECTED)
 
-where EXPECTED is the list of entries the strategy should produce when
-applied to `simple-bag'."
+   where EXPECTED is the list of entries the strategy should produce
+   when applied to `simple-bag'."
   `(addtest (,suite-name
              :documentation
              ,(format nil "Smoke test for the `~(~A~)' replay strategy class."

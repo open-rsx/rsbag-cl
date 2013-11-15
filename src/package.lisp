@@ -91,8 +91,8 @@
    #:channel-meta-data
    #:channel-transform
 
-   #:%channel-id
-   #:%channel-backend
+   #:channel-%id
+   #:channel-%backend
 
    #:channel-timestamps
    #:channel-entries
@@ -107,6 +107,9 @@
 
   ;; Convenience macros
   (:export
+   #:call-with-open-bag
+   #:with-open-bag
+
    #:with-bag)
 
   ;; Package management macros
@@ -124,9 +127,14 @@
 
    #:with-threadpool)
 
+  ;; Print utilities
+  (:export
+   #:print-direction
+   #:print-location)
+
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.
 
-The client interface primarily consists of the `file' and `channel'
-classes. Conceptually, files consists of multiple named channels which
-in turned contain sequences of timestamped data items."))
+    The client interface primarily consists of the `bag' and `channel'
+    classes. Conceptually, bags consists of multiple named channels
+    which in turn contain sequences of timestamped data items."))
