@@ -39,10 +39,26 @@
 (defun octetify (&rest things)
   (labels ((one (thing)
              (etypecase thing
-               (keyword       (one (string thing)))
-               (string        (map 'nibbles:octet-vector #'char-code thing))
-               (sequence      (coerce thing 'nibbles:octet-vector))
-               (nibbles:octet (nibbles:octet-vector thing)))))
+               (nibbles:octet
+                (nibbles:octet-vector thing))
+               ((cons (eql :ub16le) (cons unsigned-byte null))
+                (let ((buffer (nibbles:make-octet-vector 2)))
+                  (setf (nibbles:ub16ref/le buffer 0) (second thing))
+                  buffer))
+               ((cons (eql :ub32le) (cons unsigned-byte null))
+                (let ((buffer (nibbles:make-octet-vector 4)))
+                  (setf (nibbles:ub32ref/le buffer 0) (second thing))
+                  buffer))
+               ((cons (eql :ub64le) (cons unsigned-byte null))
+                (let ((buffer (nibbles:make-octet-vector 8)))
+                  (setf (nibbles:ub64ref/le buffer 0) (second thing))
+                  buffer))
+               (keyword
+                (one (string thing)))
+               (string
+                (map 'nibbles:octet-vector #'char-code thing))
+               (sequence
+                (coerce thing 'nibbles:octet-vector)))))
     (apply #'concatenate 'nibbles:octet-vector (mapcar #'one things))))
 
 (defun octet-streamify (&rest things)

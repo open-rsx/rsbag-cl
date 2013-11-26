@@ -31,8 +31,21 @@
                  &optional start)
   (declare (ignore start))
 
-  ;; Consume the TIDE block.
-  (unpack source :block)
+  ;; Consume and check the TIDE block.
+  (let ((block (unpack source :block)))
+    (unless (typep block 'tide)
+      (error "~@<Starts with a ~A block instead of a ~A block~@:>"
+             (class-name (class-of block)) 'tide))
+    (let+ (((&accessors-r/o (major tide-version-major)
+                            (minor tide-version-minor)) block))
+      (log:info "~@<Read ~A block with version ~D.~D~@:>"
+                'tide major minor)
+      (unless (= +format-version-major+ major)
+        (cerror "Try to process the file anyway."
+                "~@<Cannot process format version ~D.~D (major version ~
+                 is different from ~D.~D)~@:>"
+                major minor +format-version-major+ +format-version-minor+))))
+
   ;; Scan through remaining blocks.
   (iter (while (listen source))
         (restart-case
@@ -108,8 +121,10 @@
                    &optional start)
   (declare (ignore start))
 
-  (let+ (((&values class length) (unpack source :block-header)))
-    (when (> (+ (file-position source) length) (file-length source))
+  (let+ (((&values class length) (unpack source :block-header))
+         (file-length (ignore-errors (file-length source)))) ; TODO cache this when we have the stream abstraction
+    (when (and file-length
+               (> (+ (file-position source) length) file-length))
       (cerror "Try to read the block anyway"
               "~@<Bounds [~/rsbag.backend:print-offset/, ~
                ~/rsbag.backend:print-offset/[ of ~A block would be ~
