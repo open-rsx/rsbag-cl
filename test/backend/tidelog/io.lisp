@@ -30,6 +30,43 @@
 
 (addtest (backend-tidelog-root
           :documentation
+          "Test restarts established by the `scan' method specialized
+           on the TIDE for dealing with corrupt files.")
+  scan/tide/restarts
+
+  (ensure-cases (input restarts expected)
+      `(;; Skip once.
+        ((,@(tide-block) ,@(valid-chnk-block) ,@+invalid-chnk-block+
+          ,@(valid-chnk-block))
+         (continue)
+         (() () ((0 . 22) (0 . 75)) nil))
+        ;; Skip once with garbage at end.
+        ((,@(tide-block) ,@(valid-chnk-block) ,@+invalid-chnk-block+
+          ,@(valid-chnk-block) :chnk (:ub64le 0))
+         (continue continue)
+         (() () ((0 . 22) (0 . 75)) nil))
+        ;; Skip twice.
+        ((,@(tide-block) ,@(valid-chnk-block) ,@+invalid-chnk-block+
+          ,@(valid-chnk-block) ,@+invalid-chnk-block+ ,@(valid-chnk-block))
+         (continue continue)
+         (() () ((0 . 22) (0 . 75) (0 . 128)) nil)))
+
+    (let+ ((stream (apply #'octet-streamify input))
+           ((&flet do-it ()
+              (multiple-value-prog1
+                  (handler-bind
+                      ((error (lambda (condition)
+                                (invoke-restart
+                                 (or (pop restarts)
+                                     (error "~@<No more restarts~@:>"))
+                                 condition))))
+                    (scan stream :tide))
+                (unless (null restarts)
+                  (error "~@<Leftover restarts: ~S~@:>" restarts))))))
+      (ensure-same (do-it) (values-list expected)))))
+
+(addtest (backend-tidelog-root
+          :documentation
           "Smoke test for the `byte-pattern->block-class' function.")
   byte-pattern->block-class/smoke
 

@@ -27,6 +27,7 @@
   (when start
     (file-position source start)))
 
+;; TODO do we have to regenerate indices when skip restart has been used?
 (defmethod scan ((source stream) (object (eql :tide))
                  &optional start)
   (declare (ignore start))
@@ -47,21 +48,47 @@
                 major minor +format-version-major+ +format-version-minor+))))
 
   ;; Scan through remaining blocks.
-  (iter (while (listen source))
-        (restart-case
-            (let+ (((&values offset block) (scan source :block)))
-              (typecase block
-                (chan    (collect block               :into channels))
-                (indx    (collect block               :into indices))
-                (integer (collect (cons block offset) :into chunks))))
-          (continue (&optional condition)
-            :report (lambda (stream)
-                      (format stream "~@<Ignore the remaining content ~
-                                      of ~A.~@:>"
-                              source))
-            (declare (ignore condition))
-            (return (values channels indices chunks))))
-        (finally (return (values channels indices chunks)))))
+  (function-calling-restart-bind
+      (((retry () retry)
+        :report (lambda (stream)
+                  (format stream "~@<Retry reading at the same ~
+                                  position in ~A.~@:>"
+                          source)))
+       ((continue (&optional condition) skip bail)
+        :report (lambda (stream)
+                  (format stream
+                          (if skip
+                              "~@<Skip ahead to the next undamaged ~
+                               block in ~A.~@:>"
+                              "~@<Do not scan the remainder of ~
+                               ~A.~@:>")
+                          source)))
+       ((abort (&optinal condition) bail)
+        :report (lambda (stream)
+                  (format stream "~@<Do not scan the remainder of ~
+                                  ~A.~@:>"
+                          source))))
+    (iter (with complete? = t)
+          (when (first-iteration-p)
+            (setf retry (lambda () (next-iteration))
+                  bail  (lambda (&optional condition)
+                          (declare (ignore condition))
+                          (return (values channels indices chunks complete?)))
+                  skip  (lambda (&optional condition)
+                          (declare (ignore condition))
+                          (let ((skip/old skip)) ; prevent recursion
+                            (setf skip      nil
+                                  complete? nil)
+                            (find-next-block source)
+                            (setf skip skip/old))
+                          (next-iteration))))
+          (while (listen source))
+          (let+ (((&values offset block) (scan source :block)))
+            (typecase block
+              (chan    (collect block               :into channels))
+              (indx    (collect block               :into indices))
+              (integer (collect (cons block offset) :into chunks))))
+          (finally (return (values channels indices chunks complete?))))))
 
 (defmethod scan ((source stream) (object (eql :block))
                  &optional start)
@@ -77,7 +104,7 @@
                 (allocate-instance class)))
        (chnk
         (prog1
-            (nibbles:read-ub32/le source)
+            (nibbles:read-ub32/le source) ; CHNK id
           (file-position source (+ (file-position source) (- length 4)))))
        (t
         (file-position source (+ (file-position source) length)))))))

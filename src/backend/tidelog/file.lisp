@@ -63,7 +63,7 @@
                       (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
                       (next-chunk-id   file-%next-chunk-id)) instance)
-         ((&values chans indxs chnks)
+         ((&values chans indxs chnks complete?)
           (when (member direction '(:input :io))
             (scan stream :tide))))
 
@@ -80,7 +80,7 @@
     (setf (chnk-chunk-id buffer) next-chunk-id)
 
     ;; Verify presence of indices.
-    (when (and (not (emptyp chnks)) (emptyp indxs))
+    (unless (and complete? (or (emptyp chnks) (not (emptyp indxs))))
       (restart-case
           ;; The `progn' prevents our restarts from being only
           ;; applicable to the specific condition signaled here. See
