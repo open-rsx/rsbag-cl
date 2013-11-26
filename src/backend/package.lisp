@@ -98,7 +98,7 @@
 
   ;; Utilities
   (:export
-   :print-offset)
+   #:print-offset)
 
   (:documentation
    "This package contains protocol and implementation aids for file

@@ -14,15 +14,16 @@
     :var           condition
     :cause-initarg nil)
    :source           source
-   :format-control   "~@<Failed to scan for block ~A~@[ at position ~:D~]: ~A~@:>"
-   :format-arguments (list object
+   :format-control   "~@<Failed to ~A for block ~A~@[ at position ~
+                      ~/rsbag.backend:print-offset/~]: ~A~@:>"
+   :format-arguments (list 'scan object
                            (when (streamp source)
                              (file-position source))
                            condition)))
 
 (defmethod scan :before ((source stream) (object t)
                          &optional start)
-  "Seek to position START before starting to scan."
+  ;; Seek to position START before starting to scan.
   (when start
     (file-position source start)))
 
@@ -76,16 +77,16 @@
   (((and error (not tidelog-condition)) invalid-tidelog-structure
     :var condition)
    :source           source
-   :format-control   "~@<Failed to unpack block ~A~@[ at position ~
+   :format-control   "~@<Failed to ~A block ~A~@[ at position ~
                       ~/rsbag.backend:print-offset/~]: ~A~@:>"
-   :format-arguments (list object
+   :format-arguments (list 'unpack object
                            (when (streamp source)
                              (file-position source))
                            (format nil "~A" condition))))
 
 (defmethod unpack :before ((source stream) (object t)
                            &optional start)
-  "Seek to position START before unpacking into OBJECT."
+  ;; Seek to position START before unpacking into OBJECT.
   (when start
     (file-position source start)))
 
@@ -117,10 +118,10 @@
          (class (find-class name)))
     (when (> (+ (file-position source) length) (file-length source))
       (cerror "Try to read the block anyway"
-              "~@<Bounds [~/rsbag.backend::print-offset/, ~
-               ~/rsbag.backend::print-offset/[ of ~S block would be ~
-               outside bounds [~/rsbag.backend::print-offset/, ~
-               ~/rsbag.backend::print-offset/[ of ~A.~@:>"
+              "~@<Bounds [~/rsbag.backend:print-offset/, ~
+               ~/rsbag.backend:print-offset/[ of ~A block would be ~
+               outside bounds [~/rsbag.backend:print-offset/, ~
+               ~/rsbag.backend:print-offset/[ of ~A.~@:>"
               (file-position source) (+ (file-position source) length)
               name
               0 (file-length source) source))

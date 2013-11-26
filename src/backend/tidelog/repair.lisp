@@ -13,6 +13,8 @@
      (ID . OFFSET)
 
    . Return a list of corresponding `indx' instances."
+  (log:info "~@<Reconstructing indices for ~:D chunk~:P in ~A~@:>"
+            (length chunks) stream)
   (let+ ((indices (make-hash-table))
          ((&flet add-to-index (id entry)
             (push entry (gethash id indices))))
