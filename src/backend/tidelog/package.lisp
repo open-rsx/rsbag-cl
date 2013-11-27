@@ -27,6 +27,17 @@
    #:no-such-block-class-error
    #:no-such-block-class-error-tag)
 
+  ;; Block IO protocol
+  (:export
+   #:tag
+
+   #:size
+
+   #:scan
+
+   #:unpack
+   #:pack)
+
   (:documentation
    "This package contains a backend for the TIDE log file format as
     specified at https://retf.info/svn/drafts/rd-0001.txt.

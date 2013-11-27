@@ -24,33 +24,23 @@
   :depends-on  ((:version :cl-rsbag #.(cl-rsbag-system:version/string)))
   :components  ((:module     "tidelog"
                  :pathname   "src/backend/tidelog"
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "variables"
-                               :depends-on ("package"))
-                              (:file       "conditions"
-                               :depends-on ("package" "variables"))
-                              (:file       "util"
-                               :depends-on ("package"))
+                              (:file       "variables")
+                              (:file       "conditions")
+                              (:file       "protocol")
+                              (:file       "util")
 
-                              (:file       "generator"
-                               :depends-on ("package"))
-                              (:file       "macros"
-                               :depends-on ("package" "generator"))
+                              (:file       "generator")
+                              (:file       "macros")
 
-                              (:file       "spec"
-                               :depends-on ("package" "macros"))
-                              (:file       "io"
-                               :depends-on ("package" "conditions"
-                                                      "util" "spec"))
+                              (:file       "spec")
+                              (:file       "io")
 
-                              (:file       "index"
-                               :depends-on ("package" "spec" "io"))
-                              (:file       "file"
-                               :depends-on ("package" "variables"
-                                                      "spec" "io"))
+                              (:file       "index")
+                              (:file       "file")
 
-                              (:file       "repair"
-                               :depends-on ("package" "spec" "io")))))
+                              (:file       "repair"))))
 
   :in-order-to ((test-op (test-op :rsbag-tidelog-test))))
 

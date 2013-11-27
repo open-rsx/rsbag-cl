@@ -26,11 +26,8 @@
    #:+format-version-major+
    #:+format-version-minor+
 
-   #:scan ; TODO remove when exported
-
    #:indx-channel-id
-   #:indx-count
-   )
+   #:indx-count)
 
   (:export
    #:backend-tidelog-root)
