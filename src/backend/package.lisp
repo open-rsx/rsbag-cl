@@ -45,7 +45,9 @@
   (:export
    #:no-such-backend-class
    #:find-backend-class
-   #:backend-classes)
+   #:backend-classes
+
+   #:make-backend)
 
   ;; `stream-mixin' class
   (:export

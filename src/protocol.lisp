@@ -87,8 +87,7 @@
     (incompatible-arguments :direction      direction
                             :flush-strategy flush-strategy))
 
-  (let ((backend (apply #'make-instance
-                        (rsbag.backend:find-backend-class backend)
+  (let ((backend (apply #'rsbag.backend:make-backend backend
                         :stream    source
                         :location  location
                         :direction direction
