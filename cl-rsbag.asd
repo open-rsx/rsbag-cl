@@ -271,19 +271,15 @@
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
-  :depends-on  ((:version :cl-rsbag      #.(version/string))
-                ;; TODO temp
-                (:version :rsbag-tidelog #.(version/string))
+  :depends-on  ((:version :cl-rsbag #.(version/string))
 
-                (:version :lift          "1.7.1"))
+                (:version :lift     "1.7.1"))
   :components  ((:module     "test"
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol"
-                               :depends-on ("package"))
-                              (:file       "bag"
-                               :depends-on ("package"))
-                              (:file       "mock-backend"
-                               :depends-on ("package"))))
+                              (:file       "mock-backend")
+                              (:file       "protocol")
+                              (:file       "bag")))
 
                 (:module     "backend"
                  :pathname   "test/backend"
