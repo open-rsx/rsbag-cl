@@ -43,7 +43,6 @@
 ;;; Class generator
 
 (defun accessor-name (class-name field-name)
-  "TODO(jmoringe): document"
   (symbolicate class-name "-" (case field-name
                                 (&data '#:data)
                                 (t     field-name))))

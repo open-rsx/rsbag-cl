@@ -23,7 +23,7 @@
 
 (defmethod scan :before ((source stream) (object t)
                          &optional start)
-  "Seek to position START before starting to scan."
+  ;; Seek to position START before starting to scan.
   (when start
     (file-position source start)))
 
@@ -60,17 +60,16 @@
    :format-arguments (list object
                            (when (streamp source)
                              (file-position source))
-                           (format nil "~A" condition))))
+                           condition)))
 
 (defmethod unpack :before ((source stream) (object t)
                            &optional start)
-  "Seek to position START before unpacking into OBJECT."
+  ;; Seek to position START before unpacking into OBJECT.
   (when start
     (file-position source start)))
 
 (defmethod unpack ((source stream) (object (eql :record))
                    &optional start)
-  "Seek to position START before unpacking into OBJECT."
   (declare (ignore start))
   (let* ((header-length (read-ub32/le source))
          (header-buffer (let ((buffer (make-octet-vector (+ 4 header-length))))
