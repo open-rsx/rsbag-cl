@@ -34,6 +34,7 @@
                  :pathname   "src/backend/rosbag"
                  :serial     t
                  :components ((:file       "package")
+                              (:file       "variables")
                               (:file       "conditions")
                               (:file       "generator")
                               (:file       "macros")

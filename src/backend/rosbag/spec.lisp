@@ -13,25 +13,6 @@
 
 (cl:in-package #:rsbag.backend.rosbag)
 
-;;; Record class registry
-
-(defvar *record-classes* (make-hash-table)
-  "Maps record opcodes to record class names.")
-
-(defun find-record-class (opcode)
-  (or (gethash opcode *record-classes*)
-      (error "~@<No record class for opcode ~D.~@:>" opcode)))
-
-(defun (setf find-record-class) (new-value opcode)
-  (setf (gethash opcode *record-classes*) new-value))
-
-;;;
-
-(defvar +header/2.0+ (concatenate
-                      'simple-octet-vector
-                      (map 'list #'char-code "#ROSBAG V2.0") '(10))
-  "TODO(jmoringe): document")
-
 ;;; Record definitions
 
 (define-record (bag-header :opcode #x03)
