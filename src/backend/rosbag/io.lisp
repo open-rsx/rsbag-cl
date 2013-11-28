@@ -14,9 +14,9 @@
     :var           condition
     :cause-initarg nil)
    :source           source
-   :format-control   "~@<Failed to scan for record ~A~@[ at position ~
-                      ~:D~]: ~A~@:>"
-   :format-arguments (list object
+   :format-control   "~@<Failed to ~A for record ~A~@[ at position ~
+                      ~/rsbag.backend:print-offset/~]: ~A~@:>"
+   :format-arguments (list 'scan object
                            (when (streamp source)
                              (file-position source))
                            condition)))
@@ -38,11 +38,16 @@
              source (+ start consumed)))
     (when (not (equalp buffer +header/2.0+))
       (cerror "Try to process the data anyway."
-              "~@<Encountered ~S instead of header (~S).~@:>"
-              (make-safe-string buffer) (make-safe-string +header/2.0+))))
+              "~@<Encountered~@:_~
+               ~<| ~@;~/rsbag:print-hexdump/~:>~@:_
+               instead of header~@:_
+               ~<| ~@;~/rsbag:print-hexdump/~:>~@:>"
+              (list buffer) (list +header/2.0+))))
 
   ;; Read header.
-  (unpack source :record)
+  (let ((header (unpack source :record)))
+    ;; TODO do something with header?
+    )
 
   ;; TODO Scan through remaining records.?
   #+no (iter (while (listen source))
@@ -56,7 +61,7 @@
     :var condition)
    :source           source
    :format-control   "~@<Failed to unpack record ~A~@[ at position ~
-                      ~:D~]: ~A~@:>"
+                      ~/rsbag.backend:print-offset/~]: ~A~@:>"
    :format-arguments (list object
                            (when (streamp source)
                              (file-position source))
