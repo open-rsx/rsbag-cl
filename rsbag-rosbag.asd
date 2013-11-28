@@ -36,6 +36,7 @@
                  :components ((:file       "package")
                               (:file       "variables")
                               (:file       "conditions")
+                              (:file       "protocol")
                               (:file       "generator")
                               (:file       "macros")
                               (:file       "spec")
