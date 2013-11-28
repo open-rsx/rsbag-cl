@@ -9,25 +9,38 @@
 ;;; Multiple bag sources
 
 ;;; Relies on string-specialized method.
-(defmethod bag->events ((source sequence) (dest t) &rest args &key)
-  (unless (length= 1 source)
-    (error "~@<~S cannot be applied to ~S: more than one source is not ~
-            currently supported.~@:>"
-           'bag->events source))
-  (apply #'bag->events (first-elt source) dest args))
+(defmethod bag->events ((source sequence) (dest t)
+                        &rest args &key
+                        (replay-strategy :recorded-timing))
+  (when (length= 1 source)
+    (return-from bag->events
+      (apply #'bag->events (first-elt source) dest args)))
+
+  (let* ((connections (map 'list (apply #'rcurry #'bag->events dest
+                                        :connection-class 'bag-connection
+                                        (remove-from-plist args :replay-strategy))
+                           source))
+         (other-args  (remove-from-plist
+                       args :backend :transform :bag-class
+                       :error-policy :replay-strategy :channels))
+         (strategy    (apply #'make-strategy replay-strategy other-args)))
+    (make-instance 'replay-multi-bag-connection
+                   :connections connections
+                   :strategy    strategy)))
 
 ;;; Bag source
 
-(defmethod bag->events ((source bag)
-                        (dest   t)
-                        &rest args
-                        &key
-                        (error-policy    nil error-policy-supplied?)
-                        (replay-strategy :recorded-timing)
-                        (channels        t)
-                        (backend         nil backend-supplied?)
-                        (transform       nil transform-supplied?)
-                        (bag-class       nil bag-class-supplied?))
+(defmethod bag->events
+    ((source bag) (dest t)
+     &rest args
+     &key
+     (connection-class 'replay-bag-connection)
+     (error-policy      nil                   error-policy-supplied?)
+     (replay-strategy   :recorded-timing      replay-strategy-supplied?)
+     (channels          t)
+     (backend           nil                   backend-supplied?)
+     (transform         nil                   transform-supplied?)
+     (bag-class         nil                   bag-class-supplied?))
   (let+ (((&flet check-arg (name value supplied?)
             (when supplied?
               (incompatible-arguments 'source source name value)))))
@@ -38,17 +51,21 @@
   (let+ ((predicate  (if (eq channels t) (constantly t) channels))
          (channels   (remove-if-not predicate (bag-channels source)))
          (other-args (remove-from-plist
-                      args :error-policy :replay-strategy :channels))
+                      args :connection-class :error-policy :replay-strategy
+                           :channels))
          ((&flet do-channel (channel)
             (apply #'bag->events channel dest other-args)))
          (connections (map 'list #'do-channel channels))
-         (strategy (apply #'make-strategy replay-strategy other-args)))
-    (apply #'make-instance 'replay-bag-connection
+         (strategy    (when (or replay-strategy-supplied?
+                                (eq connection-class 'replay-bag-connection))
+                        (apply #'make-strategy replay-strategy other-args))))
+    (apply #'make-instance connection-class
            :bag         source
            :connections connections
-           :strategy    strategy
-           (when error-policy-supplied?
-             (list :error-policy error-policy)))))
+           (append (when strategy
+                     (list :strategy strategy))
+                   (when error-policy-supplied?
+                     (list :error-policy error-policy))))))
 
 (defmethod bag->events ((source channel)
                         (dest   puri:uri)

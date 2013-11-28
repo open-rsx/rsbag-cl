@@ -133,7 +133,15 @@
         ;; These are valid.
         (,(rsbag.test:simple-bag)    (:replay-strategy :as-fast-as-possible))
         ((,(rsbag.test:simple-bag))  (:replay-strategy :as-fast-as-possible))
-        (#(,(rsbag.test:simple-bag)) (:replay-strategy :as-fast-as-possible)))
+        (#(,(rsbag.test:simple-bag)) (:replay-strategy :as-fast-as-possible))
+
+        ;; Multiple sources
+        ((,(rsbag.test:simple-bag)
+          ,(rsbag.test:simple-bag))
+                                     (:replay-strategy :as-fast-as-possible))
+        (#(,(rsbag.test:simple-bag)
+           ,(rsbag.test:simple-bag))
+                                     (:replay-strategy :as-fast-as-possible)))
 
     (let+ (((&flet do-it ()
               (collecting-events (record)
@@ -156,7 +164,10 @@
         (t
          (ensure-same
           (length (do-it))
-          (reduce #'+ (bag-channels (rsbag.test:simple-bag))
+          (reduce #'+ (mappend #'bag-channels
+                               (if (typep source 'sequence)
+                                   (coerce source 'list)
+                                   (list source)))
                   :key #'length)))))))
 
 (addtest (bag->events-root

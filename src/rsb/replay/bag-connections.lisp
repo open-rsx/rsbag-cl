@@ -33,3 +33,13 @@
   (:documentation
    "Associates a replay strategy, a source bag and sinks to
     collaboratively replay events."))
+
+;;; `replay-multi-bag-connection' class
+
+(defclass replay-multi-bag-connection (composite-connection-mixin
+                                       rsb.ep:error-policy-mixin
+                                       replay-connection-mixin)
+  ()
+  (:documentation
+   "Associates a replay strategy, multiple source bags and sinks to
+    collaboratively replay events."))
