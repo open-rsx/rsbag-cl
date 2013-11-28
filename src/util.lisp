@@ -99,6 +99,54 @@
 
 (define-plist-data-mixin meta-data)
 
+;;; Error handling utilities
+
+(defmacro function-calling-restart-bind (clauses &body body)
+  "Execute BODY with established restarts according to CLAUSES.
+
+   Each element of clauses is of the form
+
+     ((NAME &rest VARIABLES) &key REPORT)
+
+   where
+
+     NAME is the name of the restart that should be established
+
+     VARIABLES is a list of variables names which are initially bound
+     to nil but can be set to functions of one parameter - a condition
+     instance - in BODY which implement the behavior of the restart.
+
+     The keyword parameter REPORT works like :report-function in
+     `cl:restart-case'.
+
+   Restarts are only active if one of their VARIABLES in non-nil. When
+   such a restart is invoked, the first non-nil variable among its
+   VARIABLES is called as function with the condition as its sole
+   argument to implement the behavior of the restart.
+
+   Example:
+
+     (control-transferring-restart-bind
+       (((continue skip)
+         :report (lambda (stream) (format stream \"Skip the element\"))))
+       (iter (when (first-iteration-p)
+               (setf skip (lambda () (next-iteration))))
+             DO-SOMETHING)) "
+  (let+ ((all-variables '())
+         ((&flet+ process-clause (((name &rest variables) &key report))
+            (mapc (lambda (var) (pushnew var all-variables)) variables)
+            `(,name (lambda (&optional condition)
+                      (declare (ignore condition))
+                      (funcall (or ,@variables)))
+                    :test-function (lambda (condition)
+                                     (declare (ignore condition))
+                                     (or ,@variables))
+                    ,@(when report
+                        `(:report-function ,report)))))
+         (clauses (mapcar #'process-clause clauses)))
+    `(let ,all-variables
+       (restart-bind ,clauses ,@body))))
+
 ;;; Printing utilities
 
 (defun print-direction (stream direction &optional colon? at?)

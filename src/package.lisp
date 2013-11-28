@@ -127,6 +127,10 @@
 
    #:with-threadpool)
 
+  ;; Error handling utilities
+  (:export
+   #:function-calling-restart-bind)
+
   ;; Print utilities
   (:export
    #:print-direction
