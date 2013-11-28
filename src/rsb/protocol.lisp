@@ -166,6 +166,12 @@
     arguments: progress ratio, current index, start index, end index
     and current timestamp."))
 
+(define-condition-translating-method replay ((connection t) (strategy t)
+                                             &key &allow-other-keys)
+  ((error event-retrieval-failed)
+   :connection connection
+   :strategy   strategy))
+
 ;;; View creation protocol
 
 (defgeneric make-view (connection strategy)

@@ -31,33 +31,23 @@
    "This mixin class add the establishing of continue and log restarts
     around the actual work of the `replay' method."))
 
+(defvar *skip* nil)
+
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   replay-restart-mixin)
                            &key &allow-other-keys)
-  (handler-bind
-      ((error (lambda (condition)
-                (restart-case
-                    (error 'event-retrieval-failed
-                           :connection connection
-                           :strategy   strategy
-                           :cause      condition)
-                  (continue (&optional condition)
-                    :report (lambda (stream)
-                              (format stream "~@<Ignore the failed ~
-                                              event and continue ~
-                                              with the next ~
-                                              event.~@:>"))
-                    (declare (ignore condition))
-                    (use-value :skip))
-                  (log (&optional condition)
-                    :report (lambda (stream)
-                              (format stream "~@<Log an error ~
-                                              message and continue ~
-                                              with the next ~
-                                              event.~@:>"))
-                    (log:error "~@<Failed to retrieve an event for replay: ~A~@:>"
-                               condition)
-                    (use-value :skip))))))
+  (function-calling-restart-bind
+      (((continue *skip* bail)
+        :report (lambda (stream)
+                  (format stream
+                          (if *skip*
+                              "~@<Ignore the failed event and ~
+                                 continue with the next event.~@:>"
+                              "~@<Stop replaying~@:>"))))
+       ((abort bail)
+        :report (lambda (stream)
+                  (format stream "~@<Stop replaying~@:>"))))
+    (setf bail (lambda () (return-from replay)))
     (call-next-method)))
 
 ;;; `bounds-mixin' mixin class
@@ -282,7 +272,9 @@
          (update-progress (%make-progress-reporter sequence progress)))
     (macrolet
         ((do-it (&optional end-index)
-           `(iter (for (timestamp event sink) each sequence
+           `(iter (when (first-iteration-p)
+                    (setf *skip* (lambda () (next-iteration))))
+                  (for (timestamp event sink) each sequence
                        :from start-index
                        ,@(when end-index '(:below end-index)))
                   (for previous-timestamp previous timestamp)
@@ -295,16 +287,6 @@
       (if end-index
           (do-it end-index)
           (do-it)))))
-
-(defmethod process-event ((connection         replay-bag-connection)
-                          (strategy           sequential-mixin)
-                          (timestamp          t)
-                          (previous-timestamp t)
-                          (event              (eql :skip))
-                          (sink               t))
-  "Error recovery behaviors may inject the value :skip for EVENT. The
-   default behavior is just ignoring the failed event. "
-  (values))
 
 (defmethod process-event ((connection         replay-bag-connection)
                           (strategy           sequential-mixin)
@@ -652,6 +634,8 @@
                          :terminate #'terminate))
 
     (iter (until terminate?)
+          (when (first-iteration-p)
+            (setf *skip* (lambda () (next-iteration))))
           (for command next (next-command strategy))
           (execute-command strategy command)
           (when update-progress
