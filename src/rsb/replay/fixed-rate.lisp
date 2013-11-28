@@ -16,8 +16,7 @@
                       delay-correcting-mixin
                       speed-adjustment-mixin
                       timestamp-adjustment-mixin)
-  ((delay :initarg  :delay
-          :type     positive-real
+  ((delay :type     positive-real
           :accessor strategy-delay
           :initform .1
           :documentation
@@ -30,20 +29,26 @@
 (defmethod shared-initialize :before ((instance   fixed-rate)
                                       (slot-names t)
                                       &key
-                                      delay
-                                      rate)
+                                      (delay nil delay-supplied?)
+                                      (rate  nil rate-supplied?))
   (cond
-    ((and (null delay) (null rate))
+    ((and (not delay-supplied?) (not rate-supplied?))
      (missing-required-initarg 'fixed-rate :delay-xor-rate))
-    ((and delay rate)
+    ((and delay-supplied? rate-supplied?)
      (incompatible-initargs 'fixed-rate :delay delay :rate rate))))
 
 (defmethod shared-initialize :after ((instance   fixed-rate)
                                      (slot-names t)
                                      &key
-                                     rate)
-  (when rate
-    (setf (strategy-rate instance) rate)))
+                                     (delay nil delay-supplied?)
+                                     (rate  nil rate-supplied?))
+  (cond
+    (delay-supplied? (setf (strategy-delay instance) delay))
+    (rate-supplied?  (setf (strategy-rate instance) rate))))
+
+(defmethod (setf strategy-delay) :before ((new-value real)
+                                          (strategy  fixed-rate))
+  (check-type new-value positive-real "a positive real number"))
 
 (defmethod strategy-rate ((strategy fixed-rate))
   (/ (strategy-delay strategy)))
