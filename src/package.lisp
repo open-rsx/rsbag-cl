@@ -130,7 +130,9 @@
   ;; Print utilities
   (:export
    #:print-direction
-   #:print-location)
+   #:print-location
+
+   #:print-hexdump)
 
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.

@@ -97,12 +97,11 @@
     (declare (dynamic-extent header))
     (handler-bind
         ((error (lambda (condition)
-                  (error "~@<Could not decode header~_~2T~{~2,'0X~^ ~
-                          ~} ~_at stream position ~
-                          ~/rsbag.backend::print-offset/: ~A.~@:>"
-                         (coerce header 'list)
-                         (file-position source)
-                         condition))))
+                  (error "~@<Could not decode header~:@_~
+                          ~<| ~/rsbag:print-hexdump/~:>~:@_~
+                          at stream position ~
+                          ~/rsbag.backend:print-offset/: ~A.~@:>"
+                         (list header) (file-position source) condition))))
       (values (sb-ext:octets-to-string header
                                        :external-format :ascii
                                        :start           0
