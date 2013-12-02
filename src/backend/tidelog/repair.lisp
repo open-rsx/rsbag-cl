@@ -53,6 +53,7 @@
                            (declare (ignore condition))
                            (return))))
             (for (id . offset) each chunks :with-index i)
+            #+sbcl (for offset/previous previous offset)
             (let+ ((chunk (unpack stream :block offset))
                    ((&accessors-r/o (chunk-id chnk-chunk-id)) chunk))
               (iter (for entry each (chnk-entries chunk) :with-index j)
@@ -67,7 +68,9 @@
                                                    :chunk-id  chunk-id
                                                    :offset    offset1))
                       (incf offset1 (+ 16 size)))))
-            #+sbcl (sb-ext:gc :full t)))
+            #+sbcl (when (and offset/previous
+                              (> (- offset offset/previous) (ash 1 23)))
+                     (sb-ext:gc :full t))))
     ;; Convert temporary index lists into `indx' instances.
     (mapcar #'make-index (hash-table-alist indices))))
 
