@@ -37,11 +37,12 @@
                        (type  (eql 'annotation/list))
                        &key &allow-other-keys)
   (xloc:with-locations-r/o
-      (((:@ (start "TIME_SLOT_REF1")) ".")
-       ((:@ (end   "TIME_SLOT_REF2")) ".")
-       (associated-value              "ANNOTATION_VALUE/text()"))
+      (((:@ (id    "ANNOTATION_ID"))  "ALIGNABLE_ANNOTATION")
+       ((:@ (start "TIME_SLOT_REF1")) "ALIGNABLE_ANNOTATION")
+       ((:@ (end   "TIME_SLOT_REF2")) "ALIGNABLE_ANNOTATION")
+       (associated-value              "ALIGNABLE_ANNOTATION/ANNOTATION_VALUE/text()"))
       value
-    (list start end associated-value)))
+    (list id start end associated-value)))
 
 (defmethod xloc:->xml ((value list)
                        (dest  stp:element)
@@ -50,11 +51,12 @@
   (check-type value annotation/list)
 
   (xloc:with-locations
-      (((:@ (start "TIME_SLOT_REF1")) ".")
-       ((:@ (end   "TIME_SLOT_REF2")) ".")
-       (associated-value              "ANNOTATION_VALUE/text()"))
+      (((:@ (id    "ANNOTATION_ID"))  "ALIGNABLE_ANNOTATION")
+       ((:@ (start "TIME_SLOT_REF1")) "ALIGNABLE_ANNOTATION")
+       ((:@ (end   "TIME_SLOT_REF2")) "ALIGNABLE_ANNOTATION")
+       (associated-value              "ALIGNABLE_ANNOTATION/ANNOTATION_VALUE/text()"))
       dest
-    (multiple-value-setq (start end associated-value)
+    (multiple-value-setq (id start end associated-value)
       (values-list value)))
   value)
 
@@ -64,9 +66,8 @@
                        (type  (eql 'tier/list))
                        &key &allow-other-keys)
   (xloc:with-locations-r/o
-      (((:@   (id "TIER_ID")) ".")
-       ((:val annotations :type 'annotation/list)
-        "ANNOTATION/ALIGNABLE_ANNOTATION"
+      (((:@   (id "TIER_ID"))                     ".")
+       ((:val annotations :type 'annotation/list) "ANNOTATION"
         :if-multiple-matches :all))
       value
     (list id annotations)))
@@ -78,9 +79,8 @@
   (check-type value tier/list)
 
   (xloc:with-locations
-      (((:@   (id "TIER_ID")) ".")
-       ((:val annotations :type 'annotation/list)
-        "ANNOTATION/ALIGNABLE_ANNOTATION"
+      (((:@   (id "TIER_ID"))                     ".")
+       ((:val annotations :type 'annotation/list) "ANNOTATION"
         :assign-mode :append))
       dest
 

@@ -22,11 +22,11 @@
 (deftype annotation/list ()
   "A list of the form
 
-     (START-TIME-SLOT END-TIME-SLOT DATUM)
+     (ID START-TIME-SLOT END-TIME-SLOT DATUM)
 
    to be interpreted as an annotation consisting of two time slot
    string ids and an associated string datum."
-  '(cons string (cons string (cons string null))))
+  '(cons string (cons string (cons string (cons string null)))))
 
 (deftype tier/list ()
   "A list of the form
