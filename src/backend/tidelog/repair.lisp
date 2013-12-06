@@ -30,28 +30,40 @@
              :entries    (coerce (nreverse entries) 'vector)))))
     ;; For each chunk, visit all its entries and add them to the
     ;; temporary index lists.
-    (iter (for (id . offset) each chunks :with-index i)
-          (restart-case
-              (let+ ((chunk (unpack stream :block offset))
-                     ((&accessors-r/o (chunk-id chnk-chunk-id)) chunk))
-                (iter (for entry each (chnk-entries chunk) :with-index j)
-                      (with offset1 = 0)
-                      (let+ (((&accessors-r/o
-                               (channed-id chunk-entry-channel-id)
-                               (timestamp  chunk-entry-timestamp)
-                               (size       chunk-entry-size)) entry))
-                        (add-to-index channed-id
-                                      (make-instance 'index-entry
-                                                     :timestamp timestamp
-                                                     :chunk-id  chunk-id
-                                                     :offset    offset1))
-                        (incf offset1 (+ 16 size)))))
-            (continue (&optional condition)
-              :report (lambda (stream)
-                        (format stream "~@<Ignore remaining chunks.~@:>"))
-              (declare (ignore condition))
-              (return)))
-          #+sbcl (sb-ext:gc :full t))
+    (function-calling-restart-bind
+        (((continue skip bail)
+          :report (lambda (stream1)
+                    (format stream1
+                            (if skip
+                                "~@<Skip ahead to the next undamaged ~
+                                 block in ~A.~@:>"
+                                "~@<Do not process the remainder of ~
+                                 ~A.~@:>")
+                            stream)))
+         ((abort bail)
+          :report (lambda (stream1)
+                    (format stream1 "~@<Do not process the remainder ~
+                                     of ~A.~@:>"
+                            stream))))
+      (iter (when (first-iteration-p)
+              (setf skip (lambda () (next-iteration))
+                    bail (lambda () (return))))
+            (for (id . offset) each chunks :with-index i)
+            (let+ ((chunk (unpack stream :block offset))
+                   ((&accessors-r/o (chunk-id chnk-chunk-id)) chunk))
+              (iter (for entry each (chnk-entries chunk) :with-index j)
+                    (with offset1 = 0)
+                    (let+ (((&accessors-r/o
+                             (channel-id chunk-entry-channel-id)
+                             (timestamp  chunk-entry-timestamp)
+                             (size       chunk-entry-size)) entry))
+                      (add-to-index channel-id
+                                    (make-instance 'index-entry
+                                                   :timestamp timestamp
+                                                   :chunk-id  chunk-id
+                                                   :offset    offset1))
+                      (incf offset1 (+ 16 size)))))
+            #+sbcl (sb-ext:gc :full t)))
     ;; Convert temporary index lists into `indx' instances.
     (mapcar #'make-index (hash-table-alist indices))))
 
