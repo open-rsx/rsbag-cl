@@ -117,9 +117,10 @@
                                (list (resolve start) (resolve end) datum))
                        content))))))
 
-(defmethod close ((file file)
-                  &key &allow-other-keys)
+(defmethod close ((file file) &key abort)
   "TODO(jmoringe): document"
+  (declare (ignore abort))
+
   (when (member (backend-direction file) '(:output :io))
     (let+ (((&accessors-r/o (stream   backend-stream)
                             (document file-%document)
