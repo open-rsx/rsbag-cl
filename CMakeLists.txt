@@ -146,6 +146,7 @@ endfunction()
 
 test(test         ${SYSTEM_NAME})
 test(test-tidelog rsbag-tidelog)
+test(test-elan    rsbag-elan)
 
 # Installation
 file(GLOB ASD_FILES

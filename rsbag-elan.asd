@@ -33,4 +33,28 @@
                               (:file       "xml"
                                :depends-on ("package" "types"))
                               (:file       "file"
-                               :depends-on ("package" "types" "xml"))))))
+                               :depends-on ("package" "types" "xml")))))
+
+  :in-order-to ((test-op (test-op :rsbag-elan-test))))
+
+(defsystem :rsbag-elan-test
+  :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+  :version     #.(cl-rsbag-system:version/string)
+  :license     "LGPLv3; see COPYING file for details."
+  :description "Unit tests for the rsbag-elan system."
+  :depends-on  ((:version :lift          "1.7.1")
+
+                (:version :rsbag-elan    #.(cl-rsbag-system:version/string :commit? t))
+
+                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string :commit? t)))
+  :components  ((:module     "elan"
+                 :pathname   "test/backend/elan"
+                             :serial     t
+                             :components ((:file       "package")))))
+
+(defmethod perform ((op     test-op)
+                    (system (eql (find-system :rsbag-elan-test))))
+  (funcall (find-symbol "RUN-TESTS" :lift)
+           :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
+                            "lift-elan.config")))
