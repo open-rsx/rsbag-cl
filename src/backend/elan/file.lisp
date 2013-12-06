@@ -11,10 +11,15 @@
 
 (defclass file (stream-mixin
                 direction-mixin)
-  ((channels        :type     list
+  ((author          :type     (or null string)
+                    :accessor file-%author
+                    :initform nil
+                    :documentation
+                    "Stores the author of the file.")
+   (channels        :type     list
                     :reader   get-channels
                     :accessor file-%channels
-                    :initform nil
+                    :initform '()
                     :documentation
                     "Stores information of the channels (or tiers,
                      rather) present in the file. Entries are of the
@@ -61,6 +66,7 @@
   (let+ (((&accessors (direction       backend-direction)
                       (stream          backend-stream)
                       (document        file-%document)
+                      (author          file-%author)
                       (channels        file-%channels)
                       (data            file-%data)
                       (next-channel-id file-%next-channel-id)) instance)
@@ -69,12 +75,16 @@
             ;; Data is available - parse as XML document.
             ((and (member direction '(:input :io)) (listen stream))
              (setf document (parse/keep-open stream (stp:make-builder)))
-             (xloc:xml-> (stp:document-element document) 'file/list))
+             (let ((file
+                     (xloc:xml-> (stp:document-element document) 'file/list)))
+               (setf author (first file))
+               (rest file)))
 
             ;; No data is available, but direction implies output -
             ;; create an empty XML document and write it back later.
             ((member direction '(:output :io))
-             (setf document (stp:make-document (stp:make-element "ANNOTATION_DOCUMENT")))
+             (setf document (stp:make-document
+                             (stp:make-element "ANNOTATION_DOCUMENT")))
              (list (local-time:now) nil nil nil))
 
             ;; No data is available and direction does not imply
@@ -85,8 +95,6 @@
          (base (timestamp->millisecs date))
          ((&flet resolve (id)
             (cdr (assoc id time-slots :test #'string=)))))
-
-    (setf (file-%document instance) document) ; TODO(jmoringe):
 
     ;; Add video channels.
     (iter (for url each urls :with-index i)
@@ -113,6 +121,7 @@
   (when (member (backend-direction file) '(:output :io))
     (let+ (((&accessors-r/o (stream   backend-stream)
                             (document file-%document)
+                            (author   file-%author)
                             (channels file-%channels)
                             (data     file-%data)) file)
            (time-slots           (make-hash-table :test #'eql))
@@ -129,9 +138,10 @@
                                                                datum))
                                                  (sort (coerce entries 'vector) #'< :key #'first))))))
            (time-slots (iter (for (timestamp id) in-hashtable time-slots)
-                             (collect (cons id timestamp))))
-           (foo (list (local-time:now) nil time-slots tiers))) ; TODO(jmoringe, 2011-12-01): media stuff
-      (xloc:->xml foo (stp:document-element document) 'file/list)
+                             (collect (cons id timestamp)))))
+      (xloc:->xml
+       (list (or author "") (local-time:now) '() time-slots tiers) ; TODO(jmoringe, 2011-12-01): media stuff
+       (stp:document-element document) 'file/list)
       (file-position stream 0)
       (serialize/keep-open document stream)))
   (when (next-method-p)

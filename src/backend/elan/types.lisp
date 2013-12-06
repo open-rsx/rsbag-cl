@@ -40,12 +40,13 @@
 (deftype file/list ()
   "A list of the form
 
-     (DATE MEDIA-URLS TIME-SLOTS TIERS)
+     (AUTHOR DATE MEDIA-URLS TIME-SLOTS TIERS)
 
    where MEDIA-URLS is a list of strings, TIME-SLOTS is a list of
    elements of type TIME-SLOT/CONS and TIERS is a list of elements of
    type TIER/LIST."
-  '(cons local-time:timestamp        ; date in ISO timestamp format
-         (cons list                  ; media URLs
-               (cons list            ; time slots
-                     (cons list))))) ; tiers
+  '(cons string                                   ; author
+         (cons local-time:timestamp               ; date in ISO timestamp format
+               (cons list                         ; media URLs
+                     (cons list                   ; time slots
+                           (cons list))))))       ; tiers

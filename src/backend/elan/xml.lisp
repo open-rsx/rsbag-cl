@@ -93,15 +93,16 @@
                        (type  (eql 'file/list))
                        &key &allow-other-keys)
   (xloc:with-locations-r/o
-      (((:@   (date "DATE") :type 'local-time:timestamp) ".")
-       ((:@   (urls "MEDIA_URL"))                        "HEADER/MEDIA_DESCRIPTOR"
+      (((:@   (author "AUTHOR"))                              ".")
+       ((:@   (date   "DATE")    :type 'local-time:timestamp) ".")
+       ((:@   (urls   "MEDIA_URL"))                           "HEADER/MEDIA_DESCRIPTOR"
         :if-multiple-matches :all)
-       ((:val time-slots :type 'time-slot/cons)          "TIME_ORDER/TIME_SLOT"
+       ((:val time-slots         :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
         :if-multiple-matches :all)
-       ((:val tiers      :type 'tier/list)               "TIER"
+       ((:val tiers              :type 'tier/list)            "TIER"
         :if-multiple-matches :all))
       value
-    (list date urls time-slots tiers)))
+    (list author date urls time-slots tiers)))
 
 (defmethod xloc:->xml ((value list)
                        (dest  stp:element)
@@ -110,17 +111,14 @@
   (check-type value file/list)
 
   (xloc:with-locations
-      (((:@   (date "DATE")      :type 'local-time:timestamp)
-        ".")
-       ((:@   (urls "MEDIA_URL"))
-        "HEADER/MEDIA_DESCRIPTOR"
+      (((:@   (author "AUTHOR"))                              ".")
+       ((:@   (date   "DATE")    :type 'local-time:timestamp) ".")
+       ((:@   (urls   "MEDIA_URL"))                           "HEADER/MEDIA_DESCRIPTOR"
         :assign-mode :append)
-       ((:val slots              :type 'time-slot/cons)
-        "TIME_ORDER/TIME_SLOT"
+       ((:val slots              :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
         :assign-mode :append)
-       ((:val tiers              :type 'tier/list)
-        "TIER"
+       ((:val tiers              :type 'tier/list)            "TIER"
         :assign-mode :append))
       dest
-    (multiple-value-setq (date urls slots tiers) (values-list value)))
+    (multiple-value-setq (author date urls slots tiers) (values-list value)))
   value)
