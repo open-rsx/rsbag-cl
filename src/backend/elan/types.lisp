@@ -28,14 +28,22 @@
    string ids and an associated string datum."
   '(cons string (cons string (cons string (cons string null)))))
 
+(deftype linguistic-type/list ()
+  "A list of the form
+
+     (ID GRAPHIC-REFERENCES TIME-ALIGNABLE)
+
+   to be interpreted as a linguistic type."
+  '(cons string (cons boolean (cons boolean null))))
+
 (deftype tier/list ()
   "A list of the form
 
-     (NAME ANNOTATIONS)
+     (NAME LINGUISTIC-TYPE-REF ANNOTATIONS)
 
    to be interpreted as a named tier containing the annotation items
    ANNOTATIONS."
-  '(cons string (cons list null)))
+  '(cons string (cons string (cons list null))))
 
 (deftype version/cons ()
   "A version specification of the form
