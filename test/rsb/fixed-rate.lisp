@@ -18,13 +18,28 @@
 
   (ensure-cases (args)
       '(()
-        (:delay 1 :rate  1)
+        (:delay 1 :rate 1)
         (:delay 0)
         (:rate 0))
 
     (ensure-condition 'error
       (apply #'make-instance 'fixed-rate args))))
 
-(define-replay-strategy-smoke-test (fixed-rate)
-  '(:rate  1000)
-  '(:delay 1/1000))
+(define-replay-strategy-smoke-test (fixed-rate
+                                    :expected-var expected)
+  ;; Some simple cases.
+  ('(:rate  1000))
+  (`(:rate  1000 :error-policy ,#'continue))
+  ('(:delay 1/1000))
+  (`(:delay 1/1000 :error-policy ,#'continue))
+
+  ;; Without an error policy, the first failing event causes an error
+  ;; to be signaled.
+  ('(:rate 1000 :error-policy nil)
+   (simple-bag :errors '(2))
+   'event-retrieval-failed)
+  ;; The `continue' restart skips to the next entry. Therefore, the
+  ;; observed output continues after the failing entry.
+  (`(:rate 1000 :error-policy ,#'continue)
+   (simple-bag :errors '(4))
+   (remove 4 expected)))

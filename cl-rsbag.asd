@@ -302,13 +302,16 @@
                 (:module     "rsb"
                  :pathname   "test/rsb"
                  :depends-on ("test")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol"
-                               :depends-on ("package"))
-                              (:file       "fixed-rate"
-                               :depends-on ("package"))
-                              (:file       "timestamp-adjustment-mixin"
-                               :depends-on ("package"))))))
+                              (:file       "protocol")
+
+                              (:file       "timestamp-adjustment-mixin")
+
+                              (:file       "recorded-timing")
+                              (:file       "fixed-rate")
+                              (:file       "as-fast-as-possible")
+                              (:file       "interactive")))))
 
 (defmethod perform ((op     test-op)
                     (system (eql (find-system :cl-rsbag-test))))
