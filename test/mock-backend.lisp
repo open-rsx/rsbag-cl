@@ -67,7 +67,11 @@
 (defmethod rsbag.backend:get-entry ((backend mock-backend)
                                     (channel integer)
                                     (index   integer))
-  (nth index (second (nth channel (backend-%channels backend)))))
+  (let* ((channel (nth channel (backend-%channels backend)))
+         (entry   (nth index (second channel))))
+    (case entry
+      (error (error "~@<Simulated entry retrieval error~@:>"))
+      (t     entry))))
 
 (defmethod rsbag.backend:put-entry ((backend mock-backend)
                                     (channel integer)
@@ -97,16 +101,18 @@
                                       ,@initargs)))
          ,@body))))
 
-(defun simple-channels ()
-  `(((,(local-time:now) ,(local-time:now))
-     (1 2)
-     0 "/foo"
-     ())
-    ((,(local-time:now) ,(local-time:now) ,(local-time:now))
-     (3 4 5)
-     1 "/bar"
-     ())))
+(defun simple-channels (&key (errors '()))
+  (let+ (((&flet maybe-error (value)
+            (if (member value errors) 'error value))))
+   `(((,(local-time:now) ,(local-time:now))
+      ,(mapcar #'maybe-error '(1 2))
+      0 "/foo"
+      ())
+     ((,(local-time:now) ,(local-time:now) ,(local-time:now))
+      ,(mapcar #'maybe-error '(3 4 5))
+      1 "/bar"
+      ()))))
 
-(defun simple-bag ()
-  (with-mock-bag (bag :direction :input) (simple-channels)
+(defun simple-bag (&key (errors '()))
+  (with-mock-bag (bag :direction :input) (simple-channels :errors errors)
     bag))
