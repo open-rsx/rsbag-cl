@@ -11,6 +11,7 @@
 (defgeneric events->bag (source dest
                          &rest args
                          &key
+                         error-policy
                          transports
                          filters
                          timestamp
@@ -28,6 +29,9 @@
     arguments ARGS are passed to the function constructing SOURCE, the
     function constructing DEST or the new connection depending on
     their keyword part.
+
+    If supplied, ERROR-POLICY has to be nil or a function to be called
+    with a `condition' object when an error is signaled.
 
     If supplied, TRANSPORTS configures RSB transport mechanisms. See
     `rsb:make-participant' for details.
@@ -67,6 +71,7 @@
 (defgeneric bag->events (source dest
                          &rest args
                          &key
+                         error-policy
                          backend
                          bag-class
                          replay-strategy
@@ -83,6 +88,9 @@
     arguments ARGS are passed to the function constructing DEST, the
     function constructing SOURCE or the new connection depending on
     their keyword part.
+
+    If supplied, ERROR-POLICY has to be nil or a function to be called
+    with a `condition' object when an error is signaled.
 
     BACKEND can be used to explicitly select a file-format backend for
     SOURCE. If supplied, it has to be a keyword designating a

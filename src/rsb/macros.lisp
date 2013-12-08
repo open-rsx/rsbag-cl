@@ -16,6 +16,7 @@
 (defmacro with-events->bag ((var source dest
                              &rest args
                              &key
+                             error-policy
                              transports
                              filters
                              timestamp
@@ -27,7 +28,8 @@
   "Execute BODY with VAR bound to a connection that is the result of
    applying `events->bag' to SOURCE, DEST and ARGS. Ensure that the
    resulting connection is properly closed."
-  (declare (ignore transports filters timestamp backend bag-class
+  (declare (ignore error-policy
+                   transports filters timestamp backend bag-class
                    channel-strategy))
   `(with-open-connection (,var (events->bag ,source, dest ,@args))
      ,@body))
@@ -35,6 +37,7 @@
 (defmacro with-bag->events ((var source dest
                              &rest args
                              &key
+                             error-policy
                              backend
                              bag-class
                              replay-strategy
@@ -48,7 +51,8 @@
   "Execute BODY with VAR bound to a connection that is the result of
    applying `bag->events' to SOURCE, DEST and ARGS. Ensure that the
    resulting connection is properly closed."
-  (declare (ignore backend bag-class replay-strategy
+  (declare (ignore error-policy
+                   backend bag-class replay-strategy
                    start-time start-index end-time end-index
                    channels))
   `(with-open-connection (,var (bag->events ,source ,dest ,@args))

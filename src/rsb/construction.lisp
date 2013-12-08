@@ -15,14 +15,13 @@
                         (channel-strategy :scope-and-type)
                         (start?           t)
                         &allow-other-keys)
-  (make-instance
-   'recording-channel-connection
-   :bag       dest
-   :endpoint  source
-   :timestamp timestamp
-   :strategy  (apply #'make-channel-strategy
-                     (ensure-list channel-strategy))
-   :start?    start?))
+  (make-instance 'recording-channel-connection
+                 :bag       dest
+                 :endpoint  source
+                 :timestamp timestamp
+                 :strategy  (apply #'make-channel-strategy
+                                   (ensure-list channel-strategy))
+                 :start?    start?))
 
 (defmethod events->bag ((source puri:uri)
                         (dest   bag)
@@ -47,13 +46,19 @@
 
 (defmethod events->bag ((source sequence)
                         (dest   bag)
-                        &rest args &key)
-  (make-instance 'bag-connection
-                 :bag      dest
-                 :channels (map 'list
-                                (lambda (source)
-                                  (apply #'events->bag source dest args))
-                                source)))
+                        &rest
+                        args
+                        &key
+                        (error-policy nil error-policy-supplied?))
+  (apply #'make-instance 'bag-connection
+         :bag      dest
+         :channels (map 'list
+                        (lambda (source)
+                          (apply #'events->bag source dest
+                                 (remove-from-plist args :error-policy)))
+                        source)
+         (when error-policy-supplied?
+           (list :error-policy error-policy))))
 
 (macrolet ((define-open-bag-method (type)
              `(progn
@@ -114,11 +119,12 @@
                         (dest   t)
                         &rest args
                         &key
+                        (error-policy    nil error-policy-supplied?)
                         (replay-strategy :recorded-timing)
                         (channels        t)
-                        (backend   nil backend-supplied?)
-                        (transform nil transform-supplied?)
-                        (bag-class nil bag-class-supplied?))
+                        (backend         nil backend-supplied?)
+                        (transform       nil transform-supplied?)
+                        (bag-class       nil bag-class-supplied?))
   (let+ (((&flet check-arg (name value supplied?)
            (when supplied?
              (more-conditions:incompatible-arguments
@@ -129,17 +135,20 @@
 
   (let+ ((predicate  (if (eq channels t) (constantly t) channels))
          (channels   (remove-if-not predicate (bag-channels source)))
-         (other-args (remove-from-plist args :replay-strategy :channels))
+         (other-args (remove-from-plist
+                      args :error-policy :replay-strategy :channels))
          ((&flet do-channel (channel)
             (apply #'bag->events channel dest other-args)))
          (connections (map 'list #'do-channel channels))
          ((class &rest args) (ensure-list replay-strategy))
          (strategy (apply #'make-replay-strategy class
                           (append other-args args))))
-    (make-instance 'replay-bag-connection
-                   :bag      source
-                   :channels connections
-                   :strategy strategy)))
+    (apply #'make-instance 'replay-bag-connection
+           :bag      source
+           :channels connections
+           :strategy strategy
+           (when error-policy-supplied?
+             (list :error-policy error-policy)))))
 
 (defmethod bag->events ((source t)
                         (dest   string)
