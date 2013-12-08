@@ -16,7 +16,9 @@
    #:rsbag.backend.test)
 
   (:import-from #:rsbag.backend.tidelog
-   #:byte-pattern->block-class)
+   #:byte-pattern->block-class
+
+   #:find-next-block)
 
   (:export
    #:backend-tidelog-root)

@@ -69,7 +69,8 @@
                  :pathname   "test/backend/tidelog"
                  :serial     t
                  :components ((:file       "package")
-                              (:file       "io")))))
+                              (:file       "io")
+                              (:file       "repair")))))
 
 (defmethod perform ((op     test-op)
                     (system (eql (find-system :rsbag-tidelog-test))))

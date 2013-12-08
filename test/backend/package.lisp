@@ -21,7 +21,8 @@
 
   ;; Test utilities
   (:export
-   #:octetify)
+   #:octetify
+   #:octet-streamify)
 
   (:documentation
    "This package contains unit tests for the backend module"))
@@ -43,3 +44,7 @@
                (sequence      (coerce thing 'nibbles:octet-vector))
                (nibbles:octet (nibbles:octet-vector thing)))))
     (apply #'concatenate 'nibbles:octet-vector (mapcar #'one things))))
+
+(defun octet-streamify (&rest things)
+  (flexi-streams:make-in-memory-input-stream
+   (apply #'octetify things)))
