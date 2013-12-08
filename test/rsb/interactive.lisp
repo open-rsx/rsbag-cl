@@ -23,6 +23,15 @@
    (format nil "~{~*emitandnext~%~}emit~%"
            (make-list (1- num-events)))))
 
+;;; Test cases
+
+(define-replay-strategy-construction-test (interactive)
+  ;; Some valid cases.
+  '(()                                             t)
+  `((:stream ,(%make-two-way-string-stream "foo")) t)
+  '((:error-policy nil)                            t)
+  `((:error-policy ,#'continue)                    t))
+
 (define-replay-strategy-smoke-test (interactive
                                     :expected-var expected)
   (`(:stream       ,(%make-emit-and-next-stream (length expected))))

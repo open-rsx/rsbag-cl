@@ -11,19 +11,18 @@
   (:documentation
    "Test suite for the `fixed-rate' replay strategy class."))
 
-(addtest (fixed-rate-root
-          :documentation
-          "Test construction of `fixed-rate' instances.")
-  construction
+(define-replay-strategy-construction-test (fixed-rate)
+  ;; Some invalid cases.
+  '(()                                   missing-required-initarg)
+  '((:delay 1 :rate 1)                   incompatible-initargs)
+  '((:delay 0)                           type-error)
+  '((:rate 0)                            type-error)
 
-  (ensure-cases (args)
-      '(()
-        (:delay 1 :rate 1)
-        (:delay 0)
-        (:rate 0))
-
-    (ensure-condition 'error
-      (apply #'make-instance 'fixed-rate args))))
+  ;; Some valid cases.
+  '((:delay 1)                           t)
+  `((:delay 1 :error-policy ,#'continue) t)
+  '((:rate 1)                            t)
+  `((:rate 1 :error-policy ,#'continue)  t))
 
 (define-replay-strategy-smoke-test (fixed-rate
                                     :expected-var expected)

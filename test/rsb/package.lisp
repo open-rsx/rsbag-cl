@@ -33,6 +33,40 @@
 
 ;;; Utilities
 
+(defmacro define-replay-strategy-construction-test
+    ((class
+      &key
+      (suite-name (symbolicate class '#:-root)))
+     &body
+     cases)
+  "Define a test case for class CLASS in test suite `SUITE-NAME' with
+   CASES. Each element of CASES has to be of the form
+
+     (INITARGS EXPECTED)
+
+   where EXPECTED is either the symbol `error' or the symbol `t'."
+  `(addtest (,suite-name
+             :documentation
+             ,(format nil "Test construction of `~(~A~)' instances." class))
+     construction
+
+     (ensure-cases (initargs expected)
+         (list ,@cases)
+
+       (let+ (((&flet do-it ()
+                 (apply #'make-instance ',class initargs))))
+         (case expected
+           (missing-required-initarg
+            (ensure-condition 'missing-required-initarg (do-it)))
+           (incompatible-initargs
+            (ensure-condition 'incompatible-initargs (do-it)))
+           (type-error
+            (ensure-condition 'type-error (do-it)))
+           (error
+            (ensure-condition 'error (do-it)))
+           (t
+            (do-it)))))))
+
 (defmacro collecting-events ((name) &body body)
   "Execute BODY with a collector function named NAME in scope."
   (with-gensyms (collected)

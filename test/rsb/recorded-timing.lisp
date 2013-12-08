@@ -11,6 +11,21 @@
   (:documentation
    "Test suite for the `recorded-timing' replay strategy class."))
 
+(define-replay-strategy-construction-test (recorded-timing)
+  ;; Some invalid cases.
+  '((:speed 0)                               type-error)
+  '((:speed -1)                              type-error)
+  '((:max-delay -1)                          type-error)
+
+  ;; Some valid cases.
+  '(()                                       t)
+  '((:speed 1)                               t)
+  `((:speed 0.5 :error-policy ,#'continue)   t)
+  `((:speed 3/2 :error-policy nil)           t)
+  '((:max-delay 0)                           t)
+  `((:max-delay 1 :error-policy ,#'continue) t)
+  `((:max-delay 1/2 :error-policy nil)       t))
+
 (define-replay-strategy-smoke-test (recorded-timing
                                     :expected-var expected)
   ;; Some simple cases.

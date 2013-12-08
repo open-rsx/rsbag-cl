@@ -11,6 +11,12 @@
   (:documentation
    "Test suite for the `as-fast-as-possible' replay strategy class."))
 
+(define-replay-strategy-construction-test (as-fast-as-possible)
+   ;; There are few interesting cases here.
+  '(()                          t)
+  `((:error-policy ,#'continue) t)
+  '((:error-policy nil)         t))
+
 (define-replay-strategy-smoke-test (as-fast-as-possible
                                     :expected-var expected)
   ;; Some simple cases.
