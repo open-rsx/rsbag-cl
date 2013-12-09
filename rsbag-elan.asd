@@ -27,15 +27,13 @@
                 (:version :cl-rsbag                    #.(cl-rsbag-system:version/string)))
   :components  ((:module     "elan"
                  :pathname   "src/backend/elan"
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "types"
-                               :depends-on ("package"))
-                              (:file       "util"
-                               :depends-on ("package"))
-                              (:file       "xml"
-                               :depends-on ("package" "types"))
-                              (:file       "file"
-                               :depends-on ("package" "types" "xml")))))
+                              (:file       "types")
+                              (:file       "util")
+                              (:file       "variables")
+                              (:file       "xml")
+                              (:file       "file"))))
 
   :in-order-to ((test-op (test-op :rsbag-elan-test))))
 

@@ -89,20 +89,45 @@
 
 ;;; File
 
+(defmethod xloc:xml-> ((value string)
+                       (type  (eql 'version/cons))
+                       &key &allow-other-keys)
+  (let ((index (or (position #\. value)
+                   (error "~@<No \".\" in ~S~@:>" value))))
+    (cons (parse-integer value :end index)
+          (parse-integer value :start (1+ index)))))
+
+(defmethod xloc:->xml ((value cons)
+                       (dest  (eql 'string))
+                       (type  (eql 'version/cons))
+                       &key &allow-other-keys)
+  (check-type value version/cons)
+
+  (format nil "~D.~D" (car value) (cdr value)))
+
 (defmethod xloc:xml-> ((value stp:element)
                        (type  (eql 'file/list))
                        &key &allow-other-keys)
   (xloc:with-locations-r/o
-      (((:@   (author "AUTHOR"))                              ".")
-       ((:@   (date   "DATE")    :type 'local-time:timestamp) ".")
-       ((:@   (urls   "MEDIA_URL"))                           "HEADER/MEDIA_DESCRIPTOR"
+      (((:@   (format     "FORMAT")    :type 'version/cons)         ".")
+       ((:@   (version    "VERSION")   :type 'version/cons)         ".")
+       ((:@   (author     "AUTHOR"))                                ".")
+       ((:@   (date       "DATE")      :type 'local-time:timestamp) ".")
+       ((:@   (time-units "TIME_UNITS"))                            "HEADER")
+       ((:@   (urls       "MEDIA_URL"))                             "HEADER/MEDIA_DESCRIPTOR"
         :if-multiple-matches :all)
-       ((:val time-slots         :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
+       ((:val time-slots               :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
         :if-multiple-matches :all)
-       ((:val tiers              :type 'tier/list)            "TIER"
+       ((:val tiers                    :type 'tier/list)            "TIER"
         :if-multiple-matches :all))
       value
-    (list author date urls time-slots tiers)))
+    (unless (= +format-version-major+ (car version))
+      (cerror "Try to process the file anyway."
+              "~@<Cannot process format version ~D.~D (major version ~
+               is different from ~D.~D)~@:>"
+              (car version) (cdr version)
+              +format-version-major+ +format-version-minor+))
+    (values (list author date urls time-slots tiers) format version))) ; TODO version should be part of file/list?
 
 (defmethod xloc:->xml ((value list)
                        (dest  stp:element)
@@ -111,14 +136,20 @@
   (check-type value file/list)
 
   (xloc:with-locations
-      (((:@   (author "AUTHOR"))                              ".")
-       ((:@   (date   "DATE")    :type 'local-time:timestamp) ".")
-       ((:@   (urls   "MEDIA_URL"))                           "HEADER/MEDIA_DESCRIPTOR"
+      (((:@   (format     "FORMAT")    :type 'version/cons)         ".")
+       ((:@   (version    "VERSION")   :type 'version/cons)         ".")
+       ((:@   (author     "AUTHOR"))                                ".")
+       ((:@   (date       "DATE")      :type 'local-time:timestamp) ".")
+       ((:@   (time-units "TIME_UNITS"))                            "HEADER")
+       ((:@   (urls       "MEDIA_URL"))                             "HEADER/MEDIA_DESCRIPTOR"
         :assign-mode :append)
-       ((:val slots              :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
+       ((:val slots                    :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
         :assign-mode :append)
-       ((:val tiers              :type 'tier/list)            "TIER"
+       ((:val tiers                    :type 'tier/list)            "TIER"
         :assign-mode :append))
       dest
+    (let ((version/cons (cons +format-version-major+ +format-version-minor+)))
+      (multiple-value-setq (format version time-units)
+        (values version/cons version/cons "milliseconds")))
     (multiple-value-setq (author date urls slots tiers) (values-list value)))
   value)

@@ -15,6 +15,11 @@
    #:rsbag
    #:rsbag.backend)
 
+  ;; Variables
+  (:export
+   #:+format-version-major+
+   #:+format-version-minor+)
+
   (:documentation
    "This package contains a reading and writing backend for the
     XML-based EAF file format used by the Elan annotation software."))

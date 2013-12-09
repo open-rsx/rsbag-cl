@@ -37,6 +37,14 @@
    ANNOTATIONS."
   '(cons string (cons list null)))
 
+(deftype version/cons ()
+  "A version specification of the form
+
+     (MAJOR . MINOR)
+
+   ."
+  '(cons non-negative-integer non-negative-integer))
+
 (deftype file/list ()
   "A list of the form
 
