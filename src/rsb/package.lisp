@@ -30,18 +30,22 @@
 
   ;; Conditions
   (:export
-   #:connection-error
-   #:connection-error-connection
+   #:connection-condition
+   #:connection-condition-connection
+
+   #:entry-condition
+   #:entry-condition-entry
 
    #:recording-error
 
-   #:event-storage-failed
-   #:connection-error-event
+   #:entry-storage-error
 
    #:replay-error
-   #:connection-error-strategy
+   #:replay-error-strategy
 
-   #:event-retrieval-failed)
+   #:entry-retrieval-error
+
+   #:entry-processing-error)
 
   ;; connection construction protocol
   (:export

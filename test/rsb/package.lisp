@@ -67,23 +67,29 @@
            (t
             (do-it)))))))
 
-(defmacro collecting-events ((name) &body body)
+(defmacro collecting-events ((name &key (errors ''())) &body body)
   "Execute BODY with a collector function named NAME in scope."
   (with-gensyms (collected)
-    `(let+ ((,collected '())
-            ((&flet ,name (&optional datum)
-               (if datum
-                   (push datum ,collected)
-                   (reverse ,collected)))))
-       ,@body)))
+    (once-only (errors)
+      `(let+ ((,collected '())
+              ((&flet ,name (&optional datum)
+                 (cond
+                   ((not datum)
+                    (reverse ,collected))
+                   ((not (member datum ,errors))
+                    (push datum ,collected))
+                   (t
+                    (error "~@<Simulated processing error~@:>"))))))
+         ,@body))))
 
 (defun select-channel (name)
   (compose (curry #'string= name) #'channel-name))
 
-(defun call-as-replay-strategy-test-case (bag strategy-class strategy-initargs
+(defun call-as-replay-strategy-test-case (bag processing-errors
+                                          strategy-class strategy-initargs
                                           replay-function assessment-function)
   (let+ (((&flet do-it ()
-            (collecting-events (collect)
+            (collecting-events (collect :errors processing-errors)
               (with-open-connection
                   (connection (apply #'bag->events bag #'collect
                                      :replay-strategy strategy-class strategy-initargs))
@@ -92,8 +98,10 @@
     (etypecase assessment-function
       ((eql error)
        (ensure-condition 'error (do-it)))
-      ((eql event-retrieval-failed)
-       (ensure-condition 'event-retrieval-failed (do-it)))
+      ((eql entry-retrieval-error)
+       (ensure-condition 'entry-retrieval-error (do-it)))
+      ((eql entry-processing-error)
+       (ensure-condition 'rsbag.rsb::entry-processing-error (do-it)))
       (function
        (funcall assessment-function (do-it))))))
 
@@ -120,14 +128,16 @@
      replay/smoke
 
      (let ((,bag-var (simple-bag)))
-       (ensure-cases (initargs bag expected)
+       (ensure-cases (initargs bag processing-errors expected)
            (list
             ,@(map-product
-               (lambda+ ((initargs &optional bag expected) (initargs1 expected1))
+               (lambda+ ((initargs &key bag expected processing-errors)
+                         (initargs1 expected1))
                  `(let ((,initargs-var (list ,@initargs1))
                         (,expected-var (list ,@expected1)))
                     (list (append ,initargs ,initargs-var)
                           ,@(if bag `(,bag) `(,bag-var))
+                          ,processing-errors
                           ,@(if expected `(,expected) `(,expected-var)))))
                cases
                `((()                                     (1 2 3 4 5))
@@ -137,10 +147,10 @@
                  ((:channels    (select-channel "/foo")) (1 2)))))
 
          (call-as-replay-strategy-test-case
-          bag ',class initargs
+          bag processing-errors ',class initargs
           (lambda (connection strategy) (replay connection strategy))
           (case expected
-            ((error event-retrieval-failed)
+            ((error entry-retrieval-error entry-processing-error)
              expected)
             (t
              (lambda (events)

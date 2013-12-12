@@ -164,11 +164,15 @@
 
     If PROGRESS is non-nil it has to be a function accepting five
     arguments: progress ratio, current index, start index, end index
-    and current timestamp."))
+    and current timestamp.
+
+    May signal a `replay-error'. In particular,
+    `entry-retrieval-error' and `entry-processing-error' may be
+    signaled."))
 
 (define-condition-translating-method replay ((connection t) (strategy t)
                                              &key &allow-other-keys)
-  ((error event-retrieval-failed)
+  (((and error (not replay-error)) entry-retrieval-error)
    :connection connection
    :strategy   strategy))
 
@@ -188,20 +192,16 @@
    "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT SINK),
     originating from CONNECTION, according to STRATEGY."))
 
-(defmethod process-event :around ((connection         t)
-                                  (strategy           t)
-                                  (timestamp          t)
-                                  (previous-timestamp t)
-                                  (event              t)
-                                  (sink               t))
-  "Install a continue restart around processing."
-  (restart-case
-      (call-next-method)
-    (continue ()
-      :report (lambda (stream)
-                (format stream "~@<Ignore the failed event and ~
-                                continue with the next event.~@:>"))
-      (values))))
+(define-condition-translating-method process-event ((connection         t)
+                                                    (strategy           t)
+                                                    (timestamp          t)
+                                                    (previous-timestamp t)
+                                                    (event              t)
+                                                    (sink               t))
+  ((error entry-processing-error)
+   :connection connection
+   :strategy   strategy
+   :entry      event))
 
 ;;; Timed replay protocol
 

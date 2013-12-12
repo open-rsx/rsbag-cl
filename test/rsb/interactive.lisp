@@ -44,13 +44,22 @@
   ;; to be signaled.
   (`(:stream       ,(%make-emit-and-next-stream (length expected))
      :error-policy nil)
-   (simple-bag :errors '(2))
-   'event-retrieval-failed)
+   :bag      (simple-bag :errors '(2))
+   :expected 'entry-retrieval-error)
+  (`(:stream       ,(%make-emit-and-next-stream (length expected))
+     :error-policy nil)
+   :processing-errors '(2)
+   :expected          'entry-processing-error)
   ;; We use "emitandnext" which does not advance in case of errors,
   ;; even if the `continue' restart is used. Therefore, the observed
   ;; output gets stuck at the failing event.
   (`(:stream       ,(%make-emit-and-next-stream (length expected))
      :error-policy ,#'continue)
-   (simple-bag :errors '(4))
-   (let ((end-index (position 4 expected)))
-     (subseq expected 0 end-index))))
+   :bag      (simple-bag :errors '(4))
+   :expected (let ((end-index (position 4 expected)))
+               (subseq expected 0 end-index)))
+  (`(:stream       ,(%make-emit-and-next-stream (length expected))
+     :error-policy ,#'continue)
+   :processing-errors '(4)
+   :expected          (let ((end-index (position 4 expected)))
+                        (subseq expected 0 end-index))))

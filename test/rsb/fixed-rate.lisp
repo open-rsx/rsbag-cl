@@ -35,10 +35,16 @@
   ;; Without an error policy, the first failing event causes an error
   ;; to be signaled.
   ('(:rate 1000 :error-policy nil)
-   (simple-bag :errors '(2))
-   'event-retrieval-failed)
+   :bag      (simple-bag :errors '(2))
+   :expected 'entry-retrieval-error)
+  ('(:rate 1000 :error-policy nil)
+   :processing-errors '(2)
+   :expected          'entry-processing-error)
   ;; The `continue' restart skips to the next entry. Therefore, the
   ;; observed output continues after the failing entry.
   (`(:rate 1000 :error-policy ,#'continue)
-   (simple-bag :errors '(4))
-   (remove 4 expected)))
+   :bag      (simple-bag :errors '(4))
+   :expected (remove 4 expected))
+  (`(:rate 1000 :error-policy ,#'continue)
+   :processing-errors '(4)
+   :expected          (remove 4 expected)))

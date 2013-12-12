@@ -6,74 +6,108 @@
 
 (cl:in-package #:rsbag.rsb)
 
-(define-condition connection-error (error)
+(define-condition connection-condition (condition)
   ((connection :initarg  :connection
-               :reader   connection-error-connection
+               :reader   connection-condition-connection
                :documentation
-               "Stores the connection involved in the error."))
-  (:report
-   (lambda (condition stream)
-     (format stream "~@<An error related to connection ~A ~
-                     occurred.~@:>"
-             (connection-error-connection condition))))
+               "Stores the connection involved in the condition."))
+  (:default-initargs
+   :connection (missing-required-initarg 'connection-condition :connection))
   (:documentation
-   "Errors of this condition class and subclasses are signaled when
-    errors involving bag-connections occur."))
+   "Subclasses of this condition are signaled when a bag connection is
+    involved."))
 
-(define-condition recording-error (connection-error)
+(define-condition entry-condition (condition)
+  ((entry :initarg  :entry
+          :reader   entry-condition-entry
+          :documentation
+          "Stores the entry involved in the condition."))
+  (:default-initargs
+   :entry (missing-required-initarg 'entry-condition :entry))
+  (:documentation
+   "Subclasses of this conditions are signaled when a bag entry is
+    involved."))
+
+;;; Recording conditions
+
+(define-condition recording-error (connection-condition
+                                   chainable-condition
+                                   error)
   ()
   (:report
    (lambda (condition stream)
-     (format stream "~@<A recording error related to ~A occurred.~@:>"
-             (connection-error-connection condition))))
+     (format stream "~@<A recording error related to ~A ~
+                     occurred.~/more-conditions:maybe-print-cause/~@:>"
+             (connection-condition-connection condition)
+             condition)))
   (:documentation
    "Errors of this condition class and subclasses are signaled when
     errors occur during event recording into a bag."))
 
-(define-condition event-storage-failed (recording-error
-                                        chainable-condition)
-  ((event :initarg  :event
-          :reader   connection-error-event
-          :documentation
-          "Stores the event that could not be stored."))
-  (:report
-   (lambda (condition stream)
-     (format stream "~@<Event ~A could not be stored in ~
-                     ~A.~/more-conditions:maybe-print-cause/~@:>"
-             (connection-error-event      condition)
-             (connection-error-connection condition)
-             condition)))
-  (:documentation
-   "This error is signaled when an event cannot be stored during a
-    recording process."))
-
-(define-condition replay-error (connection-error)
-  ((strategy :initarg  :strategy
-             :reader   connection-error-strategy
-             :documentation
-             "Stores the replay strategy involved in the replay
-              error."))
-  (:report
-   (lambda (condition stream)
-     (format stream "~@<A replay error related to source ~A and replay ~
-                     strategy ~A occurred.~@:>"
-             (connection-error-connection condition)
-             (connection-error-strategy   condition))))
-  (:documentation
-   "Errors of this condition class and subclasses are signaled when
-    errors occur during replay of events from a bag."))
-
-(define-condition event-retrieval-failed (replay-error
-                                          chainable-condition)
+(define-condition entry-storage-error (entry-condition
+                                       recording-error)
   ()
   (:report
    (lambda (condition stream)
-     (format stream "~@<Failed to retrieve next event from ~A for ~
-                     replay according to strategy ~
-                     ~A~/more-conditions:maybe-print-cause/~@:>"
-             (connection-error-connection condition)
-             (connection-error-strategy   condition)
+     (format stream "~@<Error storing entry ~A in ~
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
+             (entry-condition-entry           condition)
+             (connection-condition-connection condition)
              condition)))
   (:documentation
-   "This error is signaled when the retrieval of an event from a bag
+   "This error is signaled when an entry cannot be stored during a
+    recording process."))
+
+;;; Replay conditions
+
+(define-condition replay-error (connection-condition
+                                chainable-condition
+                                error)
+  ((strategy :initarg  :strategy
+             :reader   replay-error-strategy
+             :documentation
+             "Stores the replay strategy involved in the replay
+              error."))
+  (:default-initargs
+   :strategy (missing-required-initarg 'replay-error :strategy))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<A replay error related to connection ~A and ~
+                     replay strategy ~A ~
+                     occurred.~/more-conditions:maybe-print-cause/~@:>"
+             (connection-condition-connection condition)
+             (replay-error-strategy           condition)
+             condition)))
+  (:documentation
+   "Errors of this condition class and subclasses are signaled when
+    errors occur during replay of entries from a bag."))
+
+(define-condition entry-retrieval-error (replay-error)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Error retrieving next entry from ~A for ~
+                     replay according to strategy ~
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
+             (connection-condition-connection condition)
+             (replay-error-strategy           condition)
+             condition)))
+  (:documentation
+   "This error is signaled when the retrieval of an entry from a bag
     for replay fails."))
+
+(define-condition entry-processing-error (entry-condition
+                                          replay-error)
+  ()
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Error processing entry ~A from ~A during ~
+                     replay according to strategy ~
+                     ~A.~/more-conditions:maybe-print-cause/~@:>"
+             (entry-condition-entry           condition)
+             (connection-condition-connection condition)
+             (replay-error-strategy           condition)
+             condition)))
+  (:documentation
+   "This error is signaled when processing of an entry fails during
+    replay."))
