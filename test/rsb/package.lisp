@@ -144,6 +144,10 @@
                  ((:end-index   5)                       (1 2 3 4 5))
                  ((:start-index 1)                       (2 3 4 5))
                  ((:end-index   3)                       (1 2 3))
+                 ((:start-time  0.04)                    (2 3 4 5))
+                 ((:start-time  -0.06)                   (2 3 4 5))
+                 ((:end-time    0.09)                    (1 2 3 4))
+                 ((:end-time    -0.02)                   (1 2 3 4))
                  ((:channels    (select-channel "/foo")) (1 2)))))
 
          (call-as-replay-strategy-test-case

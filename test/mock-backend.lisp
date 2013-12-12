@@ -103,12 +103,16 @@
 
 (defun simple-channels (&key (errors '()))
   (let+ (((&flet maybe-error (value)
-            (if (member value errors) 'error value))))
-   `(((,(local-time:now) ,(local-time:now))
+            (if (member value errors) 'error value)))
+         (now (local-time:now))
+         ((&flet now+ (amount)
+            (local-time:adjust-timestamp now
+              (:offset :nsec amount)))))
+    `(((,now ,(now+ 50000000))
       ,(mapcar #'maybe-error '(1 2))
       0 "/foo"
       ())
-     ((,(local-time:now) ,(local-time:now) ,(local-time:now))
+      ((,(now+ 50001000) ,(now+ 50002000) ,(now+ 100001000))
       ,(mapcar #'maybe-error '(3 4 5))
       1 "/bar"
       ()))))
