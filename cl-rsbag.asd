@@ -306,7 +306,7 @@
                  :components ((:file       "package")
                               (:file       "protocol")
 
-                              (:file       "timestamp-adjustment-mixin")
+                              (:file       "strategy-mixins")
 
                               (:file       "recorded-timing")
                               (:file       "fixed-rate")

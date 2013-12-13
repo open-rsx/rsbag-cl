@@ -80,7 +80,12 @@
                                       (start-index nil start-index-supplied?)
                                       (end-index   nil end-index-supplied?))
   (when (and start-index-supplied? end-index-supplied?)
-    (check-ordered-indices start-index end-index)))
+    (with-condition-translation
+        (((error incompatible-initargs)
+          :class      'bounds-mixin
+          :parameters (list :start-index :end-index)
+          :values     (list start-index  end-index)))
+      (check-ordered-indices start-index end-index))))
 
 (defmethod strategy-start-index ((strategy bounds-mixin))
   (or (strategy-%start-index strategy) 0))
@@ -141,10 +146,16 @@
                            :end-time  end-time))
 
   ;; This check may do nothing when both times are supplied but one is
-  ;; a real and one is a timestamp. Therefore, the times are checked
+  ;; a negative real and one is a non-negative real or when one is a
+  ;; real and one is a timestamp. Therefore, the times are checked
   ;; again in the :before method on `replay'.
   (when (and start-time-supplied? end-time-supplied?)
-    (check-ordered-times start-time end-time)))
+    (with-condition-translation
+        (((error incompatible-initargs)
+          :class      'time-bounds-mixin
+          :parameters (list :start-time :end-time)
+          :values     (list start-time  end-time)))
+      (check-ordered-times start-time end-time))))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   time-bounds-mixin)
@@ -653,9 +664,16 @@
 (defun check-ordered-times (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
   (cond
-    ((and (realp earlier) (realp later) (not (< earlier later)))
-     (error "~@<Invalid relation of times: relative times ~,3F is not ~
+    ((and (typep earlier 'non-negative-real)
+          (typep later 'non-negative-real)
+          (not (< earlier later)))
+     (error "~@<Invalid relation of times: relative time ~,3F is not ~
              later than relative time ~,3F.~@:>"
+            later earlier))
+    ((and (typep earlier 'negative-real) (typep later 'negative-real)
+          (not (< earlier later)))
+     (error "~@<Invalid relation of times: end-relative time ~,3F is ~
+             not later than end-relative time ~,3F.~@:>"
             later earlier))
     ((and (typep earlier 'local-time:timestamp)
           (typep later 'local-time:timestamp)
