@@ -98,6 +98,8 @@
     (etypecase assessment-function
       ((eql error)
        (ensure-condition 'error (do-it)))
+      ((eql replay-error)
+       (ensure-condition 'replay-error (do-it)))
       ((eql entry-retrieval-error)
        (ensure-condition 'entry-retrieval-error (do-it)))
       ((eql entry-processing-error)
@@ -108,16 +110,17 @@
 (defmacro define-replay-strategy-smoke-test
     ((class
       &key
-      (suite-name   (symbolicate class '#:-root))
-      (bag-var      (gensym "BAG"))
-      (initargs-var (gensym "INITARGS"))
-      (expected-var (gensym "EXPECTED")))
+      (suite-name        (symbolicate class '#:-root))
+      (bag-var           (gensym "BAG"))
+      (initargs-var      (gensym "INITARGS"))
+      (expected-var      (gensym "EXPECTED"))
+      (required-initargs '()))
      &body
      cases)
   "Define a smoke test case for class CLASS in test suite `SUITE-NAME'
    with CASES. Each element of CASES has to be of the form
 
-     (INITARGS &optional BAG EXPECTED)
+     (INITARGS &key BAG PROCESSING-ERRORS EXPECTED)
 
    where EXPECTED is the list of entries the strategy should produce
    when applied to BAG."
@@ -131,7 +134,7 @@
        (ensure-cases (initargs bag processing-errors expected)
            (list
             ,@(map-product
-               (lambda+ ((initargs &key bag expected processing-errors)
+               (lambda+ ((initargs &key bag processing-errors expected)
                          (initargs1 expected1))
                  `(let ((,initargs-var (list ,@initargs1))
                         (,expected-var (list ,@expected1)))
@@ -144,18 +147,39 @@
                  ((:end-index   5)                       (1 2 3 4 5))
                  ((:start-index 1)                       (2 3 4 5))
                  ((:end-index   3)                       (1 2 3))
+                 ((:start-index -4)                      (2 3 4 5))
+                 ((:end-index   -2)                      (1 2 3))
                  ((:start-index 1 :end-index 3)          (2 3))
                  ((:start-time  0.04)                    (2 3 4 5))
                  ((:start-time  -0.06)                   (2 3 4 5))
                  ((:end-time    0.09)                    (1 2 3 4))
                  ((:end-time    -0.02)                   (1 2 3 4))
-                 ((:channels    (select-channel "/foo")) (1 2)))))
+                 ((:channels    (select-channel "/foo")) (1 2))))
+
+            ;; Some invalid start and end indices.
+            `((:start-index -10 ,,@required-initargs)
+              ,,bag-var () replay-error)
+            `((:start-index 10 ,,@required-initargs)
+              ,,bag-var () replay-error)
+            `((:start-index -10 :error-policy ,#'continue ,,@required-initargs)
+              ,,bag-var () ())
+            `((:start-index 10 :error-policy ,#'continue ,,@required-initargs)
+              ,,bag-var () ())
+            `((:end-index -10 ,,@required-initargs)
+              ,,bag-var () replay-error)
+            `((:end-index 10 ,,@required-initargs)
+              ,,bag-var () replay-error)
+            `((:end-index -10 :error-policy ,#'continue ,,@required-initargs)
+              ,,bag-var () ())
+            `((:end-index 10 :error-policy ,#'continue ,,@required-initargs)
+              ,,bag-var () ()))
 
          (call-as-replay-strategy-test-case
           bag processing-errors ',class initargs
           (lambda (connection strategy) (replay connection strategy))
           (case expected
-            ((error entry-retrieval-error entry-processing-error)
+            ((error
+              replay-error entry-retrieval-error entry-processing-error)
              expected)
             (t
              (lambda (events)

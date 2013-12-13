@@ -12,7 +12,7 @@
    "Test suite for the `as-fast-as-possible' replay strategy class."))
 
 (define-replay-strategy-construction-test (as-fast-as-possible)
-   ;; There are few interesting cases here.
+  ;; There are few interesting cases here.
   '(()                          t)
   `((:error-policy ,#'continue) t)
   '((:error-policy nil)         t))
@@ -31,6 +31,7 @@
   ('(:error-policy nil)
    :processing-errors '(2)
    :expected          'entry-processing-error)
+
   ;; The `continue' restart skips to the next entry. Therefore, the
   ;; observed output continues after the failing entry.
   (`(:error-policy ,#'continue)

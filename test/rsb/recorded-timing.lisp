@@ -44,6 +44,7 @@
   ('(:error-policy nil)
    :processing-errors '(2)
    :expected          'entry-processing-error)
+
   ;; The `continue' restart skips to the next entry. Therefore, the
   ;; observed output continues after the failing entry.
   (`(:error-policy ,#'continue)

@@ -54,7 +54,7 @@
 
 (defclass bounds-mixin ()
   ((start-index :initarg  :start-index
-                :type     (or null non-negative-integer)
+                :type     (or null integer)
                 :accessor strategy-%start-index
                 :writer   (setf strategy-start-index) ; reader is defined below
                 :initform nil
@@ -63,7 +63,7 @@
                  should start or nil if the replay should just start
                  at the first event.")
    (end-index   :initarg  :end-index
-                :type     (or null non-negative-integer)
+                :type     (or null integer)
                 :accessor strategy-end-index
                 :initform nil
                 :documentation
@@ -93,9 +93,33 @@
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
-  (when-let ((start-index (strategy-%start-index strategy))
-             (end-index   (strategy-end-index    strategy)))
-    (check-ordered-indices start-index end-index)))
+  (let+ (((&accessors (start-index strategy-%start-index)
+                      (end-index   strategy-end-index)) strategy)
+         (length)
+         ((&flet length1 ()
+            (setf length
+                  (or length
+                      (length (make-view connection strategy
+                                         :selector #'channel-timestamps))))))
+         ((&flet from-end (index name)
+            (when (> (abs index) (length1))
+              (error "~@<Requested ~A, ~:D elements from the end, is ~
+                      not within the bounds [~:D, ~:D[.~@:>"
+                     name (abs index) 0 (length1)))
+            (+ (length1) index)))
+         ((&flet check-index (index name)
+            (when (and index (not (<= 0 index (length1))))
+              (error "~@<Requested ~A ~:D is not within the bounds ~
+                      [~:D, ~:D[.~@:>"
+                     name index 0 (length1))))))
+    (when (and start-index (minusp start-index))
+      (setf start-index (from-end start-index "start index")))
+    (when (and end-index (minusp end-index))
+      (setf end-index (from-end end-index "end index")))
+    (check-index start-index "start index")
+    (check-index end-index "end index")
+    (when (and start-index end-index)
+      (check-ordered-indices start-index end-index))))
 
 (defmethod print-object ((object bounds-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -656,10 +680,15 @@
 
 (defun check-ordered-indices (earlier later)
   "Signal an error unless EARLIER is smaller than LATER."
-  (unless (< earlier later)
-    (error "~@<Invalid relation of indices: index ~:D is not greater ~
-            than index ~:D.~@:>"
-           later earlier)))
+  (cond
+    ((and (not (minusp earlier)) (not (minusp later)) (not (< earlier later)))
+     (error "~@<Invalid relation of indices: index ~:D is not greater ~
+             than index ~:D.~@:>"
+            later earlier))
+    ((and (minusp earlier) (minusp later) (not (< earlier later)))
+     (error "~@<Invalid relation of indices: end-relative index ~:D is ~
+             not greater than end-relative index ~:D.~@:>"
+            later earlier))))
 
 (defun check-ordered-times (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."

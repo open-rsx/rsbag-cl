@@ -15,16 +15,16 @@
 
 (define-replay-strategy-construction-test (bounds-mixin)
   ;; Some invalid cases.
-  '((:start-index -10)              type-error)
   '((:start-index 1.5)              type-error)
-  '((:end-index -1)                 type-error)
   '((:end-index 1/2)                type-error)
   '((:start-index 2 :end-index 1)   incompatible-initargs)
   '((:start-index -1 :end-index -2) incompatible-initargs)
 
   ;; These are OK.
   '((:start-index 0)                t)
+  '((:start-index -10)              t)
   '((:end-index 1)                  t)
+  '((:end-index -1)                 t)
   '((:start-index 1 :end-index 2)   t))
 
 ;;; `time-bounds-mixin'

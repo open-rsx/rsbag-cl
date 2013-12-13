@@ -25,7 +25,8 @@
   `((:rate 1 :error-policy ,#'continue)  t))
 
 (define-replay-strategy-smoke-test (fixed-rate
-                                    :expected-var expected)
+                                    :expected-var      expected
+                                    :required-initargs (:rate 1000))
   ;; Some simple cases.
   ('(:rate  1000))
   (`(:rate  1000 :error-policy ,#'continue))
@@ -40,6 +41,7 @@
   ('(:rate 1000 :error-policy nil)
    :processing-errors '(2)
    :expected          'entry-processing-error)
+
   ;; The `continue' restart skips to the next entry. Therefore, the
   ;; observed output continues after the failing entry.
   (`(:rate 1000 :error-policy ,#'continue)
