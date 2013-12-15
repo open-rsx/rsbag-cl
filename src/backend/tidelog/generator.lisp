@@ -120,7 +120,9 @@
                    :report (lambda (stream)
                              (format stream "~@<Ignore the rest of the ~
                                              ~S chunk at (local ~
-                                             offset) ~:D and continue ~
+                                             offset) ~
+                                             ~/rsbag.backend:print-offset/ ~
+                                             and continue ~
                                              processing.~@:>"
                                              ',type-spec offset))
                    (declare (ignore condition))

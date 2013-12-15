@@ -19,8 +19,15 @@
                     :accessor file-%channels
                     :documentation
                     "Stores information of the channels present in the
-                     file. Entries are of the form (ID NAME
-                     META-DATA).")
+                     file. Entries are of the form
+
+                       (ID NAME META-DATA)
+
+                     where ID is the integer id of the channel, NAME
+                     is string name of the channel, META-DATA is a
+                     plist containing the well-known
+                     entries :type, :format, :source-name,
+                     :source-config and potentially others.")
    (indices         :type     hash-table
                     :reader   file-%indices
                     :initform (make-hash-table :test #'eq)
@@ -133,17 +140,17 @@
                         (format stream "~@<Use the supplied value as ~
                                         list of indices and ~
                                         continue.~@:>"))
-              (setf indxs new-indxs))))))
+              (setf complete? t
+                    indxs     new-indxs))))))
 
-(defmethod close ((file file)
-                  &key &allow-other-keys)
+(defmethod close ((file file) &key abort)
   (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (map nil #'close (hash-table-values (file-%indices file))))
+    (map nil (rcurry #'close :abort abort)
+         (hash-table-values (file-%indices file))))
   (when (next-method-p)
     (call-next-method)))
 
-(defmethod make-channel-id ((file file)
-                            (name string))
+(defmethod make-channel-id ((file file) (name string))
   (prog1
       (file-%next-channel-id file)
     (incf (file-%next-channel-id file))))

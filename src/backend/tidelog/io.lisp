@@ -27,7 +27,6 @@
   (when start
     (file-position source start)))
 
-;; TODO do we have to regenerate indices when skip restart has been used?
 (defmethod scan ((source stream) (object (eql :tide))
                  &optional start)
   (declare (ignore start))
@@ -73,6 +72,7 @@
             (setf retry (lambda () (next-iteration))
                   bail  (lambda (&optional condition)
                           (declare (ignore condition))
+                          (setf complete? nil)
                           (return (values channels indices chunks complete?)))
                   skip  (lambda (&optional condition)
                           (declare (ignore condition))

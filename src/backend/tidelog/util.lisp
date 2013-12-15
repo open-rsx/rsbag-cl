@@ -18,7 +18,8 @@
     (unless (= read length)
       (cerror "Continue with incomplete block"
               "~@<Could only read ~:D byte~:P when trying to read a ~
-               sequence of ~:D byte~:P at stream position ~:D.~@:>"
+               sequence of ~:D byte~:P at stream position ~
+               ~/rsbag.backend:print-offset/.~@:>"
               read length (file-position stream))))
   buffer)
 
