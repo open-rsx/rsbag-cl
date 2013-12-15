@@ -31,7 +31,7 @@
     ;; For each chunk, visit all its entries and add them to the
     ;; temporary index lists.
     (function-calling-restart-bind
-        (((continue skip bail)
+        (((continue (&optional condition) skip bail)
           :report (lambda (stream1)
                     (format stream1
                             (if skip
@@ -40,14 +40,18 @@
                                 "~@<Do not process the remainder of ~
                                  ~A.~@:>")
                             stream)))
-         ((abort bail)
+         ((abort (&optional condition) bail)
           :report (lambda (stream1)
                     (format stream1 "~@<Do not process the remainder ~
                                      of ~A.~@:>"
                             stream))))
       (iter (when (first-iteration-p)
-              (setf skip (lambda () (next-iteration))
-                    bail (lambda () (return))))
+              (setf skip (lambda (&optional condition)
+                           (declare (ignore condition))
+                           (next-iteration))
+                    bail (lambda (&optional condition)
+                           (declare (ignore condition))
+                           (return))))
             (for (id . offset) each chunks :with-index i)
             (let+ ((chunk (unpack stream :block offset))
                    ((&accessors-r/o (chunk-id chnk-chunk-id)) chunk))

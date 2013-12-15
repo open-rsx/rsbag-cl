@@ -37,17 +37,19 @@
                            (strategy   replay-restart-mixin)
                            &key &allow-other-keys)
   (function-calling-restart-bind
-      (((continue *skip* bail)
+      (((continue (&optional condition) *skip* bail)
         :report (lambda (stream)
                   (format stream
                           (if *skip*
                               "~@<Ignore the failed event and ~
                                  continue with the next event.~@:>"
                               "~@<Stop replaying~@:>"))))
-       ((abort bail)
+       ((abort (&optional condition) bail)
         :report (lambda (stream)
                   (format stream "~@<Stop replaying~@:>"))))
-    (setf bail (lambda () (return-from replay)))
+    (setf bail (lambda (&optional condition)
+                 (declare (ignore condition))
+                 (return-from replay)))
     (call-next-method)))
 
 ;;; `bounds-mixin' mixin class

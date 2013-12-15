@@ -106,7 +106,7 @@
 
    Each element of clauses is of the form
 
-     ((NAME &rest VARIABLES) &key REPORT)
+     ((NAME LAMBDA-LIST &rest VARIABLES) &key REPORT)
 
    where
 
@@ -133,11 +133,11 @@
                (setf skip (lambda () (next-iteration))))
              DO-SOMETHING)) "
   (let+ ((all-variables '())
-         ((&flet+ process-clause (((name &rest variables) &key report))
+         ((&flet+ process-clause (((name &ign &rest variables)
+                                   &key report))
             (mapc (lambda (var) (pushnew var all-variables)) variables)
-            `(,name (lambda (&optional condition)
-                      (declare (ignore condition))
-                      (funcall (or ,@variables)))
+            `(,name (lambda (&rest args)
+                      (apply (or ,@variables) args))
                     :test-function (lambda (condition)
                                      (declare (ignore condition))
                                      (or ,@variables))
