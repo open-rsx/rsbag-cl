@@ -63,6 +63,25 @@
                       (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
                       (next-chunk-id   file-%next-chunk-id)) instance)
+         ((&flet ensure-channel (id)
+            (or (find id channels :test #'= :key #'first)
+                (restart-case
+                    (progn (error "~@<No channel with id ~D.~@:>" id))
+                  (continue (&optional condition)
+                    :report (lambda (stream)
+                              (format stream "~@<Reconstruct channel ~D.~@:>"
+                                      id))
+                    (declare (ignore condition))
+                    (log:info "~@<Reconstructing channel ~D~@:>" id)
+                    (push `(,id ,(format nil "reconstructed~D" id) (:type :bytes))
+                          channels))
+                  (use-value (name meta-data)
+                    :report (lambda (stream)
+                              (format stream "~@<Use the supplied ~
+                                              description for channel ~
+                                              ~D.~@:>"
+                                      id))
+                    (push (list id name meta-data) channels))))))
          ((&values chans indxs chnks complete?)
           (when (member direction '(:input :io))
             (scan stream :tide))))
@@ -82,17 +101,23 @@
     ;; Verify presence of indices and construct index objects.
     (iter (with reconstructed? = nil)
           (restart-case
-              (if (or (not complete?) (and (not (emptyp chnks)) (emptyp indxs)))
+              (progn
+                (when (or (not complete?) (and (not (emptyp chnks)) (emptyp indxs)))
                   (error "~@<Incomplete indices; read ~:D chunk~:P and ~
                           ~:D ~:*~[indices~;index~:;indices~].~@:>"
-                         (length chnks) (length indxs))
-                  ;; Create `index' instances for each channel. If
-                  ;; this fails, we can regenerate indices and retry
-                  ;; via one of the restarts.
-                  (return
-                    (iter (for (id name meta-data) in channels)
-                          (setf (gethash id indices)
-                                (make-index id indxs chnks stream direction)))))
+                         (length chnks) (length indxs)))
+                ;; Make sure that entries in CHANNELS exist for all
+                ;; channel ids mentioned in INDXS. This problem can
+                ;; occur, when INDX blocks are written, but CHAN
+                ;; blocks are lost.
+                (mapc (compose #'ensure-channel #'indx-channel-id) indxs)
+                ;; Create `index' instances for all channels. If this
+                ;; fails, we can regenerate indices and retry via one
+                ;; of the restarts.
+                (iter (for (id name meta-data) in channels)
+                      (setf (gethash id indices)
+                            (make-index id indxs chnks stream direction)))
+                (return))
             (continue (&optional condition)
               :report (lambda (stream)
                         (format stream "~@<Regenerate indices.~@:>"))
@@ -102,14 +127,7 @@
               (declare (ignore condition))
               (setf reconstructed? t                 ; detect infinite retries
                     complete?      t
-                    indxs          (reconstruct-indices stream chnks))
-              (iter (for indx in indxs)
-                    (let ((channel-id (indx-channel-id indx)))
-                      (unless (find channel-id channels :test #'= :key #'first)
-                        (push (list channel-id
-                                    (format nil "reconstructed~D" channel-id)
-                                    (list :type '(:rsb-event-0.9 :bytes))) ; TODO just bytes
-                              channels)))))
+                    indxs          (reconstruct-indices stream chnks)))
             (use-value (new-indxs)
               :report (lambda (stream)
                         (format stream "~@<Use the supplied value as ~
