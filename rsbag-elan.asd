@@ -30,6 +30,8 @@
                  :components ((:file       "package")
                               (:file       "types"
                                :depends-on ("package"))
+                              (:file       "util"
+                               :depends-on ("package"))
                               (:file       "xml"
                                :depends-on ("package" "types"))
                               (:file       "file"

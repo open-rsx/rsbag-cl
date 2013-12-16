@@ -67,8 +67,8 @@
          ((date urls time-slots tiers)
           (cond
             ;; Data is available - parse as XML document.
-            ((listen stream)
-             (setf document (cxml:parse stream (stp:make-builder)))
+            ((and (member direction '(:input :io)) (listen stream))
+             (setf document (parse/keep-open stream (stp:make-builder)))
              (xloc:xml-> (stp:document-element document) 'file/list))
 
             ;; No data is available, but direction implies output -
@@ -133,9 +133,7 @@
            (foo (list (local-time:now) nil time-slots tiers))) ; TODO(jmoringe, 2011-12-01): media stuff
       (xloc:->xml foo (stp:document-element document) 'file/list)
       (file-position stream 0)
-      (stp:serialize document (cxml:make-octet-stream-sink
-                               (make-broadcast-stream stream)
-                               :indentation 2))))
+      (serialize/keep-open document stream)))
   (when (next-method-p)
     (call-next-method)))
 
