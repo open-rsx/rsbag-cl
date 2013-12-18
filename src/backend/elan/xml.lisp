@@ -136,7 +136,9 @@
   (check-type value file/list)
 
   (xloc:with-locations
-      (((:@   (format     "FORMAT")    :type 'version/cons)         ".")
+      (((:@   (schema     "xsi:noNamespaceSchemaLocation"))         "."
+        :namespaces '(("xsi" . "http://www.w3.org/2001/XMLSchema-instance")))
+       ((:@   (format     "FORMAT")    :type 'version/cons)         ".")
        ((:@   (version    "VERSION")   :type 'version/cons)         ".")
        ((:@   (author     "AUTHOR"))                                ".")
        ((:@   (date       "DATE")      :type 'local-time:timestamp) ".")
@@ -149,7 +151,7 @@
         :assign-mode :append))
       dest
     (let ((version/cons (cons +format-version-major+ +format-version-minor+)))
-      (multiple-value-setq (format version time-units)
-        (values version/cons version/cons "milliseconds")))
+      (multiple-value-setq (schema format version time-units)
+        (values (princ-to-string +schema-url+) version/cons version/cons "milliseconds")))
     (multiple-value-setq (author date urls slots tiers) (values-list value)))
   value)
