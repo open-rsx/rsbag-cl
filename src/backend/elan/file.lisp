@@ -70,31 +70,33 @@
                       (channels        file-%channels)
                       (data            file-%data)
                       (next-channel-id file-%next-channel-id)) instance)
-         ((date urls time-slots tiers)
-          (cond
-            ;; Data is available - parse as XML document.
-            ((and (member direction '(:input :io)) (listen stream))
-             (setf document (parse/keep-open stream (stp:make-builder)))
-             (let ((file
-                     (xloc:xml-> (stp:document-element document) 'file/list)))
-               (setf author (first file))
-               (rest file)))
-
-            ;; No data is available, but direction implies output -
-            ;; create an empty XML document and write it back later.
-            ((member direction '(:output :io))
-             (setf document (stp:make-document
-                             (stp:make-element "ANNOTATION_DOCUMENT")))
-             (list (local-time:now) nil nil nil))
-
-            ;; No data is available and direction does not imply
-            ;; output - signal an error.
-            (t
-             (error "~@<Trying to read an empty EAF file from: ~S~@:>"
-                    stream))))
-         (base (timestamp->millisecs date))
+         (urls       '())
+         (time-slots '())
+         (tiers      '())
+         (base-time  (local-time:now))
          ((&flet resolve (id)
-            (cdr (assoc id time-slots :test #'string=)))))
+            (+ (timestamp->millisecs base-time)
+               (cdr (assoc id time-slots :test #'string=))))))
+
+    (cond
+      ;; Data is available - parse as XML document.
+      ((and (member direction '(:input :io)) (listen stream))
+       (setf document (parse/keep-open stream (stp:make-builder)))
+       (setf (values author base-time urls time-slots tiers)
+             (values-list
+              (xloc:xml-> (stp:document-element document) 'file/list))))
+
+      ;; No data is available, but direction implies output -
+      ;; create an empty XML document and write it back later.
+      ((member direction '(:output :io))
+       (setf document (stp:make-document
+                       (stp:make-element "ANNOTATION_DOCUMENT"))))
+
+      ;; No data is available and direction does not imply
+      ;; output - signal an error.
+      (t
+       (error "~@<Trying to read an empty EAF file from: ~S~@:>"
+              stream)))
 
     ;; Add video channels.
     (iter (for url each urls :with-index i)
@@ -112,9 +114,7 @@
                   channels)
             (setf (gethash id data)
                   (map 'list (lambda+ ((&ign start end datum))
-                               (list (+ base (resolve start))
-                                     (+ base (resolve end))
-                                     datum))
+                               (list (resolve start) (resolve end) datum))
                        content))))))
 
 (defmethod close ((file file)
@@ -197,15 +197,3 @@
                       (channel integer)
                       (index   integer))
   (third (nth index (gethash channel (file-%data file)))))
-
-;;; Utility functions
-
-(defun millisecs->timestamp (value)
-  (let+ (((&values secs msecs) (truncate value 1000)))
-    (local-time:unix-to-timestamp secs :nsec (* 1000000 msecs))))
-
-(defun timestamp->millisecs (value)
-  (let+ (((&accessors-r/o (secs  local-time:timestamp-to-unix)
-                          (nsecs local-time:nsec-of)) value)
-         (msecs (truncate nsecs 1000000)))
-    (+ (* 1000 secs) msecs)))
