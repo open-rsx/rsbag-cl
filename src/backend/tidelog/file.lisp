@@ -1,6 +1,6 @@
 ;;;; file.lisp --- The file class represents a TIDE log file.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -261,14 +261,14 @@
 (defmethod write-buffer ((file   file)
                          (buffer chnk))
   (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (let+ (((&accessors-r/o (stream backend-stream)) file)
-           ((&accessors     (count   chnk-count)
-                            (entries chnk-entries)) buffer))
+    (let+ (((&structure-r/o backend- stream) file)
+           ((&structure chnk- count entries) buffer))
       ;; We abused chnk-count to store the size of the chunk instead of
       ;; the number of entries. Correct this before writing the chunk.
       (unless (zerop count)
         (setf count (length entries))
         (pack buffer stream)
+        (force-output stream)
 
         ;; For the sake of conservative garbage collectors, we
         ;; dereference as much as possible here. On SBCL we even garbage
