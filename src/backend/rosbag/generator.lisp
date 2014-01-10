@@ -1,6 +1,6 @@
 ;;;; generator.lisp ---
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -79,8 +79,7 @@
 
 (defun specs->size (class-name specs)
   `(defmethod size ((object ,class-name))
-     (+ ,@(mapcar (rcurry #'spec->size class-name 'object)
-                  specs))))
+     (+ ,@(mapcar (rcurry #'spec->size class-name 'object) specs))))
 
 (defun spec->size (spec class-name object)
   (let+ (((name type &rest &ign) spec)
@@ -241,8 +240,7 @@
                 ((&values object length)
                  (progn
                    (format t "Found header of length ~D with opcode ~D ~%" header-length opcode)
-                   (unpack ,source (allocate-instance
-                                    (find-class (find-record-class opcode)))
+                   (unpack ,source (allocate-instance (find-record-class opcode))
                            (- ,offset 4)))))
 
            (incf offset (- length 4))

@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the backend.rosbag module.
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -19,8 +19,13 @@
   ;; Conditions
   (:export
    #:rosbag-condition
+
    #:rosbag-file-error
-   #:invalid-rosbag-structure)
+
+   #:invalid-rosbag-structure
+
+   #:no-such-record-class-error
+   #:no-such-record-class-error-opcode)
 
   (:documentation
    "This package contains a backend for Version 2.0 of the Rosbag file

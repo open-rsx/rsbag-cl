@@ -1,6 +1,6 @@
 ;;;; io.lisp ---
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -16,9 +16,8 @@
    :source           source
    :format-control   "~@<Failed to ~A for record ~A~@[ at position ~
                       ~/rsbag.backend:print-offset/~]: ~A~@:>"
-   :format-arguments (list 'scan object
-                           (when (streamp source)
-                             (file-position source))
+   :format-arguments (list 'scan object (when (streamp source)
+                                          (file-position source))
                            condition)))
 
 (defmethod scan :before ((source stream) (object t)
@@ -62,9 +61,8 @@
    :source           source
    :format-control   "~@<Failed to unpack record ~A~@[ at position ~
                       ~/rsbag.backend:print-offset/~]: ~A~@:>"
-   :format-arguments (list object
-                           (when (streamp source)
-                             (file-position source))
+   :format-arguments (list object (when (streamp source)
+                                    (file-position source))
                            condition)))
 
 (defmethod unpack :before ((source stream) (object t)
@@ -77,33 +75,18 @@
                    &optional start)
   (declare (ignore start))
   (let* ((header-length (read-ub32/le source))
-         (header-buffer (let ((buffer (make-octet-vector (+ 4 header-length))))
-                          (unless (= (read-sequence buffer source :start 4) (+ 4 header-length))
-                            (error "~@<Failed to read header~@:>"))
-                          (setf (ub32ref/le buffer 0) header-length)
-                          buffer))
-         (opcode        (extract-opcode header-buffer 4 (+ 4 header-length)))
+         (header-buffer (read-chunk-of-length header-length)) ; TODO currently in TIDELog backend
+         (opcode        (extract-opcode header-buffer))
          (data-length   (read-ub32/le source))
-         (buffer        (let ((buffer (make-octet-vector (+ 4 header-length 4 data-length))))
-                          (setf (subseq buffer 0 (+ 4 header-length)) header-buffer)
-                          (unless (= (read-sequence buffer source
-                                                    :start (+ 4 header-length 4))
-                                     (+ 4 header-length 4 data-length))
-                            (error "~@<Failed to read data~@:>"))
-                          (setf (ub32ref/le buffer (+ 4 header-length)) data-length)
-                          buffer)))
-    (print (file-position source))
-    (unpack buffer (allocate-instance (find-class (find-record-class opcode))))))
+         (data-buffer   (read-chunk-of-length data-length)))
+    ;; TODO generated unpack method is not yet prepared for this cons trick
+    (unpack (cons header-buffer data-buffer)
+            (allocate-instance (find-record-class opcode)))))
 
 ;;; Utilities
 
-(defun make-safe-string (buffer)
-  (substitute-if #\. (curry #'> 32)
-                 (sb-ext:octets-to-string
-                  buffer :external-format '(:ascii :replacement #\?))
-                 :key #'char-code))
-
-(defun extract-opcode (buffer start end)
+(defun extract-opcode (buffer &optional (start 0 ) end)
+  (declare (type simple-octet-vector buffer))
   ;; TODO(jmoringe, 2013-01-24): hack
   (let ((position (search (load-time-value
                            (concatenate 'simple-octet-vector

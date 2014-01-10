@@ -1,6 +1,6 @@
 ;;;; macros.lisp --- Macros for code generation.
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -25,7 +25,7 @@
     `(progn
        ,(specs->class name all-specs :documentation documentation)
        ,@(when opcode-supplied?
-           `((setf (find-record-class ,opcode) ',name)))
+           `((setf (find-record-class ,opcode) (find-class ',name))))
        ,(specs->size name all-specs)
        ,(specs->serializer name all-specs)
        ,(specs->deserializer name all-specs))))

@@ -1,6 +1,6 @@
 ;;;; util.lisp --- Utility functions for the TIDELog backend.
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -8,7 +8,7 @@
 
 ;;; IO-related utility functions
 
-(defun read-chunk-of-length (length stream
+(defun read-chunk-of-length (length stream ; TODO move to src/backend/util.lisp
                              &optional
                              (buffer (nibbles:make-octet-vector length)))
   "Create a `simple-octet-vector' (unless BUFFER is supplied) of
