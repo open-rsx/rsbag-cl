@@ -8,6 +8,7 @@
   (:use
    #:cl
    #:alexandria
+   #:let-plus
    #:iterate
    #:lift
 

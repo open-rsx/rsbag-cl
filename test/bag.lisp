@@ -17,16 +17,23 @@
   smoke
 
   (let* ((pathname (asdf:system-relative-pathname
-                    :cl-rsbag-test "test/data/minimal.tide"))
-         (bag      (handler-bind
-                       ((open-error #'continue))
-                     (open-bag pathname :direction :input))))
+                    :cl-rsbag-test "test/data/minimal.mock"))
+         (bag      (open-bag pathname
+                             :direction :input
+                             :backend   `(:mock :channels ,(simple-channels)))))
+    (ensure-same (bag-direction bag) :input)
     (ensure-same (mapcar #'channel-name (bag-channels bag))
-                 '("MYCHAN")
+                 '("/bar" "/foo")
                  :test #'equal)
+
+    ;; Check content of first channel.
     (let ((channel (first (bag-channels bag))))
-      (ensure-same (length (channel-timestamps channel)) 1
-                   :test #'=)
-      (ensure-same (coerce channel 'list) '(#(1 2 3))
-                   :test #'equalp))
+      (ensure-same (length (channel-timestamps channel)) 3)
+      (ensure-same (coerce channel 'list) '(3 4 5) :test #'equalp))
+
+    ;; Check content of second channel.
+    (let ((channel (second (bag-channels bag))))
+      (ensure-same (length (channel-timestamps channel)) 2)
+      (ensure-same (coerce channel 'list) '(1 2) :test #'equalp))
+
     (close bag)))

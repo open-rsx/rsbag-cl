@@ -49,13 +49,16 @@
             "Stores the encoded data, the decoding of which failed."))
   (:report
    (lambda (condition stream)
-     (let ((*print-length* (or *print-length* 16)))
-       (format stream "~@<The encoded value ~S could not be decoded by ~
-                       the transform ~
-                       ~A.~/more-conditions:maybe-print-cause/~@:>"
-               (transform-error-encoded   condition)
-               (transform-error-transform condition)
-               condition))))
+     (let+ (((&accessors-r/o (encoded   transform-error-encoded)
+                             (transform transform-error-transform)) condition)
+            (octet-sequence? (and (typep encoded 'sequence)
+                                  (every (of-type 'octet) encoded)))
+            (*print-length* (or *print-length* 16))) ; TODO remove
+       (format stream "~@<The encoded value ~:@_~
+                       ~<| ~@;~:[~S~;~:@/rsbag:print-hexdump/~]~:>~:@_~
+                       could not be decoded by the transform ~:_~
+                       ~A.~/more-conditions:maybe-print-cause/~:>"
+               (list octet-sequence? encoded) transform condition))))
   (:documentation
    "This error is signaled when the decoding of data, usually
     retrieved from a bag, fails."))

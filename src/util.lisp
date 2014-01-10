@@ -99,6 +99,54 @@
 
 (define-plist-data-mixin meta-data)
 
+;;; Error handling utilities
+
+(defmacro function-calling-restart-bind (clauses &body body)
+  "Execute BODY with established restarts according to CLAUSES.
+
+   Each element of clauses is of the form
+
+     ((NAME LAMBDA-LIST &rest VARIABLES) &key REPORT)
+
+   where
+
+     NAME is the name of the restart that should be established
+
+     VARIABLES is a list of variables names which are initially bound
+     to nil but can be set to functions of one parameter - a condition
+     instance - in BODY which implement the behavior of the restart.
+
+     The keyword parameter REPORT works like :report-function in
+     `cl:restart-case'.
+
+   Restarts are only active if one of their VARIABLES in non-nil. When
+   such a restart is invoked, the first non-nil variable among its
+   VARIABLES is called as function with the condition as its sole
+   argument to implement the behavior of the restart.
+
+   Example:
+
+     (control-transferring-restart-bind
+       (((continue skip)
+         :report (lambda (stream) (format stream \"Skip the element\"))))
+       (iter (when (first-iteration-p)
+               (setf skip (lambda () (next-iteration))))
+             DO-SOMETHING)) "
+  (let+ ((all-variables '())
+         ((&flet+ process-clause (((name &ign &rest variables)
+                                   &key report))
+            (mapc (lambda (var) (pushnew var all-variables)) variables)
+            `(,name (lambda (&rest args)
+                      (apply (or ,@variables) args))
+                    :test-function (lambda (condition)
+                                     (declare (ignore condition))
+                                     (or ,@variables))
+                    ,@(when report
+                        `(:report-function ,report)))))
+         (clauses (mapcar #'process-clause clauses)))
+    `(let ,all-variables
+       (restart-bind ,clauses ,@body))))
+
 ;;; Printing utilities
 
 (defun print-direction (stream direction &optional colon? at?)
@@ -115,3 +163,74 @@
                               (pathname-name location)
                               (pathname-type location)))
             (t        location))))
+
+(defun print-hexdump (stream data
+                      &optional
+                      colon? at? (width (%stream-remaining-columns stream)))
+  "Print DATA to the STREAM as a hexdump of the form
+
+     [OFFSET ]B1 B2 B3 ... S1S2S3 ...
+     ...
+
+   where OFFSET - the hexadecimal offset of B1 - is only printed when
+   the COLON? modifier is true. B1, B2, ... are the bytes of DATA
+   printed in hexadecimal base. S1S2... is a the part of data which
+   corresponds to B1 B2 ... rendered as string. In S1S2...,
+   unprintable and whitespace characters are replaced with \".\"
+
+   Depending on the length of DATA and WIDTH, the printed
+   representation can span multiple lines."
+  (let+ ((length        (length data))
+         (end           (if *print-length*
+                            (min *print-length* length)
+                            length))
+         (shortened?    (< end length))
+         (offset-digits (ceiling (integer-length (1- end)) 4))
+         (width/offset  (if colon? (+ offset-digits 2) 0))
+         (width         (when width
+                          (max width (+ width/offset 5))))
+         (width/hex     (if width
+                            (let ((x (floor (- width width/offset 1) 4/3)))
+                              (1- (- x (mod x 3))))
+                            (max 0 (1- (* 3 end)))))
+         (width/string  (if width
+                            (- width width/offset width/hex 1)
+                            end))
+         (chunk-length  (if width
+                            (floor (1+ width/hex) 3)
+                            end))
+         ((&flet printable-character (code)
+            (let ((char (code-char code)))
+              (if (and (standard-char-p char)
+                       (not (member char '(#\Space #\Newline #\Tab))))
+                  char
+                  #\.)))))
+    (assert (plusp chunk-length))
+    (pprint-logical-block (stream (list data))
+      (when at?
+        (format stream "~:D-byte ~S~:@_" length (type-of data)))
+      (iter (for offset below end :by chunk-length)
+            (let* ((last-chunk? (>= (+ offset chunk-length) end))
+                   (chunk       (subseq data offset (min end (+ offset chunk-length))))
+                   (hex-chunk   chunk))
+              (when (and shortened? last-chunk?)
+                (setf (last-elt chunk) 0)
+                (coercef hex-chunk 'list)
+                (setf (last-elt hex-chunk) ".."))
+              (format stream "~:[~2*~:;~V,'0X: ~]~V@<~{~2,'0X~^ ~}~> ~V@<~{~C~}~>~@[~:@_~]"
+                      colon? offset-digits offset
+                      width/hex    (coerce hex-chunk 'list)
+                      width/string (map 'list #'printable-character chunk)
+                      (not last-chunk?)))))))
+
+(defun %stream-remaining-columns (stream)
+  (let ((right-margin (or *print-right-margin*
+                          #+sbcl (if (sb-pretty:pretty-stream-p stream)
+                                     (sb-pretty::pretty-stream-line-length stream)
+                                     (sb-impl::line-length stream))
+                          80))
+        (column       (or #+sbcl (when (sb-pretty:pretty-stream-p stream)
+                                   (sb-pretty::logical-block-start-column
+                                    (car (sb-pretty::pretty-stream-blocks stream))))
+                          0)))
+    (- right-margin column 4)))

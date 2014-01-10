@@ -12,7 +12,7 @@
    (pathname/existing ()
      (asdf:system-relative-pathname
       (asdf:find-system :cl-rsbag-test)
-      "test/data/minimal.tide")))
+      "test/data/minimal.mock")))
   (:function
    (namestring/existing ()
      (pathname/existing)))
@@ -32,13 +32,10 @@
   (ensure-cases (args)
       `((,(namestring/existing) :direction :input)
         (,(pathname/existing)   :direction :input)
-        (,(namestring/existing) :direction :input :backend :tide)
-        (,(pathname/existing)   :direction :input :backend :tide)
-        (,(stream)              :direction :input :backend :tide))
-    (handler-bind
-        ((open-error #'continue))
-      (let ((bag (apply #'open-bag args)))
-        (close bag)))))
+        (,(namestring/existing) :direction :input :backend :mock)
+        (,(pathname/existing)   :direction :input :backend :mock)
+        (,(stream)              :direction :input :backend :mock))
+    (close (apply #'open-bag args))))
 
 (addtest (protocol-root
           :documentation
@@ -52,26 +49,26 @@
         ;; :backend missing
         (,(stream)              :direction :input)
         ;; :direction missing
-        (,(stream)              :backend :tide)
+        (,(stream)              :backend :mock)
         ;; invalid direction
-        (,(namestring/existing) :direction :invalid :backend :tide)
-        (,(pathname/existing)   :direction :invalid :backend :tide)
-        (,(stream)              :direction :invalid :backend :tide)
+        (,(namestring/existing) :direction :invalid :backend :mock)
+        (,(pathname/existing)   :direction :invalid :backend :mock)
+        (,(stream)              :direction :invalid :backend :mock)
         ;; invalid backend
         (,(namestring/existing) :direction :input :backend :no-such-backend)
         (,(pathname/existing)   :direction :input :backend :no-such-backend)
         (,(stream)              :direction :input :backend :no-such-backend)
         ;; file exists
-        (,(namestring/existing) :direction :output :backend :tide)
-        (,(pathname/existing)   :direction :output :backend :tide)
+        (,(namestring/existing) :direction :output :backend :mock)
+        (,(pathname/existing)   :direction :output :backend :mock)
         ;; cannot specify flush strategy for input direction
         (,(namestring/existing) :direction :input :flush-strategy :some-strategy)
         (,(pathname/existing)   :direction :input :flush-strategy :some-strategy)
-        (,(stream)              :direction :input :backend :tide :flush-strategy :some-strategy)
+        (,(stream)              :direction :input :backend :mock :flush-strategy :some-strategy)
         ;; invalid flush strategy
         (,(namestring/existing) :direction :io :flush-strategy :no-such-strategy)
         (,(pathname/existing)   :direction :io :flush-strategy :no-such-strategy)
-        (,(stream)              :direction :io :backend :tide :flush-strategy :no-such-strategy))
+        (,(stream)              :direction :io :backend :mock :flush-strategy :no-such-strategy))
 
     (ensure-condition 'error
       (apply #'open-bag args))))

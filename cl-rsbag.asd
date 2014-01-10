@@ -271,19 +271,16 @@
   :version     #.(version/string)
   :license     "LGPLv3; see COPYING file for details."
   :description "Unit tests for the cl-rsbag system."
-  :depends-on  ((:version :cl-rsbag      #.(version/string))
-                ;; TODO temp
-                (:version :rsbag-tidelog #.(version/string))
+  :depends-on  (:flexi-streams
+                (:version :lift     "1.7.1")
 
-                (:version :lift          "1.7.1"))
+                (:version :cl-rsbag #.(version/string)))
   :components  ((:module     "test"
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol"
-                               :depends-on ("package"))
-                              (:file       "bag"
-                               :depends-on ("package"))
-                              (:file       "mock-backend"
-                               :depends-on ("package"))))
+                              (:file       "mock-backend")
+                              (:file       "protocol")
+                              (:file       "bag")))
 
                 (:module     "backend"
                  :pathname   "test/backend"
@@ -306,13 +303,16 @@
                 (:module     "rsb"
                  :pathname   "test/rsb"
                  :depends-on ("test")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol"
-                               :depends-on ("package"))
-                              (:file       "fixed-rate"
-                               :depends-on ("package"))
-                              (:file       "timestamp-adjustment-mixin"
-                               :depends-on ("package"))))))
+                              (:file       "protocol")
+
+                              (:file       "strategy-mixins")
+
+                              (:file       "recorded-timing")
+                              (:file       "fixed-rate")
+                              (:file       "as-fast-as-possible")
+                              (:file       "interactive")))))
 
 (defmethod perform ((op     test-op)
                     (system (eql (find-system :cl-rsbag-test))))

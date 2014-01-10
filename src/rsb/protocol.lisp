@@ -11,6 +11,7 @@
 (defgeneric events->bag (source dest
                          &rest args
                          &key
+                         error-policy
                          transports
                          filters
                          timestamp
@@ -28,6 +29,9 @@
     arguments ARGS are passed to the function constructing SOURCE, the
     function constructing DEST or the new connection depending on
     their keyword part.
+
+    If supplied, ERROR-POLICY has to be nil or a function to be called
+    with a `condition' object when an error is signaled.
 
     If supplied, TRANSPORTS configures RSB transport mechanisms. See
     `rsb:make-participant' for details.
@@ -67,6 +71,7 @@
 (defgeneric bag->events (source dest
                          &rest args
                          &key
+                         error-policy
                          backend
                          bag-class
                          replay-strategy
@@ -83,6 +88,9 @@
     arguments ARGS are passed to the function constructing DEST, the
     function constructing SOURCE or the new connection depending on
     their keyword part.
+
+    If supplied, ERROR-POLICY has to be nil or a function to be called
+    with a `condition' object when an error is signaled.
 
     BACKEND can be used to explicitly select a file-format backend for
     SOURCE. If supplied, it has to be a keyword designating a
@@ -156,7 +164,17 @@
 
     If PROGRESS is non-nil it has to be a function accepting five
     arguments: progress ratio, current index, start index, end index
-    and current timestamp."))
+    and current timestamp.
+
+    May signal a `replay-error'. In particular,
+    `entry-retrieval-error' and `entry-processing-error' may be
+    signaled."))
+
+(define-condition-translating-method replay ((connection t) (strategy t)
+                                             &key &allow-other-keys)
+  (((and error (not replay-error)) entry-retrieval-error)
+   :connection connection
+   :strategy   strategy))
 
 ;;; View creation protocol
 
@@ -174,20 +192,16 @@
    "Process the tuple (TIMESTAMP PREVIOUS-TIMESTAMP EVENT SINK),
     originating from CONNECTION, according to STRATEGY."))
 
-(defmethod process-event :around ((connection         t)
-                                  (strategy           t)
-                                  (timestamp          t)
-                                  (previous-timestamp t)
-                                  (event              t)
-                                  (sink               t))
-  "Install a continue restart around processing."
-  (restart-case
-      (call-next-method)
-    (continue ()
-      :report (lambda (stream)
-                (format stream "~@<Ignore the failed event and ~
-                                continue with the next event.~@:>"))
-      (values))))
+(define-condition-translating-method process-event ((connection         t)
+                                                    (strategy           t)
+                                                    (timestamp          t)
+                                                    (previous-timestamp t)
+                                                    (event              t)
+                                                    (sink               t))
+  ((error entry-processing-error)
+   :connection connection
+   :strategy   strategy
+   :entry      event))
 
 ;;; Timed replay protocol
 

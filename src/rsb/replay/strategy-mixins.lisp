@@ -31,40 +31,32 @@
    "This mixin class add the establishing of continue and log restarts
     around the actual work of the `replay' method."))
 
+(defvar *skip* nil)
+
 (defmethod replay :around ((connection replay-bag-connection)
                            (strategy   replay-restart-mixin)
                            &key &allow-other-keys)
-  (handler-bind
-      ((error (lambda (condition)
-                (restart-case
-                    (error 'event-retrieval-failed
-                           :connection connection
-                           :strategy   strategy
-                           :cause      condition)
-                  (continue (&optional condition)
-                    :report (lambda (stream)
-                              (format stream "~@<Ignore the failed ~
-                                              event and continue ~
-                                              with the next ~
-                                              event.~@:>"))
-                    (declare (ignore condition))
-                    (use-value :skip))
-                  (log (&optional condition)
-                    :report (lambda (stream)
-                              (format stream "~@<Log an error ~
-                                              message and continue ~
-                                              with the next ~
-                                              event.~@:>"))
-                    (log:error "~@<Failed to retrieve an event for replay: ~A~@:>"
-                               condition)
-                    (use-value :skip))))))
+  (function-calling-restart-bind
+      (((continue (&optional condition) *skip* bail)
+        :report (lambda (stream)
+                  (format stream
+                          (if *skip*
+                              "~@<Ignore the failed event and ~
+                                 continue with the next event.~@:>"
+                              "~@<Stop replaying~@:>"))))
+       ((abort (&optional condition) bail)
+        :report (lambda (stream)
+                  (format stream "~@<Stop replaying~@:>"))))
+    (setf bail (lambda (&optional condition)
+                 (declare (ignore condition))
+                 (return-from replay)))
     (call-next-method)))
 
 ;;; `bounds-mixin' mixin class
 
 (defclass bounds-mixin ()
   ((start-index :initarg  :start-index
-                :type     (or null non-negative-integer)
+                :type     (or null integer)
                 :accessor strategy-%start-index
                 :writer   (setf strategy-start-index) ; reader is defined below
                 :initform nil
@@ -73,7 +65,7 @@
                  should start or nil if the replay should just start
                  at the first event.")
    (end-index   :initarg  :end-index
-                :type     (or null non-negative-integer)
+                :type     (or null integer)
                 :accessor strategy-end-index
                 :initform nil
                 :documentation
@@ -90,7 +82,12 @@
                                       (start-index nil start-index-supplied?)
                                       (end-index   nil end-index-supplied?))
   (when (and start-index-supplied? end-index-supplied?)
-    (check-ordered-indices start-index end-index)))
+    (with-condition-translation
+        (((error incompatible-initargs)
+          :class      'bounds-mixin
+          :parameters (list :start-index :end-index)
+          :values     (list start-index  end-index)))
+      (check-ordered-indices start-index end-index))))
 
 (defmethod strategy-start-index ((strategy bounds-mixin))
   (or (strategy-%start-index strategy) 0))
@@ -98,9 +95,33 @@
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
-  (when-let ((start-index (strategy-%start-index strategy))
-             (end-index   (strategy-end-index    strategy)))
-    (check-ordered-indices start-index end-index)))
+  (let+ (((&accessors (start-index strategy-%start-index)
+                      (end-index   strategy-end-index)) strategy)
+         (length)
+         ((&flet length1 ()
+            (setf length
+                  (or length
+                      (length (make-view connection strategy
+                                         :selector #'channel-timestamps))))))
+         ((&flet from-end (index name)
+            (when (> (abs index) (length1))
+              (error "~@<Requested ~A, ~:D elements from the end, is ~
+                      not within the bounds [~:D, ~:D[.~@:>"
+                     name (abs index) 0 (length1)))
+            (+ (length1) index)))
+         ((&flet check-index (index name)
+            (when (and index (not (<= 0 index (length1))))
+              (error "~@<Requested ~A ~:D is not within the bounds ~
+                      [~:D, ~:D[.~@:>"
+                     name index 0 (length1))))))
+    (when (and start-index (minusp start-index))
+      (setf start-index (from-end start-index "start index")))
+    (when (and end-index (minusp end-index))
+      (setf end-index (from-end end-index "end index")))
+    (check-index start-index "start index")
+    (check-index end-index "end index")
+    (when (and start-index end-index)
+      (check-ordered-indices start-index end-index))))
 
 (defmethod print-object ((object bounds-mixin) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -151,10 +172,16 @@
                            :end-time  end-time))
 
   ;; This check may do nothing when both times are supplied but one is
-  ;; a real and one is a timestamp. Therefore, the times are checked
+  ;; a negative real and one is a non-negative real or when one is a
+  ;; real and one is a timestamp. Therefore, the times are checked
   ;; again in the :before method on `replay'.
   (when (and start-time-supplied? end-time-supplied?)
-    (check-ordered-times start-time end-time)))
+    (with-condition-translation
+        (((error incompatible-initargs)
+          :class      'time-bounds-mixin
+          :parameters (list :start-time :end-time)
+          :values     (list start-time  end-time)))
+      (check-ordered-times start-time end-time))))
 
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   time-bounds-mixin)
@@ -282,7 +309,9 @@
          (update-progress (%make-progress-reporter sequence progress)))
     (macrolet
         ((do-it (&optional end-index)
-           `(iter (for (timestamp event sink) each sequence
+           `(iter (when (first-iteration-p)
+                    (setf *skip* (lambda () (next-iteration))))
+                  (for (timestamp event sink) each sequence
                        :from start-index
                        ,@(when end-index '(:below end-index)))
                   (for previous-timestamp previous timestamp)
@@ -295,16 +324,6 @@
       (if end-index
           (do-it end-index)
           (do-it)))))
-
-(defmethod process-event ((connection         replay-bag-connection)
-                          (strategy           sequential-mixin)
-                          (timestamp          t)
-                          (previous-timestamp t)
-                          (event              (eql :skip))
-                          (sink               t))
-  "Error recovery behaviors may inject the value :skip for EVENT. The
-   default behavior is just ignoring the failed event. "
-  (values))
 
 (defmethod process-event ((connection         replay-bag-connection)
                           (strategy           sequential-mixin)
@@ -652,6 +671,8 @@
                          :terminate #'terminate))
 
     (iter (until terminate?)
+          (when (first-iteration-p)
+            (setf *skip* (lambda () (next-iteration))))
           (for command next (next-command strategy))
           (execute-command strategy command)
           (when update-progress
@@ -661,17 +682,29 @@
 
 (defun check-ordered-indices (earlier later)
   "Signal an error unless EARLIER is smaller than LATER."
-  (unless (< earlier later)
-    (error "~@<Invalid relation of indices: index ~:D is not greater ~
-            than index ~:D.~@:>"
-           later earlier)))
+  (cond
+    ((and (not (minusp earlier)) (not (minusp later)) (not (< earlier later)))
+     (error "~@<Invalid relation of indices: index ~:D is not greater ~
+             than index ~:D.~@:>"
+            later earlier))
+    ((and (minusp earlier) (minusp later) (not (< earlier later)))
+     (error "~@<Invalid relation of indices: end-relative index ~:D is ~
+             not greater than end-relative index ~:D.~@:>"
+            later earlier))))
 
 (defun check-ordered-times (earlier later)
   "Signal an error unless EARLIER is earlier than LATER."
   (cond
-    ((and (realp earlier) (realp later) (not (< earlier later)))
-     (error "~@<Invalid relation of times: relative times ~,3F is not ~
+    ((and (typep earlier 'non-negative-real)
+          (typep later 'non-negative-real)
+          (not (< earlier later)))
+     (error "~@<Invalid relation of times: relative time ~,3F is not ~
              later than relative time ~,3F.~@:>"
+            later earlier))
+    ((and (typep earlier 'negative-real) (typep later 'negative-real)
+          (not (< earlier later)))
+     (error "~@<Invalid relation of times: end-relative time ~,3F is ~
+             not later than end-relative time ~,3F.~@:>"
             later earlier))
     ((and (typep earlier 'local-time:timestamp)
           (typep later 'local-time:timestamp)

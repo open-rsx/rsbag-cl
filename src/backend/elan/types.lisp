@@ -22,30 +22,47 @@
 (deftype annotation/list ()
   "A list of the form
 
-     (START-TIME-SLOT END-TIME-SLOT DATUM)
+     (ID START-TIME-SLOT END-TIME-SLOT DATUM)
 
    to be interpreted as an annotation consisting of two time slot
    string ids and an associated string datum."
-  '(cons string (cons string (cons string null))))
+  '(cons string (cons string (cons string (cons string null)))))
+
+(deftype linguistic-type/list ()
+  "A list of the form
+
+     (ID GRAPHIC-REFERENCES TIME-ALIGNABLE)
+
+   to be interpreted as a linguistic type."
+  '(cons string (cons boolean (cons boolean null))))
 
 (deftype tier/list ()
   "A list of the form
 
-     (NAME ANNOTATIONS)
+     (NAME LINGUISTIC-TYPE-REF ANNOTATIONS)
 
    to be interpreted as a named tier containing the annotation items
    ANNOTATIONS."
-  '(cons string (cons list null)))
+  '(cons string (cons string (cons list null))))
+
+(deftype version/cons ()
+  "A version specification of the form
+
+     (MAJOR . MINOR)
+
+   ."
+  '(cons non-negative-integer non-negative-integer))
 
 (deftype file/list ()
   "A list of the form
 
-     (DATE MEDIA-URLS TIME-SLOTS TIERS)
+     (AUTHOR DATE MEDIA-URLS TIME-SLOTS TIERS)
 
    where MEDIA-URLS is a list of strings, TIME-SLOTS is a list of
    elements of type TIME-SLOT/CONS and TIERS is a list of elements of
    type TIER/LIST."
-  '(cons local-time:timestamp        ; date in ISO timestamp format
-         (cons list                  ; media URLs
-               (cons list            ; time slots
-                     (cons list))))) ; tiers
+  '(cons string                                   ; author
+         (cons local-time:timestamp               ; date in ISO timestamp format
+               (cons list                         ; media URLs
+                     (cons list                   ; time slots
+                           (cons list))))))       ; tiers

@@ -22,7 +22,21 @@
 
    #:tidelog-file-error
 
-   #:invalid-tidelog-structure)
+   #:invalid-tidelog-structure
+
+   #:no-such-block-class-error
+   #:no-such-block-class-error-tag)
+
+  ;; Block IO protocol
+  (:export
+   #:tag
+
+   #:size
+
+   #:scan
+
+   #:unpack
+   #:pack)
 
   (:documentation
    "This package contains a backend for the TIDE log file format as

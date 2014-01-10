@@ -136,11 +136,17 @@ message(STATUS "Project is ${CMAKE_PROJECT_NAME} (${VERSION_FROM_LISP})")
 # Tests
 enable_testing()
 
-configure_lisp_redirect("test"
-                        "--eval \"(proclaim (quote (optimize (debug 3) (safety 3) (speed 0))))\"
-                         --eval \"(asdf:test-system :${SYSTEM_NAME})\"")
-add_test(NAME    "${SYSTEM_NAME}"
-         COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/sbcl.test.cmake")
+function(test NAME SYSTEM)
+    configure_lisp_redirect("${NAME}"
+                            "--eval \"(proclaim (quote (optimize (debug 3) (safety 3) (speed 0))))\"
+                             --eval \"(asdf:test-system :${SYSTEM})\"")
+    add_test(NAME    "${SYSTEM}"
+             COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/sbcl.${NAME}.cmake")
+endfunction()
+
+test(test         ${SYSTEM_NAME})
+test(test-tidelog rsbag-tidelog)
+test(test-elan    rsbag-elan)
 
 # Installation
 file(GLOB ASD_FILES

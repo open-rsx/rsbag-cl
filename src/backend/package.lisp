@@ -45,7 +45,9 @@
   (:export
    #:no-such-backend-class
    #:find-backend-class
-   #:backend-classes)
+   #:backend-classes
+
+   #:make-backend)
 
   ;; `stream-mixin' class
   (:export
@@ -96,7 +98,7 @@
 
   ;; Utilities
   (:export
-   :print-offset)
+   #:print-offset)
 
   (:documentation
    "This package contains protocol and implementation aids for file

@@ -95,6 +95,37 @@
 (dynamic-classes:define-findable-class-family backend
     "This class family consists of file format backends.")
 
+(defgeneric make-backend (spec &rest args)
+  (:documentation
+   "Return, potentially creating it first, a backend as specified by
+    SPEC and ARGS.
+
+    When SPEC is a `standard-object' it is just returned.
+
+    When SPEC is a class or a symbol an instance is created, using
+    ARGS as initargs, and returned.
+
+    When SPEC is a list, it is assumed to be of the form
+
+      (CLASS-OR-CLASS-NAME &rest INITARGS)
+
+    and used as in the previously described cases with INITARGS and
+    ARGS concatenated to form the list of initargs."))
+
+(defmethod make-backend ((spec standard-object) &rest args)
+  (if args
+      (apply #'reinitialize-instance spec args)
+      spec))
+
+(defmethod make-backend ((spec class) &rest args)
+  (apply #'make-instance spec args))
+
+(defmethod make-backend ((spec symbol) &rest args)
+  (apply #'make-backend (find-backend-class spec) args))
+
+(defmethod make-backend ((spec cons) &rest args)
+  (apply #'make-backend (first spec) (append (rest spec) args)))
+
 ;;; Flush strategy protocol
 
 (defgeneric flush? (strategy backend buffer)

@@ -19,8 +19,15 @@
                     :accessor file-%channels
                     :documentation
                     "Stores information of the channels present in the
-                     file. Entries are of the form (ID NAME
-                     META-DATA).")
+                     file. Entries are of the form
+
+                       (ID NAME META-DATA)
+
+                     where ID is the integer id of the channel, NAME
+                     is string name of the channel, META-DATA is a
+                     plist containing the well-known
+                     entries :type, :format, :source-name,
+                     :source-config and potentially others.")
    (indices         :type     hash-table
                     :reader   file-%indices
                     :initform (make-hash-table :test #'eq)
@@ -63,7 +70,26 @@
                       (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
                       (next-chunk-id   file-%next-chunk-id)) instance)
-         ((&values chans indxs chnks)
+         ((&flet ensure-channel (id)
+            (or (find id channels :test #'= :key #'first)
+                (restart-case
+                    (progn (error "~@<No channel with id ~D.~@:>" id))
+                  (continue (&optional condition)
+                    :report (lambda (stream)
+                              (format stream "~@<Reconstruct channel ~D.~@:>"
+                                      id))
+                    (declare (ignore condition))
+                    (log:info "~@<Reconstructing channel ~D~@:>" id)
+                    (push `(,id ,(format nil "reconstructed~D" id) (:type :bytes))
+                          channels))
+                  (use-value (name meta-data)
+                    :report (lambda (stream)
+                              (format stream "~@<Use the supplied ~
+                                              description for channel ~
+                                              ~D.~@:>"
+                                      id))
+                    (push (list id name meta-data) channels))))))
+         ((&values chans indxs chnks complete?)
           (when (member direction '(:input :io))
             (scan stream :tide))))
 
@@ -79,41 +105,52 @@
           channels        (map 'list #'make-channel chans))
     (setf (chnk-chunk-id buffer) next-chunk-id)
 
-    ;; Verify presence of indices.
-    (when (and (not (emptyp chnks)) (emptyp indxs))
-      (restart-case
-          ;; The `progn' prevents our restarts from being only
-          ;; applicable to the specific condition signaled here. See
-          ;; remark about (restart-case (error ...)) in CLHS on
-          ;; `restart-case'.
-          (progn (error "~@<Read ~:D chunk~:P, but no indices.~@:>"
-                        (length chnks)))
-        (continue (&optional condition)
-          :report (lambda (stream)
-                    (format stream "~@<Regenerate indices.~@:>"))
-          (declare (ignore condition))
-          (setf indxs (reconstruct-indices stream chnks)))
-        (use-value (new-indxs)
-          :report (lambda (stream)
-                    (format stream "~@<Use the supplied value as ~
-                                    list of indices and ~
-                                    continue.~@:>"))
-          (setf indxs new-indxs))))
+    ;; Verify presence of indices and construct index objects.
+    (iter (with reconstructed? = nil)
+          (restart-case
+              (progn
+                (when (or (not complete?) (and (not (emptyp chnks)) (emptyp indxs)))
+                  (error "~@<Incomplete indices; read ~:D chunk~:P and ~
+                          ~:D ~:*~[indices~;index~:;indices~].~@:>"
+                         (length chnks) (length indxs)))
+                ;; Make sure that entries in CHANNELS exist for all
+                ;; channel ids mentioned in INDXS. This problem can
+                ;; occur, when INDX blocks are written, but CHAN
+                ;; blocks are lost.
+                (mapc (compose #'ensure-channel #'indx-channel-id) indxs)
+                ;; Create `index' instances for all channels. If this
+                ;; fails, we can regenerate indices and retry via one
+                ;; of the restarts.
+                (iter (for (id name meta-data) in channels)
+                      (setf (gethash id indices)
+                            (make-index id indxs chnks stream direction)))
+                (return))
+            (continue (&optional condition)
+              :report (lambda (stream)
+                        (format stream "~@<Regenerate indices.~@:>"))
+              :test   (lambda (condition)            ; avoid infinite retries
+                        (declare (ignore condition))
+                        (not reconstructed?))
+              (declare (ignore condition))
+              (setf reconstructed? t                 ; detect infinite retries
+                    complete?      t
+                    indxs          (reconstruct-indices stream chnks)))
+            (use-value (new-indxs)
+              :report (lambda (stream)
+                        (format stream "~@<Use the supplied value as ~
+                                        list of indices and ~
+                                        continue.~@:>"))
+              (setf complete? t
+                    indxs     new-indxs))))))
 
-    ;; Create indices for all channels.
-    (iter (for (id name meta-data) in channels)
-          (setf (gethash id indices)
-                (make-index id indxs chnks stream direction)))))
-
-(defmethod close ((file file)
-                  &key &allow-other-keys)
+(defmethod close ((file file) &key abort)
   (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (map nil #'close (hash-table-values (file-%indices file))))
+    (map nil (rcurry #'close :abort abort)
+         (hash-table-values (file-%indices file))))
   (when (next-method-p)
     (call-next-method)))
 
-(defmethod make-channel-id ((file file)
-                            (name string))
+(defmethod make-channel-id ((file file) (name string))
   (prog1
       (file-%next-channel-id file)
     (incf (file-%next-channel-id file))))

@@ -11,20 +11,42 @@
   (:documentation
    "Test suite for the `fixed-rate' replay strategy class."))
 
-(addtest (fixed-rate-root
-          :documentation
-          "Test construction of `fixed-rate' instances.")
-  construction
+(define-replay-strategy-construction-test (fixed-rate)
+  ;; Some invalid cases.
+  '(()                                   missing-required-initarg)
+  '((:delay 1 :rate 1)                   incompatible-initargs)
+  '((:delay 0)                           type-error)
+  '((:rate 0)                            type-error)
 
-  (ensure-cases (args)
-      '(()
-        (:delay 1 :rate  1)
-        (:delay 0)
-        (:rate 0))
+  ;; Some valid cases.
+  '((:delay 1)                           t)
+  `((:delay 1 :error-policy ,#'continue) t)
+  '((:rate 1)                            t)
+  `((:rate 1 :error-policy ,#'continue)  t))
 
-    (ensure-condition 'error
-      (apply #'make-instance 'fixed-rate args))))
+(define-replay-strategy-smoke-test (fixed-rate
+                                    :expected-var      expected
+                                    :required-initargs (:rate 1000))
+  ;; Some simple cases.
+  ('(:rate  1000))
+  (`(:rate  1000 :error-policy ,#'continue))
+  ('(:delay 1/1000))
+  (`(:delay 1/1000 :error-policy ,#'continue))
 
-(define-replay-strategy-smoke-test (fixed-rate)
-  '(:rate  1000)
-  '(:delay 1/1000))
+  ;; Without an error policy, the first failing event causes an error
+  ;; to be signaled.
+  ('(:rate 1000 :error-policy nil)
+   :bag      (simple-bag :errors '(2))
+   :expected 'entry-retrieval-error)
+  ('(:rate 1000 :error-policy nil)
+   :processing-errors '(2)
+   :expected          'entry-processing-error)
+
+  ;; The `continue' restart skips to the next entry. Therefore, the
+  ;; observed output continues after the failing entry.
+  (`(:rate 1000 :error-policy ,#'continue)
+   :bag      (simple-bag :errors '(4))
+   :expected (remove 4 expected))
+  (`(:rate 1000 :error-policy ,#'continue)
+   :processing-errors '(4)
+   :expected          (remove 4 expected)))

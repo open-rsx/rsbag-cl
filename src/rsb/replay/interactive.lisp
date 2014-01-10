@@ -25,6 +25,8 @@
                      :initform nil
                      :documentation
                      "Stores the previously invoked command or nil."))
+  (:default-initargs
+   :error-policy #'continue)
   (:documentation
    "This strategy allows controlling the replay process interactively
     by means of textual commands."))
@@ -56,12 +58,7 @@
 
 (defmethod execute-command ((strategy interactive)
                             (command  function))
-  (let+ (((&accessors-r/o (stream strategy-stream)) strategy))
-    (handler-case
-        (funcall command)
-      (error (condition)
-        (format stream "~&~@<Error executing command ~A: ~A~@:>~%"
-                command condition)))))
+  (funcall command))
 
 (defmethod replay ((connection replay-bag-connection)
                    (strategy   interactive)
@@ -70,7 +67,13 @@
     (format stream "~&~@<OHAI, type command; unambiguous prefix ~
                     suffices. empty command repeats previous ~
                     one.~@:>~%")
-    (call-next-method)
+    ;; Try to execute specified commands and print error reports if
+    ;; something goes wrong. Note that no control transfer happens
+    ;; here. That is done via the restarts established by
+    ;; `replay-restart-mixin' and, potentially, the error policy.
+    (handler-bind ((error (lambda (condition)
+                            (format stream "~&~@<Error ~A~@:>~%" condition)))) ; TODO put this into the error policy?
+      (call-next-method))
     (format stream "~&~@<KTHXBYE~@:>~%")))
 
 ;;; Utility functions
