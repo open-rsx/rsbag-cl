@@ -16,9 +16,8 @@
    :source           source
    :format-control   "~@<Failed to ~A for block ~A~@[ at position ~
                       ~/rsbag.backend:print-offset/~]: ~A~@:>"
-   :format-arguments (list 'scan object
-                           (when (streamp source)
-                             (file-position source))
+   :format-arguments (list 'scan object (when (streamp source)
+                                          (file-position source))
                            condition)))
 
 (defmethod scan :before ((source stream) (object t)
@@ -122,10 +121,9 @@
    :source           source
    :format-control   "~@<Failed to ~A block ~A~@[ at position ~
                       ~/rsbag.backend:print-offset/~]: ~A~@:>"
-   :format-arguments (list 'unpack object
-                           (when (streamp source)
-                             (file-position source))
-                           (format nil "~A" condition))))
+   :format-arguments (list 'unpack object (when (streamp source)
+                                            (file-position source))
+                           condition)))
 
 (defmethod unpack :before ((source stream) (object t)
                            &optional start)
