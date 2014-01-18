@@ -1,6 +1,6 @@
 ;;;; bag.lisp --- The bag class represent data channels stored in a file.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -136,8 +136,8 @@
                   (reduce #'safe-compare (bag-channels bag)
                           :key           (function ,name)
                           :initial-value nil)))))
-  (define-bound-method start local-time:timestamp<)
-  (define-bound-method end   local-time:timestamp>))
+  (define-bound-method start-timestamp local-time:timestamp<)
+  (define-bound-method end-timestamp   local-time:timestamp>))
 
 ;;;
 

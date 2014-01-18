@@ -1,6 +1,6 @@
 ;;;; channel.lisp --- The channel class represents a time-series of homogeneous data.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -135,11 +135,11 @@
 
 ;;; Time range protocol
 
-(defmethod start ((channel channel))
+(defmethod start-timestamp ((channel channel))
   (unless (emptyp channel)
     (elt (channel-timestamps channel) 0)))
 
-(defmethod end ((channel channel))
+(defmethod end-timestamp ((channel channel))
   (unless (emptyp channel)
     (elt (channel-timestamps channel) (1- (length channel)))))
 

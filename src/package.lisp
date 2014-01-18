@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -102,8 +102,8 @@
 
   ;; Time range protocol
   (:export
-   #:start
-   #:end)
+   #:start-timestamp
+   #:end-timestamp)
 
   ;; Convenience macros
   (:export
