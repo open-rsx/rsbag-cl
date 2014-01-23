@@ -107,7 +107,7 @@
           ((nil)  nil)))))
 
 (defmethod (setf entry) :before ((new-value t)
-                                 (channel   t)
+                                 (channel   channel)
                                  (index     t)
                                  &key &allow-other-keys)
   (unless (member (bag-direction (channel-bag channel)) '(:output :io))
