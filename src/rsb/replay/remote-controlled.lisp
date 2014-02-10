@@ -1,6 +1,6 @@
 ;;;; remote-controlled.lisp --- Strategy for RPC-controlled replay.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -115,7 +115,7 @@
                  (name (string-downcase name)))
             (setf (server-method server name)
                   (lambda (&rest request)
-                    (let ((future (make-instance 'rsb.patterns:future)))
+                    (let ((future (make-instance 'rsb.patterns.request-reply:future)))
                       (enqueue strategy (make-command lambda request future))
                       (let ((result (future-result future))) ; TODO(jmoringe): cumbersome
                         (if (eq result rsb.converter:+no-value+)
