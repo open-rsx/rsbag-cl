@@ -1,6 +1,6 @@
 ;;;; strategy-mixin.lisp --- Mixins classes for replay strategy classes.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -10,8 +10,6 @@
 
 (defclass error-policy-mixin (rsb.ep:error-policy-mixin)
   ()
-  (:default-initargs
-   :error-policy #'log-error)
   (:documentation
    "This mixin class provides a method on `replay' that arranges for
     the next `replay' methods to be called with error handling based
@@ -28,8 +26,8 @@
 (defclass replay-restart-mixin ()
   ()
   (:documentation
-   "This mixin class add the establishing of continue and log restarts
-    around the actual work of the `replay' method."))
+   "This mixin class adds the establishing of a `continue' and an
+    `abort' restart around the actual work of the `replay' method."))
 
 (defvar *skip* nil)
 
