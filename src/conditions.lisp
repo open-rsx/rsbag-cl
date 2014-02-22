@@ -1,16 +1,30 @@
 ;;;; conditions.lisp --- Conditions used in the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag)
 
-(define-condition rsbag-error (error)
+(define-condition rsbag-condition (condition)
   ()
   (:documentation
-   "This calls is intended to be mixed into all rsbag-related error
-    condition classes."))
+   "This condition class is intended to be mixed into all
+    rsbag-related condition classes."))
+
+(define-condition rsbag-problem-condition (rsbag-condition)
+  ()
+  (:documentation
+   "This condition class is intended to be mixed into all
+    rsbag-related problem (e.g. warning and error) condition
+    classes."))
+
+(define-condition rsbag-error (error
+                               rsbag-problem-condition)
+  ()
+  (:documentation
+   "This condition class is intended to be mixed into all
+    rsbag-related error condition classes."))
 
 (define-condition open-error (rsbag-error
                               chainable-condition)

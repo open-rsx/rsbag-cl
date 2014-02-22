@@ -1,12 +1,12 @@
 ;;;; conditions.lisp --- Conditions used in the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.rsb)
 
-(define-condition connection-condition (condition)
+(define-condition connection-condition (rsbag-condition)
   ((connection :initarg  :connection
                :reader   connection-condition-connection
                :documentation
@@ -17,7 +17,7 @@
    "Subclasses of this condition are signaled when a bag connection is
     involved."))
 
-(define-condition entry-condition (condition)
+(define-condition entry-condition (rsbag-condition)
   ((entry :initarg  :entry
           :reader   entry-condition-entry
           :documentation
@@ -32,7 +32,7 @@
 
 (define-condition recording-error (connection-condition
                                    chainable-condition
-                                   error)
+                                   rsbag-error)
   ()
   (:report
    (lambda (condition stream)
@@ -62,7 +62,7 @@
 
 (define-condition replay-error (connection-condition
                                 chainable-condition
-                                error)
+                                rsbag-error)
   ((strategy :initarg  :strategy
              :reader   replay-error-strategy
              :documentation

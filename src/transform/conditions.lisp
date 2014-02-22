@@ -1,12 +1,12 @@
 ;;;; conditions.lisp --- Conditions used in the transform module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.transform)
 
-(define-condition transform-error (error)
+(define-condition transform-error (rsbag-error)
   ((transform :initarg  :transform
               :reader   transform-error-transform
               :documentation

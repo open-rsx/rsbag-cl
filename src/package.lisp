@@ -30,6 +30,8 @@
 
   ;; Conditions
   (:export
+   #:rsbag-condition
+   #:rsbag-problem-condition
    #:rsbag-error
 
    #:open-error

@@ -1,12 +1,12 @@
 ;;;; conditions.lisp --- Conditions used in the TIDE log backend of cl-rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend.tidelog)
 
-(define-condition tidelog-condition (condition)
+(define-condition tidelog-condition (rsbag-condition)
   ()
   (:documentation
    "This condition class serves as a superclass for TIDELOG-related
@@ -27,7 +27,7 @@
     while processing a TIDE log file."))
 
 (define-condition no-such-block-class-error (tidelog-condition
-                                             error)
+                                             rsbag-error)
   ((tag :initarg :tag
         :type    nibbles:octet-vector
         :reader  no-such-block-class-error-tag
