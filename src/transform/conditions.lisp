@@ -12,6 +12,8 @@
               :documentation
               "Stores the transform instance that was used in the
                failed transform operation."))
+  (:default-initargs
+   :transform (missing-required-initarg 'transform-condition :transform))
   (:documentation
    "This condition class can be mixed into condition classes which
     have an associated transform."))
@@ -24,6 +26,8 @@
                   :documentation
                   "Stores the domain object the encoding of which
                    failed."))
+  (:default-initargs
+   :domain-object (missing-required-initarg 'encoding-error :domain-object))
   (:report
    (lambda (condition stream)
      (let ((*print-length* (or *print-length* 16)))
@@ -44,6 +48,8 @@
             :reader   transform-error-encoded
             :documentation
             "Stores the encoded data, the decoding of which failed."))
+  (:default-initargs
+   :encoded (missing-required-initarg 'decoding-error :encoded))
   (:report
    (lambda (condition stream)
      (let+ (((&accessors-r/o (encoded   transform-error-encoded)
