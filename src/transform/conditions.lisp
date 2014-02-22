@@ -6,22 +6,18 @@
 
 (cl:in-package #:rsbag.transform)
 
-(define-condition transform-error (rsbag-error)
+(define-condition transform-condition (rsbag-condition)
   ((transform :initarg  :transform
-              :reader   transform-error-transform
+              :reader   transform-condition-transform
               :documentation
               "Stores the transform instance that was used in the
                failed transform operation."))
-  (:report
-   (lambda (condition stream)
-     (format stream "~@<A transformation involving the transform ~A ~
-                     failed.~@:>"
-             (transform-error-transform condition))))
   (:documentation
-   "Errors of this condition class and its subclasses are signaled
-    when a transform fails."))
+   "This condition class can be mixed into condition classes which
+    have an associated transform."))
 
-(define-condition encoding-error (transform-error
+(define-condition encoding-error (rsbag-error
+                                  transform-condition
                                   chainable-condition)
   ((domain-object :initarg  :domain-object
                   :reader   transform-error-domain-object
@@ -35,13 +31,14 @@
                        the transform ~
                        ~A.~/more-conditions:maybe-print-cause/~@:>"
                (transform-error-domain-object condition)
-               (transform-error-transform     condition)
+               (transform-condition-transform condition)
                condition))))
   (:documentation
    "This error is signaled when the encoding of a domain object for
     storage in bag fails."))
 
-(define-condition decoding-error (transform-error
+(define-condition decoding-error (rsbag-error
+                                  transform-condition
                                   chainable-condition)
   ((encoded :initarg  :encoded
             :reader   transform-error-encoded
@@ -50,7 +47,7 @@
   (:report
    (lambda (condition stream)
      (let+ (((&accessors-r/o (encoded   transform-error-encoded)
-                             (transform transform-error-transform)) condition)
+                             (transform transform-condition-transform)) condition)
             (octet-sequence? (and (typep encoded 'sequence)
                                   (every (of-type 'octet) encoded)))
             (*print-length* (or *print-length* 16))) ; TODO remove

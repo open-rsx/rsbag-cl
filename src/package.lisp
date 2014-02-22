@@ -37,16 +37,16 @@
    #:open-error
    #:open-error-source
 
-   #:bag-error
-   #:bag-error-bag
+   #:bag-condition
+   #:bag-condition-bag
 
    #:no-such-channel
    #:no-such-channel-name
 
    #:read-only-bag
 
-   #:channel-error
-   #:channel-error-channel
+   #:channel-condition
+   #:channel-condition-channel
 
    #:channel-open-error
 

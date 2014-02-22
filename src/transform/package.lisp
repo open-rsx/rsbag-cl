@@ -15,6 +15,7 @@
    #:nibbles)
 
   (:import-from #:rsbag
+   #:rsbag-condition
    #:rsbag-error
 
    #:make-versioned-name
@@ -26,8 +27,8 @@
 
   ;; Conditions
   (:export
-   #:transform-error
-   #:transform-error-transform
+   #:transform-condition
+   #:transform-condition-transform
 
    #:encoding-error
    #:transform-error-domain-object
