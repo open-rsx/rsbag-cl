@@ -43,7 +43,8 @@
    #:no-such-channel
    #:no-such-channel-name
 
-   #:read-only-bag
+   #:direction-error
+   #:direction-error-expected-direction
 
    #:channel-condition
    #:channel-condition-channel

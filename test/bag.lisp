@@ -1,6 +1,6 @@
 ;;;; bag.lisp --- Unit tests for the bag class.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -46,3 +46,13 @@
 
     (with-mock-bag (bag :direction direction) channels
       (ensure-same expected (princ-to-string bag) :test #'search))))
+
+(addtest (bag-root
+          :documentation
+          "Test errors signaled by attempts to modify read-only `bag'
+           instances.")
+  read-only
+
+  (with-mock-bag (bag :direction :input) '()
+    (ensure-condition direction-error
+      (setf (bag-channel bag "foo") '()))))

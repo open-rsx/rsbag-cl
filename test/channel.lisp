@@ -22,3 +22,14 @@
                    :test #'search)
       (ensure-same "CHANNEL \"/foo\" (2)" (princ-to-string second)
                    :test #'search))))
+
+(addtest (channel-root
+          :documentation
+          "Test errors signaled by attempts to modify `channel'
+           instances in read-only `bag's.")
+  read-only
+
+  (with-mock-bag (bag :direction :input) (simple-channels)
+    (ensure-condition direction-error
+      (setf (entry (first (bag-channels bag)) (local-time:now))
+            :does-not-matter))))

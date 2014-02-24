@@ -102,9 +102,10 @@
                                  (channel   t)
                                  (index     t)
                                  &key &allow-other-keys)
-  (when (eq (bag-direction (channel-bag channel)) :input)
-    (error 'read-only-bag
-           :bag (channel-bag channel))))
+  (unless (member (bag-direction (channel-bag channel)) '(:output :io))
+    (error 'direction-error
+           :bag                (channel-bag channel)
+           :expected-direction '(member :output :io))))
 
 (defmethod (setf entry) ((new-value t)
                          (channel   channel)

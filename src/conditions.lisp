@@ -76,18 +76,30 @@
    "This error is signaled when a requested channel does not exist
     within a bag an cannot or may not be created."))
 
-(define-condition read-only-bag (rsbag-error
-                                 bag-condition)
-  ()
+(define-condition direction-error (rsbag-error
+                                   bag-condition)
+  ((expected-direction :initarg  :expected-direction
+                       :type     (or direction cons)
+                       :reader   direction-error-expected-direction
+                       :documentation
+                       "Stores the expected direction or
+                        directions."))
   (:report
    (lambda (condition stream)
-     (let+ (((&accessors-r/o (bag bag-condition-bag)) condition))
-       (format stream "~@<The bag ~A has not been opened for output (but ~
-                       ~A).~@:>"
-               bag (bag-direction bag)))))
+     (let+ (((&accessors-r/o
+              (bag                bag-condition-bag)
+              (expected-direction direction-error-expected-direction))
+             condition)
+            (actual-direction (bag-direction bag)))
+       (format stream "~@<The bag ~A has not been opened with ~
+                       direction ~A (but ~A).~@:>"
+               bag expected-direction actual-direction))))
+  (:default-initargs
+   :expected-direction (missing-required-initarg
+                        'direction-error :expected-direction))
   (:documentation
-   "This error is signaled when an attempt is made to write to a bag
-    that has not been opened for output."))
+   "This error is signaled when an attempt is made to access a bag
+    with a direction for which it has not been opened."))
 
 (define-condition channel-condition (bag-condition)
   ((channel :initarg  :channel

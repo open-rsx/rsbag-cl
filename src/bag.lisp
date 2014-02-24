@@ -81,9 +81,10 @@
                                        (bag       t)
                                        (name      t)
                                        &key &allow-other-keys)
-  (when (eq (bag-direction bag) :input)
-    (error 'read-only-bag
-           :bag bag)))
+  (unless (member (bag-direction bag) '(member :output :io))
+    (error 'direction-error
+           :bag                bag
+           :expected-direction '(member :output :io))))
 
 (defmethod (setf bag-channel) ((new-value list)
                                (bag       bag)
