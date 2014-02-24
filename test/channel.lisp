@@ -1,6 +1,6 @@
 ;;;; channel.lisp --- Unit tests for the channel class.
 ;;;;
-;;;; Copyright (C) 2014 Jan Moringen
+;;;; Copyright (C) 2014, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -33,3 +33,14 @@
     (ensure-condition direction-error
       (setf (entry (first (bag-channels bag)) (local-time:now))
             :does-not-matter))))
+
+(addtest (channel-root
+          :documetation
+          "Smoke test for `start-timestamp' and `end-timestamp'
+           methods on `channel' class.")
+  start+end-timestamp
+
+  (with-mock-bag (bag :direction :input) (simple-channels)
+    (let ((channel (first (bag-channels bag))))
+     (start-timestamp channel)
+     (end-timestamp channel))))
