@@ -16,11 +16,8 @@
           "Smoke test for the `bag' class.")
   smoke
 
-  (let* ((pathname (asdf:system-relative-pathname
-                    :cl-rsbag-test "test/data/minimal.mock"))
-         (bag      (open-bag pathname
-                             :direction :input
-                             :backend   `(:mock :channels ,(simple-channels)))))
+  (with-mock-bag (bag :direction :input) (simple-channels)
+
     (ensure-same (bag-direction bag) :input)
     (ensure-same (mapcar #'channel-name (bag-channels bag))
                  '("/bar" "/foo")
@@ -34,6 +31,4 @@
     ;; Check content of second channel.
     (let ((channel (second (bag-channels bag))))
       (ensure-same (length (channel-timestamps channel)) 2)
-      (ensure-same (coerce channel 'list) '(1 2) :test #'equalp))
-
-    (close bag)))
+      (ensure-same (coerce channel 'list) '(1 2) :test #'equalp))))
