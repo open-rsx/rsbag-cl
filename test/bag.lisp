@@ -32,3 +32,17 @@
     (let ((channel (second (bag-channels bag))))
       (ensure-same (length (channel-timestamps channel)) 2)
       (ensure-same (coerce channel 'list) '(1 2) :test #'equalp))))
+
+(addtest (bag-root
+          :documentation
+          "Test printing a `bag' instance.")
+  print
+
+  (ensure-cases (direction channels expected)
+      `((:input  ()                 "BAG N/A r- (0)")
+        (:output ()                 "BAG N/A -w (0)")
+        (:io     ()                 "BAG N/A rw (0)")
+        (:input  ,(simple-channels) "BAG N/A r- (2)"))
+
+    (with-mock-bag (bag :direction direction) channels
+      (ensure-same expected (princ-to-string bag) :test #'search))))

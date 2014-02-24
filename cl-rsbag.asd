@@ -1,6 +1,6 @@
 ;;;; cl-rsbag.asd ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -280,6 +280,7 @@
                  :components ((:file       "package")
                               (:file       "mock-backend")
                               (:file       "protocol")
+                              (:file       "channel")
                               (:file       "bag")))
 
                 (:module     "backend"
