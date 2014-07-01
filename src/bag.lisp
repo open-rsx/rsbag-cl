@@ -1,12 +1,12 @@
 ;;;; bag.lisp --- The bag class represent data channels stored in a file.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag)
 
-(defclass bag ()
+(defclass bag (print-items:print-items-mixin)
   ((direction :initarg  :direction
               :type     direction
               :reader   bag-direction
@@ -56,6 +56,14 @@
                 (%make-channel instance name meta-data
                                (make-transform name meta-data id)
                                :id id)))))
+
+(defmethod print-items:print-items append ((object bag))
+  (let+ (((&structure-r/o bag- location direction (channels %channels))
+          object)
+         (channel-count (hash-table-count channels)))
+    `((:location      ,location      "~/rsbag:print-location/")
+      (:direction     ,direction     " ~/rsbag:print-direction/" ((:after :location)))
+      (:channel-count ,channel-count " (~:D)"                    ((:after :direction))))))
 
 (defmethod close ((bag bag)
                   &key &allow-other-keys)
@@ -115,14 +123,6 @@
     (rsbag.backend:put-channel
      backend (channel-%id channel) name meta-data)
     (setf (gethash name channels) channel)))
-
-(defmethod print-object ((object bag) stream)
-  (let+ (((&accessors-r/o (location  bag-location)
-                          (direction bag-direction)
-                          (channels  bag-%channels)) object))
-    (print-unreadable-object (object stream :type t :identity t)
-      (format stream "~/rsbag:print-location/ ~/rsbag:print-direction/ (~D)"
-              location direction (hash-table-count channels)))))
 
 ;;; Time range protocol
 

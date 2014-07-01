@@ -1,13 +1,14 @@
 ;;;; channel.lisp --- The channel class represents a time-series of homogeneous data.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag)
 
 (defclass channel (plist-meta-data-mixin
-                   #+sbcl sequence)
+                   #+sbcl sequence
+                   print-items:print-items-mixin)
   ((bag       :initarg  :bag
               :reader   channel-bag
               :documentation
@@ -43,6 +44,16 @@
   (:documentation
    "Instances of this class represent time-series of homogeneous data
     items."))
+
+(defmethod print-items:print-items append ((object channel))
+  (let+ (((&structure-r/o channel- name transform) object)
+         (length (length object))
+         (transform (when transform
+                      (rsbag.transform:transform-name transform))))
+
+    `((:name      ,name       "~S")
+      (:length    ,length   " (~:D)"    ((:after :name)))
+      (:transform ,transform "~@[ ~A~]" ((:after :length))))))
 
 (defmethod channel-timestamps ((channel channel))
   (let+ (((&accessors-r/o (id      channel-%id)
@@ -125,14 +136,6 @@
                   new-value)))
     (rsbag.backend:put-entry backend id index raw)
     new-value))
-
-(defmethod print-object ((object channel) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~S (~D)~@[ ~A~]"
-            (channel-name      object)
-            (length            object)
-            (when-let ((transform (channel-transform object)))
-              (rsbag.transform:transform-name transform)))))
 
 ;;; Time range protocol
 

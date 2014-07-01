@@ -1,6 +1,6 @@
 ;;;; cl-rsbag.asd ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -100,19 +100,20 @@
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
                 :split-sequence
-                (:version :let-plus          "0.2")
+                (:version :let-plus              "0.2")
                 :iterate
                 :cl-dynamic-classes
                 :more-conditions
-                (:version :log4cl            "1.1.1")
+                (:version :log4cl                "1.1.1")
+                (:version :utilities.print-items "0.1")
 
                 :bordeaux-threads
                 :lparallel
                 :local-time
                 :nibbles
 
-                (:version :cl-rsb            #.(version/string :revision? nil))
-                (:version :rsb-introspection #.(version/string :revision? nil)))
+                (:version :cl-rsb                #.(version/string :revision? nil))
+                (:version :rsb-introspection     #.(version/string :revision? nil)))
   :components  ((:module     "src/early"
                  :pathname   "src"
                  :components ((:file       "package")
