@@ -1,6 +1,6 @@
 ;;;; rsbag-tidelog.asd --- System definition for TIDELog backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -52,9 +52,9 @@
   :description "Unit tests for the rsbag-tidelog system."
   :depends-on  ((:version :lift          "1.7.1")
 
-                (:version :rsbag-tidelog #.(cl-rsbag-system:version/string :commit? t))
+                (:version :rsbag-tidelog #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string :commit? t)))
+                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string)))
   :components  ((:module     "tidelog"
                  :pathname   "test/backend/tidelog"
                  :serial     t

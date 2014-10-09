@@ -1,6 +1,6 @@
 ;;;; rsbag-elan.asd --- System definition for ELAN backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -45,9 +45,9 @@
   :description "Unit tests for the rsbag-elan system."
   :depends-on  ((:version :lift          "1.7.1")
 
-                (:version :rsbag-elan    #.(cl-rsbag-system:version/string :commit? t))
+                (:version :rsbag-elan    #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string :commit? t)))
+                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string)))
   :components  ((:module     "elan"
                  :pathname   "test/backend/elan"
                              :serial     t
