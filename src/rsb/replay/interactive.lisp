@@ -1,6 +1,6 @@
 ;;;; interactive.lisp --- A strategy for interactive replay control.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -63,7 +63,7 @@
 (defmethod replay ((connection replay-bag-connection)
                    (strategy   interactive)
                    &key &allow-other-keys)
-  (let+ (((&accessors-r/o (stream strategy-stream)) strategy))
+  (let+ (((&structure-r/o strategy- stream num-repetitions) strategy))
     (format stream "~&~@<OHAI, type command; unambiguous prefix ~
                     suffices. empty command repeats previous ~
                     one.~@:>~%")
@@ -73,7 +73,7 @@
     ;; `replay-restart-mixin' and, potentially, the error policy.
     (handler-bind ((error (lambda (condition)
                             (format stream "~&~@<Error ~A~@:>~%" condition)))) ; TODO put this into the error policy?
-      (call-next-method))
+      (call-repeatedly num-repetitions (lambda () (call-next-method))))
     (format stream "~&~@<KTHXBYE~@:>~%")))
 
 ;;; Utility functions

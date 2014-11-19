@@ -53,6 +53,10 @@
 
    #:time-bounds-mixin)
 
+  ;; repetitions mixin class
+  (:export
+   #:repetitions-mixin)
+
   ;; view creation protocol and mixin class
   (:export
    #:make-view

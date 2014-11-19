@@ -264,6 +264,26 @@
               requested end time ~A~@:>"
              bag end-time)))))
 
+;;; `repetitions-mixin' mixin class
+
+(defclass repetitions-mixin ()
+  ((num-repetitions :initarg  :num-repetitions
+                    :type     (or (eql t) positive-integer)
+                    :reader   strategy-num-repetitions
+                    :initform 1
+                    :documentation
+                    "Stores the number of times the replay should be
+                     repeated or `t' to indicate indefinite
+                     repetition."))
+  (:documentation
+   "This class is intended to be mixed into replay strategy classes
+    that allow repeating the event replay multiple times."))
+
+(defun call-repeatedly (spec thunk)
+ (etypecase spec
+   ((eql t)          (iter (funcall thunk)))
+   (positive-integer (iter (repeat spec) (funcall thunk)))))
+
 ;;; `view-creation-mixin' mixin class
 
 (defclass view-creation-mixin ()
@@ -288,6 +308,7 @@
 
 (defclass sequential-mixin (replay-restart-mixin
                             time-bounds-mixin
+                            repetitions-mixin
                             view-creation-mixin)
   ()
   (:documentation
@@ -301,27 +322,28 @@
                    (strategy   sequential-mixin)
                    &key
                    progress)
-  (let+ (((&accessors-r/o (start-index strategy-start-index)
-                          (end-index   strategy-end-index)) strategy)
-         (sequence        (make-view connection strategy))
-         (update-progress (%make-progress-reporter sequence progress)))
-    (macrolet
-        ((do-it (&optional end-index)
-           `(iter (when (first-iteration-p)
-                    (setf *skip* (lambda () (next-iteration))))
-                  (for (timestamp event sink) each sequence
-                       :from start-index
-                       ,@(when end-index '(:below end-index)))
-                  (for previous-timestamp previous timestamp)
-                  (for i :from start-index)
-                  (process-event connection strategy
-                                 timestamp previous-timestamp
-                                 event sink)
-                  (when update-progress
-                    (funcall update-progress i timestamp)))))
-      (if end-index
-          (do-it end-index)
-          (do-it)))))
+  (macrolet ((do-entries (&optional end-index)
+               `(iter (when (first-iteration-p)
+                        (setf *skip* (lambda () (next-iteration))))
+                      (for (timestamp event sink) each sequence
+                           :from start-index
+                           ,@(when end-index '(:below end-index)))
+                      (for previous-timestamp previous timestamp)
+                      (for i :from start-index)
+                      (process-event connection strategy
+                                     timestamp previous-timestamp
+                                     event sink)
+                      (when update-progress
+                        (funcall update-progress i timestamp)))))
+    (let+ (((&structure-r/o strategy- start-index end-index num-repetitions)
+            strategy)
+           (sequence        (make-view connection strategy))
+           (update-progress (%make-progress-reporter sequence progress))
+           ((&flet do-sequence ()
+              (if end-index
+                  (do-entries end-index)
+                  (do-entries)))))
+      (call-repeatedly num-repetitions #'do-sequence))))
 
 (defmethod process-event ((connection         replay-bag-connection)
                           (strategy           sequential-mixin)
