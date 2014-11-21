@@ -134,6 +134,6 @@
                    &key &allow-other-keys)
   (let+ (((&structure strategy- control-uri (server %server) num-repetitions)
           strategy))
-    (with-local-server (server uri)
+    (with-local-server (server* control-uri)
       (setf server server*)
       (call-repeatedly num-repetitions (lambda () (call-next-method))))))
