@@ -93,89 +93,133 @@
   (uint64->timestamp
    (aref (timestamps-entries timestamps) (* 2 index))))
 
-;;;
+;;; Index creation
 
-(defclass index (direction-mixin
-                 async-double-buffered-writer-mixin
-                 buffering-writer-mixin
-                 last-write-time-mixin)
-  ((channel   :initarg  :channel
-              :type     non-negative-integer
-              :reader   index-channel
-              :documentation
-              "Stores the id of the channel to which this index
-               belongs.")
-   (entries   :type     index-vector
-              :accessor index-entries
-              :initform (make-index-vector)
-              :documentation
-              "Stores the actual timestamp -> offset mapping. The
-               storage is sorted and interleaved of the form
+(defun make-index (channel-id stream lock direction
+                   &key flush-strategy)
+  (let+ (((&flet make-it (class &rest initargs)
+            (apply #'make-instance class
+                   :stream    stream
+                   :lock      lock
+                   :direction direction
+                   :channel   channel-id
+                   initargs))))
+    (ecase direction
+      (:input
+       (make-it 'input-index))
+      (:output
+       (apply #'make-it 'output-index
+              (when flush-strategy
+                (list :flush-strategy flush-strategy))))
+      (:io
+       (make-it 'io-index)))))
 
-                 TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
+;;; `base-index'
 
-               .")
-   (sorted-to :initarg  :sorted-to
+(defclass base-index (direction-mixin)
+  ((channel :initarg  :channel
+            :type     non-negative-integer
+            :reader   index-channel
+            :documentation
+            "Stores the id of the channel to which this index
+             belongs.")
+   (stream  :initarg  :stream
+            :type     stream
+            :reader   index-stream
+            :documentation
+            "Stores the stream to which the data of this index should
+             be written when flushing.")
+   (lock    :initarg  :lock
+            :reader   index-%lock
+            :documentation
+            "Stores a lock that protects the stream."))
+  (:default-initargs
+   :channel (missing-required-initarg 'base-index :channel)
+   :stream  (missing-required-initarg 'base-index :stream)
+   :lock    (missing-required-initarg 'base-index :lock))
+  (:documentation
+   "Superclass of index classes."))
+
+;;; `input-index'
+
+(defclass input-index (base-index)
+  ((entries :type     index-vector
+            :accessor index-entries
+            :initform (make-index-vector)
+            :documentation
+            "Stores the actual timestamp -> offset mapping. The
+             storage is sorted and interleaved of the form
+
+               TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
+
+             ."))
+  (:documentation
+   "Instances of this class index events of individual channels for
+    files opened with :input direction.
+
+    These indices only store event timestamps and corresponding
+    offsets, are immutable and never write back any data."))
+
+(defmethod index-num-entries ((index input-index))
+  (/ (length (index-entries index)) 2))
+
+(defmethod index-offset ((index  input-index)
+                         (index1 integer))
+  (aref (index-entries index) (1+ (* 2 index1))))
+
+(defmethod index-offset ((index     input-index)
+                         (timestamp local-time:timestamp))
+  (%timestamp->index timestamp (index-entries index)))
+
+(defmethod index-add-indxs ((index  input-index)
+                            (indxs  sequence)
+                            (chunks vector))
+  (index-vector-add-indxs (index-entries index) indxs chunks))
+
+(defmethod index-add-entries ((index   input-index)
+                              (entries sequence)
+                              (chunks  vector))
+  (index-vector-add-entries (index-entries index) entries chunks))
+
+;;; `output-index'
+
+(defclass output-index (base-index
+                        async-double-buffered-writer-mixin
+                        buffering-writer-mixin
+                        last-write-time-mixin)
+  ((sorted-to :initarg  :sorted-to
               :type     (or integer null)
               :accessor index-%sorted-to
               :initform 0
               :documentation
               "Stores the index into the entries vector up to which
                entries are sorted. The value nil indicates that
-               entries are not sorted.")
-   (stream    :initarg  :stream
-              :type     stream
-              :reader   index-stream
-              :documentation
-              "Stores the stream to which the data of this index
-               should be written when flushing.")
-   (lock      :initarg  :lock
-              :reader   index-%lock
-              :documentation
-              "Stores a lock that protects the stream."))
+               entries are not sorted."))
   (:default-initargs
-   :channel        (missing-required-initarg 'index :channel)
-   :stream         (missing-required-initarg 'index :stream)
-   :lock           (missing-required-initarg 'index :lock)
    :flush-strategy (make-flush-strategy :property-limit
                                         :property :length/entries
                                         :limit    most-positive-fixnum))
   (:documentation
-   "Instances of this class store mappings of indices and timestamps
-    of entries to corresponding file offsets for one channel."))
+   "Instances of this class store partial index information for
+    individual channels until it is written to the output stream.
 
-(defmethod index-add-indxs ((index  index)
-                            (indxs  sequence)
-                            (chunks vector))
-  (index-vector-add-indxs (index-entries index) indxs chunks))
+    These indices do not generally store information for all events in
+    one channel and cannot be queried."))
 
-(defmethod index-add-entries ((index   index)
-                              (entries sequence)
-                              (chunks  vector))
-  (index-vector-add-entries (index-entries index) entries chunks))
+(defmethod initialize-instance :after ((instance output-index) &key)
+  (setf (indx-channel-id (backend-buffer instance))
+        (index-channel instance)))
 
-(defmethod index-num-entries ((index index))
-  (/ (length (index-entries index)) 2))
+(defmethod index-num-entries ((index output-index))
+  (indx-count (backend-buffer index))) ; TODO wrong after flushing
 
-(defmethod index-offset ((index index)
-                         (index1 integer))
-  (aref (index-entries index) (1+ (* 2 index1))))
-
-(defmethod index-offset ((index     index)
-                         (timestamp local-time:timestamp))
-  (%timestamp->index timestamp (index-entries index)))
-
-(defmethod put-entry ((index     index)
+(defmethod put-entry ((index     output-index)
                       (timestamp integer)
                       (offset    integer)
                       (chunk-id  integer))
   (let+ (((&accessors-r/o (buffer    backend-buffer)
-                          (entries   index-entries)
                           (sorted-to index-%sorted-to))
           index))
-    ;; Add to entries.
-    (index-vector-push-extend-entry entries timestamp offset)
-
     ;; Update index block.
     (incf (indx-count buffer))
     (vector-push-extend
@@ -191,14 +235,14 @@
             (when (> timestamp sorted-to)
               timestamp)))))
 
-;;; Buffering
+;; Buffering
 
-(defmethod make-buffer ((index  index)
+(defmethod make-buffer ((index  output-index)
                         (buffer (eql nil)))
   (make-buffer index (make-instance 'indx
                                     :channel-id (index-channel index))))
 
-(defmethod make-buffer ((index  index)
+(defmethod make-buffer ((index  output-index)
                         (buffer indx))
   (reinitialize-instance buffer
                          :count   0
@@ -206,30 +250,57 @@
                                               :adjustable   t
                                               :fill-pointer 0)))
 
-(defmethod write-buffer ((index  index)
+(defmethod write-buffer ((index  output-index)
                          (buffer indx))
-  ;; If some timestamps have been inserted out of order, sort the
-  ;; entire index block now.
-  (unless (index-%sorted-to index)
-    (warn "~@<Sorting index block due to out-of-order ~
-           insertions.~@:>")
-    (let ((entries (indx-entries buffer)))
-      (sort entries #'< :key #'index-entry-timestamp)
-      (setf (indx-entries buffer) entries)))
+  (let+ (((&accessors-r/o (stream    index-stream)
+                          (sorted-to index-%sorted-to))
+          index)
+         ((&accessors-r/o (entries indx-entries)) buffer))
+    ;; If some timestamps have been inserted out of order, sort the
+    ;; entire index block now.
+    (unless sorted-to
+      (warn "~@<Sorting index block due to out-of-order ~
+             insertions.~@:>")
+      (setf entries (sort entries #'< :key #'index-entry-timestamp)))
 
-  ;; If we have anything to write, write it and reset fill pointers so
-  ;; we can start filling the buffer again.
-  (unless (zerop (indx-count buffer))
-    (bt:with-lock-held ((index-%lock index))
-      (pack buffer (index-stream index))
-      (force-output (index-stream index)))))
+    ;; If we have anything to write, write it and reset fill pointers
+    ;; so we can start filling the buffer again.
+    (unless (zerop (indx-count buffer))
+      (bt:with-lock-held ((index-%lock index))
+        (pack buffer stream)
+        (force-output stream))
+      ;; TODO
+      #+no (fill (indx-entries buffer) 0))))
 
-(defmethod buffer-property ((backend index)
+(defmethod buffer-property ((backend output-index)
                             (buffer  indx)
                             (name    (eql :length/entries)))
   (indx-count buffer))
 
-(defmethod buffer-property ((backend index)
+(defmethod buffer-property ((backend output-index)
                             (buffer  indx)
                             (name    (eql :length/bytes)))
   (+ 8 (* 20 (buffer-property backend buffer :length/entries))))
+
+;;; `io-index'
+
+(defclass io-index (input-index
+                    output-index)
+  ()
+  (:documentation
+   "Instances of these class manage mutable and queryable index
+    information for individual channels.
+
+    Such an index contains timestamp and index information for all
+    events of the associated channel as well as a buffer of unwritten
+    index information."))
+
+(defmethod put-entry ((index     io-index)
+                      (timestamp integer)
+                      (offset    integer)
+                      (chunk-id  integer))
+  ;; Next methods updates current in-memory indx block.
+  (call-next-method)
+
+  ;; Add to entries.
+  (index-vector-push-extend-entry (index-entries index) timestamp offset))

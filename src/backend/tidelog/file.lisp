@@ -57,8 +57,13 @@
                                      (slot-names t)
                                      &key)
   ;; If the file is completely empty, add a TIDE header.
-  (when (member (backend-direction instance) '(:output :io))
-    (maybe-write-header (backend-stream instance)))
+  (let+ (((&structure-r/o backend- stream direction) instance))
+    (case direction
+      (:output
+       (maybe-write-header stream))
+      (:io
+       (maybe-write-header stream)
+       (file-position stream 0))))
 
   ;; Scan through the TIDElog file collecting deserialized CHAN and
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.
@@ -371,8 +376,7 @@
                          :version-minor +format-version-minor+
                          :num-channels  0
                          :num-chunks    0)
-          stream)
-    (file-position stream 0)))
+          stream)))
 
 (defun make-channel (chan)
   (list (chan-id chan)
@@ -382,16 +386,6 @@
                 (list :source-name   (chan-source-name   chan)
                       :source-config (chan-source-config chan)
                       :format        (chan-format        chan)))))
-
-(defun make-index (channel-id stream lock direction
-                   &key flush-strategy)
-  (apply #'make-instance 'index
-         :stream    stream
-         :lock      lock
-         :direction direction
-         :channel   channel-id
-         (when flush-strategy
-           (list :flush-strategy flush-strategy))))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."

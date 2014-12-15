@@ -77,7 +77,7 @@
                   (apply #'events->bag source
                          (apply #'open-bag dest
                                 :bag-class bag-class
-                                :direction :io
+                                :direction :output
                                 (append (when if-exists-supplied?
                                           (list :if-exists if-exists))
                                         (when backend
