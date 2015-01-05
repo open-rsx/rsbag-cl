@@ -1,6 +1,6 @@
 ;;;; rsbag-elan.asd --- System definition for ELAN backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -19,7 +19,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "Elan file format backend for cl-rsbag."
   :depends-on  ((:version :xml.location                "0.2.0")
                 (:version :xml.location-and-local-time "0.2.0")
@@ -41,7 +41,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "Unit tests for the rsbag-elan system."
   :depends-on  ((:version :lift          "1.7.1")
 

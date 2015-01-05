@@ -1,6 +1,6 @@
 ;;;; cl-rsbag.asd ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -95,7 +95,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "Common Lisp implementation of rsbag."
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
@@ -269,7 +269,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "Unit tests for the cl-rsbag system."
   :depends-on  (:flexi-streams
                 (:version :lift     "1.7.1")

@@ -1,6 +1,6 @@
 ;;;; rsbag-tidelog.asd --- System definition for TIDELog backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -19,7 +19,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "TIDE log file format backend for cl-rsbag."
   :depends-on  ((:version :cl-rsbag #.(cl-rsbag-system:version/string)))
   :components  ((:module     "tidelog"
@@ -48,7 +48,7 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3; see COPYING file for details."
+  :license     "LGPLv3" ; see COPYING file for details.
   :description "Unit tests for the rsbag-tidelog system."
   :depends-on  ((:version :lift          "1.7.1")
 
