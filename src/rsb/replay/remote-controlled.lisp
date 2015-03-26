@@ -1,6 +1,6 @@
 ;;;; remote-controlled.lisp --- Strategy for RPC-controlled replay.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -134,6 +134,6 @@
                    &key &allow-other-keys)
   (let+ (((&structure strategy- control-uri (server %server) num-repetitions)
           strategy))
-    (with-local-server (server* control-uri)
+    (with-participant (server* :local-server control-uri)
       (setf server server*)
       (call-repeatedly num-repetitions (lambda () (call-next-method))))))

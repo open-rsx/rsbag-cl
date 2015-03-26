@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Unit tests for the protocol of the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -33,7 +33,7 @@
               (with-mock-bag (bag :direction :output) ()
                 (with-open-connection
                     (connection (apply #'events->bag '("inprocess:") bag args))
-                  (rsb:with-informer (informer "inprocess:" t)
+                  (rsb:with-participant (informer :informer "inprocess:")
                     (mapc (lambda (datum)
                             (let ((buffer (make-octet-vector 4)))
                               (setf (ub32ref/le buffer 0) datum)
@@ -97,7 +97,7 @@
   (ensure-cases (prefix)
       '("/" "/prefix")
 
-    (rsb:with-reader (reader "inprocess:")
+    (rsb:with-participant (reader :reader "inprocess:")
       ;; Send the events stored in the mock bag.
       (with-open-connection
           (connection (bag->events

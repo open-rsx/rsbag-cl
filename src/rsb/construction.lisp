@@ -1,6 +1,6 @@
 ;;;; construction.lisp --- Construction of channel <-> events connections.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -30,9 +30,9 @@
                         (transports '((t :expose (:rsb.transport.wire-schema)
                                          &inherit)))
                         (filters    nil filters-supplied?))
-  (let ((listener (make-listener source
-                                 :transports transports
-                                 :converters '((t . :fundamental-null)))))
+  (let ((listener (make-participant :listener source
+                                    :transports transports
+                                    :converters '((t . :fundamental-null)))))
     (when filters-supplied?
       (setf (receiver-filters listener) filters))
     (apply #'events->bag listener dest
@@ -169,8 +169,8 @@
                                           (second type)
                                           :bytes)))
          (participant
-          (apply #'make-informer
-                 uri t :converters `((t . ,converter))
+          (apply #'make-participant :informer uri
+                 :converters `((t . ,converter))
                  (when-let ((transform
                              (%make-scope-transform prefix-scope type)))
                    (list :transform (list transform))))))
