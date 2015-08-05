@@ -67,6 +67,7 @@
                       (lock            rsbag.backend::backend-lock)
                       (direction       backend-direction)
                       (buffer          backend-buffer)
+                      (flush-strategy  backend-flush-strategy)
                       (channels        file-%channels)
                       (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
@@ -103,7 +104,8 @@
          ((&flet make-index (channel-id)
             (let ((lock (rsbag.backend::backend-lock instance)))
               (setf (gethash channel-id indices)
-                    (make-index channel-id stream lock direction)))))
+                    (make-index channel-id stream lock direction
+                                :flush-strategy flush-strategy)))))
          #+unused
          ((&flet check-index (channel-id)
             (or (gethash channel-id indices)
@@ -229,9 +231,9 @@
   (let+ (((&accessors (stream         backend-stream)
                       (lock           rsbag.backend::backend-lock)
                       (direction      backend-direction)
+                      (flush-strategy backend-flush-strategy)
                       (channels       file-%channels)
-                      (indices        file-%indices)
-                      (flush-strategy backend-flush-strategy))
+                      (indices        file-%indices))
           file)
          ((&plist-r/o (type          :type)
                       (source-name   :source-name   "")
@@ -249,7 +251,8 @@
 
     ;; Add an index for the new channel
     (setf (gethash channel indices)
-          (make-index channel stream lock direction))
+          (make-index channel stream lock direction
+                      :flush-strategy flush-strategy))
 
     (bt:with-lock-held (lock)
       (pack channel1 stream))))
@@ -382,12 +385,15 @@
                       :source-config (chan-source-config chan)
                       :format        (chan-format        chan)))))
 
-(defun make-index (channel-id stream lock direction)
-  (make-instance 'index
-                 :stream    stream
-                 :lock      lock
-                 :direction direction
-                 :channel   channel-id))
+(defun make-index (channel-id stream lock direction
+                   &key flush-strategy)
+  (apply #'make-instance 'index
+         :stream    stream
+         :lock      lock
+         :direction direction
+         :channel   channel-id
+         (when flush-strategy
+           (list :flush-strategy flush-strategy))))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."
