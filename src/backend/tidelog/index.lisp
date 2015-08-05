@@ -6,6 +6,67 @@
 
 (cl:in-package #:rsbag.backend.tidelog)
 
+;;; Index vector
+
+(deftype index-vector ()
+  '(array (unsigned-byte 64) (*)))
+
+(defun make-index-vector ()
+  (make-array 0 :element-type '(unsigned-byte 64)
+                :adjustable   t
+                :fill-pointer 0))
+
+(declaim (inline index-vector-push-entry
+                 index-vector-push-extend-entry))
+(defun index-vector-push-entry (index timestamp offset)
+  (vector-push timestamp index)
+  (vector-push offset    index))
+
+(defun index-vector-push-extend-entry (index timestamp offset)
+  (vector-push-extend timestamp index)
+  (vector-push-extend offset    index))
+
+(defun index-vector-add-entries (index entries chunks)
+  (declare (type index-vector index))
+  (let+ ((num-entries (length entries))
+         ((&flet add-offset! (entry)
+            (let+ (((&structure-r/o index-entry- timestamp chunk-id offset)
+                    entry)
+                   (outer-offset  (%chunk-id->offset chunk-id chunks))
+                   (global-offset (+ outer-offset 12 25 offset))) ; TODO(jmoringe):  get rid of the constants
+              (index-vector-push-entry index timestamp global-offset)))))
+    (adjust-array index (+ (length index) (* 2 num-entries)))
+    (map nil #'add-offset! entries)
+    index))
+
+(defun index-vector-add-indxs (index indxs chunks)
+  (declare (type index-vector index))
+  (let ((num-entries (reduce #'+ indxs :key #'indx-count)))
+    (adjust-array index (+ (length index) (* 2 num-entries)))
+    (iter (for indx in-sequence indxs)
+          (index-vector-add-entries index (indx-entries indx) chunks))
+    index))
+
+(declaim (ftype (function ((unsigned-byte 64) index-vector
+                           &optional
+                           non-negative-fixnum
+                           non-negative-fixnum)
+                          (unsigned-byte 64))
+                %timestamp->index))
+
+(defun %timestamp->index (timestamp index
+                          &optional
+                          (start 0)
+                          (end   (length index)))
+  (let* ((pivot  (ash (+ start end) -1))
+         (pivot* (aref index (* 2 pivot))))
+    (cond
+      ((< pivot* timestamp)
+       (%timestamp->index timestamp index pivot end))
+      ((> pivot* timestamp)
+       (%timestamp->index timestamp index start pivot))
+      (t (aref index (1+ (* 2 pivot)))))))
+
 ;;; Lazy timestamp sequence
 
 #+sbcl
@@ -43,8 +104,9 @@
               :documentation
               "Stores the id of the channel to which this index
                belongs.")
-   (entries   :type     vector
+   (entries   :type     index-vector
               :accessor index-entries
+              :initform (make-index-vector)
               :documentation
               "Stores the actual timestamp -> offset mapping. The
                storage is sorted and interleaved of the form
@@ -81,14 +143,12 @@
    "Instances of this class store mappings of indices and timestamps
     of entries to corresponding file offsets for one channel."))
 
-(defmethod initialize-instance :after ((instance index)
-                                       &key
-                                       indices
-                                       chunks)
-  (setf (index-entries instance)
-        (make-entries indices chunks)
-        (indx-channel-id (backend-buffer instance))
+(defmethod initialize-instance :after ((instance index) &key)
+  (setf (indx-channel-id (backend-buffer instance))
         (index-channel instance)))
+
+(defun index-add-indxs (index indxs chunks)
+  (index-vector-add-indxs (index-entries index) indxs chunks))
 
 (defmethod index-num-entries ((index index))
   (/ (length (index-entries index)) 2))
@@ -107,10 +167,10 @@
                       (chunk-id  integer))
   (let+ (((&accessors-r/o (buffer    backend-buffer)
                           (entries   index-entries)
-                          (sorted-to index-%sorted-to)) index))
+                          (sorted-to index-%sorted-to))
+          index))
     ;; Add to entries.
-    (vector-push-extend timestamp entries)
-    (vector-push-extend offset    entries)
+    (index-vector-push-extend-entry entries timestamp offset)
 
     ;; Update index block.
     (incf (indx-count buffer))
@@ -168,44 +228,3 @@
                             (buffer  indx)
                             (name    (eql :length/bytes)))
   (+ 8 (* 20 (buffer-property backend buffer :length/entries))))
-
-;;; Utility functions
-
-(defun make-entries (indices chunks)
-  (let+ ((result (make-array (* 2 (reduce #'+ indices
-                                          :key #'indx-count))
-                             :element-type '(unsigned-byte 64)
-                             :adjustable   t
-                             :fill-pointer 0))
-         ((&flet add-offset! (entry)
-            (let+ (((&accessors-r/o
-                     (timestamp    index-entry-timestamp)
-                     (chunk-id     index-entry-chunk-id)
-                     (inner-offset index-entry-offset)) entry)
-                   (outer-offset (%chunk-id->offset chunk-id chunks)))
-              (vector-push timestamp result)
-              (vector-push (+ outer-offset 12 25 inner-offset) result))))) ; TODO(jmoringe):  get rid of the constants
-    (iter (for index each indices)
-          (map nil #'add-offset! (indx-entries index)))
-    result))
-
-(declaim (ftype (function ((unsigned-byte 64)
-                           (array (unsigned-byte 64) (*))
-                           &optional
-                           non-negative-fixnum
-                           non-negative-fixnum)
-                          (unsigned-byte 64))
-                %timestamp->index))
-
-(defun %timestamp->index (timestamp index
-                          &optional
-                          (start 0)
-                          (end   (length index)))
-  (let* ((pivot  (ash (+ start end) -1))
-         (pivot* (aref index (* 2 pivot))))
-    (cond
-      ((< pivot* timestamp)
-       (%timestamp->index timestamp index pivot end))
-      ((> pivot* timestamp)
-       (%timestamp->index timestamp index start pivot))
-      (t (aref index (1+ (* 2 pivot)))))))

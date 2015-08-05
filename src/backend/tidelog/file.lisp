@@ -315,16 +315,16 @@
                       :format        (chan-format        chan)))))
 
 (defun make-index (channel-id indices chunks stream lock direction)
-  (let ((relevant (remove channel-id indices
-                          :test-not #'=
-                          :key      #'indx-channel-id)))
-    (make-instance 'index
-                   :stream    stream
-                   :lock      lock
-                   :direction direction
-                   :channel   channel-id
-                   :indices   relevant
-                   :chunks    chunks)))
+  (let* ((relevant (remove channel-id indices
+                           :test-not #'=
+                           :key      #'indx-channel-id))
+         (index    (make-instance 'index
+                                  :stream    stream
+                                  :lock      lock
+                                  :direction direction
+                                  :channel   channel-id)))
+    (index-add-indxs index relevant chunks)
+    index))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."
