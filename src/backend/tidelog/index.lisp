@@ -1,6 +1,6 @@
 ;;;; index.lisp --- Representation of TIDELog indices.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -52,12 +52,6 @@
                  TIMESTAMP1 OFFSET1 TIMESTAMP2 OFFSET2 ...
 
                .")
-   (stream    :initarg  :stream
-              :type     stream
-              :reader   index-stream
-              :documentation
-              "Stores the stream to which the data of this index
-               should be written when flushing.")
    (sorted-to :initarg  :sorted-to
               :type     (or integer null)
               :accessor index-%sorted-to
@@ -65,12 +59,21 @@
               :documentation
               "Stores the index into the entries vector up to which
                entries are sorted. The value nil indicates that
-               entries are not sorted."))
+               entries are not sorted.")
+   (stream    :initarg  :stream
+              :type     stream
+              :reader   index-stream
+              :documentation
+              "Stores the stream to which the data of this index
+               should be written when flushing.")
+   (lock      :initarg  :lock
+              :reader   index-%lock
+              :documentation
+              "Stores a lock that protects the stream."))
   (:default-initargs
    :channel        (missing-required-initarg 'index :channel)
    :stream         (missing-required-initarg 'index :stream)
-   :indices        (missing-required-initarg 'index :indices)
-   :chunks         (missing-required-initarg 'index :chunks)
+   :lock           (missing-required-initarg 'index :lock)
    :flush-strategy (make-flush-strategy :property-limit
                                         :property :length/entries
                                         :limit    most-positive-fixnum))
@@ -152,7 +155,9 @@
   ;; If we have anything to write, write it and reset fill pointers so
   ;; we can start filling the buffer again.
   (unless (zerop (indx-count buffer))
-    (pack buffer (index-stream index))))
+    (bt:with-lock-held ((index-%lock index))
+      (pack buffer (index-stream index))
+      (force-output (index-stream index)))))
 
 (defmethod buffer-property ((backend index)
                             (buffer  indx)

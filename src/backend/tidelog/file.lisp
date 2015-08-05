@@ -1,6 +1,6 @@
 ;;;; file.lisp --- The file class represents a TIDE log file.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -64,6 +64,7 @@
   ;; INDX blocks and the *ids and file offsets* of CHNK blocks.
   ;; Use the INDX blocks to build per-channel indices.
   (let+ (((&accessors (stream          backend-stream)
+                      (lock            rsbag.backend::backend-lock)
                       (direction       backend-direction)
                       (buffer          backend-buffer)
                       (channels        file-%channels)
@@ -123,7 +124,7 @@
                 ;; of the restarts.
                 (iter (for (id name meta-data) in channels)
                       (setf (gethash id indices)
-                            (make-index id indxs chnks stream direction)))
+                            (make-index id indxs chnks stream lock direction)))
                 (return))
             (continue (&optional condition)
               :report (lambda (stream)
@@ -144,9 +145,8 @@
                     indxs     new-indxs))))))
 
 (defmethod close ((file file) &key abort)
-  (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (map nil (rcurry #'close :abort abort)
-         (hash-table-values (file-%indices file))))
+  (map nil (rcurry #'close :abort abort)
+       (hash-table-values (file-%indices file)))
   (when (next-method-p)
     (call-next-method)))
 
@@ -160,10 +160,12 @@
                         (name      string)
                         (meta-data list))
   (let+ (((&accessors (stream         backend-stream)
+                      (lock           rsbag.backend::backend-lock)
                       (direction      backend-direction)
                       (channels       file-%channels)
                       (indices        file-%indices)
-                      (flush-strategy backend-flush-strategy)) file)
+                      (flush-strategy backend-flush-strategy))
+          file)
          ((&plist-r/o (type          :type)
                       (source-name   :source-name   "")
                       (source-config :source-config "")
@@ -180,9 +182,9 @@
 
     ;; Add an index for the new channel
     (setf (gethash channel indices)
-          (make-index channel nil nil stream direction))
+          (make-index channel nil nil stream lock direction))
 
-    (bt:with-lock-held ((rsbag.backend::backend-lock file))
+    (bt:with-lock-held (lock)
       (pack channel1 stream))))
 
 (defmethod get-num-entries ((file    file)
@@ -260,25 +262,26 @@
 
 (defmethod write-buffer ((file   file)
                          (buffer chnk))
-  (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (let+ (((&structure-r/o backend- stream) file)
-           ((&structure chnk- count entries) buffer))
-      ;; We abused chnk-count to store the size of the chunk instead of
-      ;; the number of entries. Correct this before writing the chunk.
-      (unless (zerop count)
-        (setf count (length entries))
+  (let+ (((&structure-r/o backend- stream) file)
+         ((&structure chnk- count entries) buffer))
+    ;; We abused chnk-count to store the size of the chunk instead of
+    ;; the number of entries. Correct this before writing the chunk.
+    (unless (zerop count)
+      (setf count (length entries))
+      (bt:with-lock-held ((rsbag.backend::backend-lock file))
         (pack buffer stream)
-        (force-output stream)
+        (force-output stream))
 
-        ;; For the sake of conservative garbage collectors, we
-        ;; dereference as much as possible here. On SBCL we even garbage
-        ;; collect explicitly.
-        (map-into entries
-                  (lambda (entry)
-                    (setf (chunk-entry-entry entry) (nibbles:octet-vector))
-                    nil)
-                  entries)
-        #+sbcl (sb-ext:gc)))))
+
+      ;; For the sake of conservative garbage collectors, we
+      ;; dereference as much as possible here. On SBCL we even garbage
+      ;; collect explicitly.
+      (map-into entries
+                (lambda (entry)
+                  (setf (chunk-entry-entry entry) (nibbles:octet-vector))
+                  nil)
+                entries)
+      #+sbcl (sb-ext:gc))))
 
 (defmethod buffer-property ((backend file)
                             (buffer  chnk)
@@ -311,12 +314,13 @@
                       :source-config (chan-source-config chan)
                       :format        (chan-format        chan)))))
 
-(defun make-index (channel-id indices chunks stream direction)
+(defun make-index (channel-id indices chunks stream lock direction)
   (let ((relevant (remove channel-id indices
                           :test-not #'=
                           :key      #'indx-channel-id)))
     (make-instance 'index
                    :stream    stream
+                   :lock      lock
                    :direction direction
                    :channel   channel-id
                    :indices   relevant
