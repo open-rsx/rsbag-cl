@@ -1,6 +1,6 @@
 ;;;; io.lisp --- Input and output of TIDE log structures.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -85,9 +85,12 @@
           (while (listen source))
           (let+ (((&values offset block) (scan source :block)))
             (typecase block
-              (chan    (collect block               :into channels))
-              (indx    (collect block               :into indices))
-              (integer (collect (cons block offset) :into chunks))))
+              (chan
+               (collect block               :into channels))
+              ((cons (eql indx) integer) ; cdr is channel id
+               (collect (cons (cdr block) offset) :into indices))
+              ((cons (eql chnk) integer) ; cdr is CHNK id
+               (collect (cons (cdr block) offset) :into chunks))))
           (finally (return (values channels indices chunks complete?))))))
 
 (defmethod scan ((source stream) (object (eql :block))
@@ -95,16 +98,17 @@
   (declare (ignore start))
 
   (let+ ((offset (file-position source))
-         ((&values class length) (unpack source :block-header)))
+         ((&values class length) (unpack source :block-header))
+         (class-name (class-name class)))
     (values
      offset
-     (case (class-name class)
-       ((type1 chan indx)
+     (case class-name
+       ((type1 chan)
         (unpack (read-chunk-of-length length source)
                 (allocate-instance class)))
-       (chnk
+       ((indx chnk)
         (prog1
-            (nibbles:read-ub32/le source) ; CHNK id
+            (cons class-name (nibbles:read-ub32/le source)) ; CHNK id / INDX channel id
           (file-position source (+ (file-position source) (- length 4)))))
        (t
         (file-position source (+ (file-position source) length)))))))

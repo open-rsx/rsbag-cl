@@ -1,6 +1,6 @@
 ;;;; repair.lisp --- Recover from damage in log files.
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -8,26 +8,35 @@
 
 ;;; Reconstructing indices
 
-(defun reconstruct-indices (stream chunks)
+(defun reconstruct-indices (stream chunks ensure-index)
   "Reconstruct index information for CHUNKS based on the contents of
    STREAM. CHUNKS is a list of entries of the form
 
      (ID . OFFSET)
 
-   . Return a list of corresponding `indx' instances."
+   . Call ENSURE-INDEX with a channel number to retrieve (creating it
+   if necessary) an `index' instance and add entries. Returns
+   nothing."
   (log:info "~@<Reconstructing indices for ~:D chunk~:P in ~A~@:>"
             (length chunks) stream)
-  (let+ ((indices (make-hash-table))
-         ((&flet add-to-index (id entry)
-            (push entry (gethash id indices))))
-         ((&flet+ make-index ((id . entries))
-            "Make and return an `indx' instance for the channel and
-             entries ID-AND-ENTRIES."
-            (make-instance
-             'indx
-             :channel-id id
-             :count      (length entries)
-             :entries    (coerce (nreverse entries) 'vector)))))
+  ;; For each channel there is a queue of `index-entry' instances to
+  ;; that should eventually be added to the corresponding index.
+  (let+ ((queues (make-hash-table))
+         ((&flet make-queue ()
+            (make-array 0 :adjustable t :fill-pointer 0)))
+         ((&flet flush-queue (queue)
+            (fill queue nil)
+            (setf (fill-pointer queue) 0)))
+         ((&flet add-to-queue (channel-id entry)
+            (vector-push-extend
+             entry (ensure-gethash channel-id queues (make-queue)))))
+         ((&flet flush-indices ()
+            (log:info "~@<Flushing ~:D collected index entr~:@P~@:>"
+                      (reduce #'+ (hash-table-values queues) :key #'length))
+            (iter (for (channel-id queue) :in-hashtable queues)
+                  (let ((index (funcall ensure-index channel-id)))
+                    (index-add-entries index queue chunks))
+                  (flush-queue queue)))))
     ;; For each chunk, visit all its entries and add them to the
     ;; temporary index lists.
     (function-calling-restart-bind
@@ -53,26 +62,31 @@
                            (declare (ignore condition))
                            (return))))
             (for (id . offset) each chunks :with-index i)
-            #+sbcl (for offset/previous previous offset)
+            ;; Flush collected index entries into the respective
+            ;; `index' instances where they will be integrated into
+            ;; a memory-efficient representation. This limits the
+            ;; peak memory use.
+            (with offset/previous = 0)
+            (when (> (- offset offset/previous) (ash 1 27))
+              (flush-indices)
+              #+sbcl (sb-ext:gc :full t)
+              (setf offset/previous offset))
+            ;; Make and collect index entries for chunk entries.
             (let+ ((chunk (unpack stream :block offset))
                    ((&accessors-r/o (chunk-id chnk-chunk-id)) chunk))
               (iter (for entry each (chnk-entries chunk) :with-index j)
                     (with offset1 = 0)
-                    (let+ (((&accessors-r/o
-                             (channel-id chunk-entry-channel-id)
-                             (timestamp  chunk-entry-timestamp)
-                             (size       chunk-entry-size)) entry))
-                      (add-to-index channel-id
+                    (let+ (((&structure-r/o
+                             chunk-entry- channel-id timestamp size)
+                            entry))
+                      (add-to-queue channel-id
                                     (make-instance 'index-entry
                                                    :timestamp timestamp
                                                    :chunk-id  chunk-id
                                                    :offset    offset1))
-                      (incf offset1 (+ 16 size)))))
-            #+sbcl (when (and offset/previous
-                              (> (- offset offset/previous) (ash 1 23)))
-                     (sb-ext:gc :full t))))
-    ;; Convert temporary index lists into `indx' instances.
-    (mapcar #'make-index (hash-table-alist indices))))
+                      (incf offset1 (+ 16 size)))))))
+    (flush-indices)
+    (values)))
 
 ;;; Finding undamaged blocks
 

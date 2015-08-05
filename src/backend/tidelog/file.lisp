@@ -70,29 +70,60 @@
                       (channels        file-%channels)
                       (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
-                      (next-chunk-id   file-%next-chunk-id)) instance)
-         ((&flet ensure-channel (id)
+                      (next-chunk-id   file-%next-chunk-id))
+          instance)
+         ((&values chans indxs chnks complete?)
+          (when (member direction '(:input :io))
+            (scan stream :tide)))
+         ((&flet check-channel (id)
             (or (find id channels :test #'= :key #'first)
                 (restart-case
-                    (progn (error "~@<No channel with id ~D.~@:>" id))
+                    (progn
+                      (setf complete? nil)
+                      (error "~@<No channel with id ~D.~@:>" id))
                   (continue (&optional condition)
                     :report (lambda (stream)
                               (format stream "~@<Reconstruct channel ~D.~@:>"
                                       id))
                     (declare (ignore condition))
                     (log:info "~@<Reconstructing channel ~D~@:>" id)
-                    (push `(,id ,(format nil "reconstructed~D" id) (:type :bytes))
-                          channels))
+                    (let* ((name    (format nil "reconstructed~D" id))
+                           (channel `(,id ,name (:type :bytes))))
+                      (push channel channels)
+                      channel))
                   (use-value (name meta-data)
                     :report (lambda (stream)
                               (format stream "~@<Use the supplied ~
                                               description for channel ~
                                               ~D.~@:>"
                                       id))
-                    (push (list id name meta-data) channels))))))
-         ((&values chans indxs chnks complete?)
-          (when (member direction '(:input :io))
-            (scan stream :tide))))
+                    (let ((channel (list id name meta-data)))
+                      (push channel channels)
+                      channel))))))
+         ((&flet make-index (channel-id)
+            (let ((lock (rsbag.backend::backend-lock instance)))
+              (setf (gethash channel-id indices)
+                    (make-index channel-id stream lock direction)))))
+         #+unused
+         ((&flet check-index (channel-id)
+            (or (gethash channel-id indices)
+                (restart-case
+                    (progn
+                      (setf complete? nil)
+                      (error "~@<No index for channel id ~D.~@:>"
+                             channel-id))
+                  (continue (&optional condition)
+                    :report (lambda (stream)
+                              (format stream "~@<Reconstruct index for ~
+                                              channel ~D.~@:>"
+                                      channel-id))
+                    (declare (ignore condition))
+                    (log:info "~@<Reconstructing index for channel ~D.~@:>"
+                              channel-id)
+                    (make-index channel-id))))))
+         ((&flet ensure-index (channel-id)
+            (or (gethash channel-id indices)
+                (make-index channel-id)))))
 
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks           (sort (coerce chnks 'vector) #'<
@@ -106,36 +137,72 @@
           channels        (map 'list #'make-channel chans))
     (setf (chnk-chunk-id buffer) next-chunk-id)
 
-    ;; Verify presence of indices and construct index objects.
+    ;; Construct `index' instances and, when necessary, missing
+    ;; channels.
+    (when (and (not (emptyp chnks)) (emptyp indxs))
+      (setf complete? nil))
     (iter (with reconstructed? = nil)
           (restart-case
               (progn
-                (when (or (not complete?) (and (not (emptyp chnks)) (emptyp indxs)))
-                  (error "~@<Incomplete indices; read ~:D chunk~:P and ~
-                          ~:D ~:*~[indices~;index~:;indices~].~@:>"
-                         (length chnks) (length indxs)))
+                ;; Unpack INDX blocks into `index' instances. Multiple
+                ;; INDX blocks can be merged into a single `index'
+                ;; instance.
+                ;;
+                ;; If this signals an error, the CONTINUE restart can
+                ;; be used to regenerate indices.
+                (iter (for (channel-id . offset) in indxs)
+                      (let ((indx (unpack stream :block offset))
+                            (index (ensure-index channel-id)))
+                        (index-add-indxs index (list indx) chnks)))
+
                 ;; Make sure that entries in CHANNELS exist for all
-                ;; channel ids mentioned in INDXS. This problem can
-                ;; occur, when INDX blocks are written, but CHAN
-                ;; blocks are lost.
-                (mapc (compose #'ensure-channel #'indx-channel-id) indxs)
-                ;; Create `index' instances for all channels. If this
-                ;; fails, we can regenerate indices and retry via one
-                ;; of the restarts.
-                (iter (for (id name meta-data) in channels)
-                      (setf (gethash id indices)
-                            (make-index id indxs chnks stream lock direction)))
+                ;; channel ids mentioned in the constructed
+                ;; indices. This problem can occur, when INDX blocks
+                ;; are written, but CHAN blocks are missing.
+                ;;
+                ;; If this signals an error, the CONTINUE restart can
+                ;; be used to regenerate indices.
+                (mapc (compose #'check-channel #'index-channel)
+                      (hash-table-values indices))
+
+                ;; Make sure that `index' instances exist for all
+                ;; channels in CHANNELS. This can problem can occur
+                ;; when CHAN blocks are written, but INDX blocks are
+                ;; missing.
+                ;;
+                ;; If this fails, the CONTINUE restart can be used to
+                ;; regenerate indices.
+                #+no (mapc (compose #'check-index #'first) channels)
+                ;; INDX chunks may currently be omitted for empty
+                ;; channels.
+                (mapc (compose #'ensure-index #'first) channels)
+
+                ;; If nothing above signaled an error but we still
+                ;; know that the data is incomplete, signal an error
+                ;; here.
+                ;;
+                ;; The CONTINUE restart can be used to regenerate
+                ;; indices.
+                (unless (or (eq direction :output) complete? reconstructed?)
+                  (error "~@<Incomplete indices; read ~
+                          ~:D chunk~:P (CHNK blocks), ~
+                          ~:D channel~:P (CHAN blocks) and ~
+                          ~:D ~:*~[indices~;index~:;indices~] (INDX blocks).~@:>"
+                         (length chnks) (length chans) (length indxs)))
+
                 (return))
             (continue (&optional condition)
               :report (lambda (stream)
-                        (format stream "~@<Regenerate indices.~@:>"))
-              :test   (lambda (condition)            ; avoid infinite retries
+                        (format stream "~@<Scan through all chunks and ~
+                                        regenerate indices.~@:>"))
+              :test   (lambda (condition) ; avoid infinite retries
                         (declare (ignore condition))
                         (not reconstructed?))
               (declare (ignore condition))
-              (setf reconstructed? t                 ; detect infinite retries
+              (reconstruct-indices stream chnks #'ensure-index)
+              (setf reconstructed? t    ; detect infinite retries
                     complete?      t
-                    indxs          (reconstruct-indices stream chnks)))
+                    indxs          '()))
             (use-value (new-indxs)
               :report (lambda (stream)
                         (format stream "~@<Use the supplied value as ~
@@ -182,7 +249,7 @@
 
     ;; Add an index for the new channel
     (setf (gethash channel indices)
-          (make-index channel nil nil stream lock direction))
+          (make-index channel stream lock direction))
 
     (bt:with-lock-held (lock)
       (pack channel1 stream))))
@@ -205,7 +272,8 @@
                       (timestamp local-time:timestamp)
                       (entry     simple-array))
   (let+ (((&accessors-r/o (buffer  backend-buffer)
-                          (indices file-%indices)) file)
+                          (indices file-%indices))
+          file)
          (timestamp* (timestamp->uint64 timestamp))
          (size       (length entry))
          (entry      (make-instance 'chunk-entry
@@ -314,17 +382,12 @@
                       :source-config (chan-source-config chan)
                       :format        (chan-format        chan)))))
 
-(defun make-index (channel-id indices chunks stream lock direction)
-  (let* ((relevant (remove channel-id indices
-                           :test-not #'=
-                           :key      #'indx-channel-id))
-         (index    (make-instance 'index
-                                  :stream    stream
-                                  :lock      lock
-                                  :direction direction
-                                  :channel   channel-id)))
-    (index-add-indxs index relevant chunks)
-    index))
+(defun make-index (channel-id stream lock direction)
+  (make-instance 'index
+                 :stream    stream
+                 :lock      lock
+                 :direction direction
+                 :channel   channel-id))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."
@@ -362,20 +425,21 @@
                           (unsigned-byte 64))
                 %chunk-id->offset))
 
-(defun %chunk-id->offset (id index
+(defun %chunk-id->offset (id chunks
                           &optional
                           (start 0)
-                          (end   (length index)))
+                          (end   (length chunks)))
   (when (= start end)
-    (error "~@<Chunk with id ~:D not found in index.~@:>"
+    (error "~@<Referenced chunk with id ~:D is not in chunk ~
+            list.~@:>"
            id))
 
   (let* ((pivot  (ash (+ start end) -1))
-         (pivot* (car (aref index pivot))))
+         (pivot* (car (aref chunks pivot))))
     (cond
       ((< pivot* id)
-       (%chunk-id->offset id index (1+ pivot) end))
+       (%chunk-id->offset id chunks (1+ pivot) end))
       ((> pivot* id)
-       (%chunk-id->offset id index start pivot))
+       (%chunk-id->offset id chunks start pivot))
       (t
-       (cdr (aref index pivot))))))
+       (cdr (aref chunks pivot))))))

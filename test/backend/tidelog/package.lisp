@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for unit tests of the tidelog backend.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -27,7 +27,9 @@
    #:+format-version-minor+
 
    #:indx-channel-id
-   #:indx-count)
+   #:indx-count
+
+   #:index-add-entries)
 
   (:export
    #:backend-tidelog-root)

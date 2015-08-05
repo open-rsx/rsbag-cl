@@ -147,8 +147,15 @@
   (setf (indx-channel-id (backend-buffer instance))
         (index-channel instance)))
 
-(defun index-add-indxs (index indxs chunks)
+(defmethod index-add-indxs ((index  index)
+                            (indxs  sequence)
+                            (chunks vector))
   (index-vector-add-indxs (index-entries index) indxs chunks))
+
+(defmethod index-add-entries ((index   index)
+                              (entries sequence)
+                              (chunks  vector))
+  (index-vector-add-entries (index-entries index) entries chunks))
 
 (defmethod index-num-entries ((index index))
   (/ (length (index-entries index)) 2))

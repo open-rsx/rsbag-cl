@@ -1,10 +1,21 @@
 ;;;; repair.lisp --- Unit tests for the repair functions of the tidelog backend.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend.tidelog.test)
+
+(defclass mock-index ()
+  ((channel-id :initarg :channel-id
+               :accessor mock-index-channel-id)
+   (entries    :accessor mock-index-entries
+               :initform '())))
+
+(defmethod index-add-entries ((index   mock-index)
+                              (entries sequence)
+                              (chunks  vector))
+  (push (cons entries chunks) (mock-index-entries index)))
 
 (addtest (backend-tidelog-root
           :documentation
@@ -12,18 +23,26 @@
   reconstruct-indices/smoke
 
   (ensure-cases (input chunks expected)
-      `(((,@(tide-block)
+      `(;; Minimal input
+        ((,@(tide-block)
           ,@(valid-chnk-block
              :count 1 :content `(,@(chunk-entry))))
-         ((0 . 22))
-         ((0 1))))
+         ,#((0 . 22))
+         ((0 ((#() . ,#((0 . 22))))))))
 
-    (let ((stream (apply #'octet-streamify input)))
-      (ensure-same (mapcar (lambda (indx)
-                             (list (indx-channel-id indx)
-                                   (indx-count indx)))
-                           (reconstruct-indices stream chunks))
-                   expected))))
+    (let+ ((stream (apply #'octet-streamify input))
+           (indices (make-hash-table))
+           ((&flet ensure-index (channel-id)
+              (ensure-gethash channel-id indices
+                              (make-instance 'mock-index
+                                             :channel-id channel-id)))))
+      (reconstruct-indices stream chunks #'ensure-index)
+      (ensure-same (mapcar (lambda (index)
+                             (list (mock-index-channel-id index)
+                                   (mock-index-entries index)))
+                           (hash-table-values indices))
+                   expected
+                   :test #'equalp))))
 
 (addtest (backend-tidelog-root
           :documentation
