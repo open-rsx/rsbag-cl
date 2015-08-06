@@ -96,6 +96,7 @@
 ;;;
 
 (defclass index (direction-mixin
+                 async-double-buffered-writer-mixin
                  buffering-writer-mixin
                  last-write-time-mixin)
   ((channel   :initarg  :channel
@@ -142,10 +143,6 @@
   (:documentation
    "Instances of this class store mappings of indices and timestamps
     of entries to corresponding file offsets for one channel."))
-
-(defmethod initialize-instance :after ((instance index) &key)
-  (setf (indx-channel-id (backend-buffer instance))
-        (index-channel instance)))
 
 (defmethod index-add-indxs ((index  index)
                             (indxs  sequence)
@@ -198,7 +195,8 @@
 
 (defmethod make-buffer ((index  index)
                         (buffer (eql nil)))
-  (make-buffer index (make-instance 'indx)))
+  (make-buffer index (make-instance 'indx
+                                    :channel-id (index-channel index))))
 
 (defmethod make-buffer ((index  index)
                         (buffer indx))
