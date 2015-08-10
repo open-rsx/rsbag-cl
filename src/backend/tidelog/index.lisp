@@ -222,12 +222,11 @@
           index))
     ;; Update index block.
     (incf (indx-count buffer))
-    (vector-push-extend
-     (make-instance 'index-entry
-                    :chunk-id  chunk-id
-                    :timestamp timestamp
-                    :offset    offset)
-     (indx-entries buffer))
+    (make-or-reuse-instance
+     (indx-entries buffer) index-entry
+     :chunk-id  chunk-id
+     :timestamp timestamp
+     :offset    offset)
 
     ;; Update sorted state.
     (when sorted-to
@@ -237,18 +236,18 @@
 
 ;; Buffering
 
-(defmethod make-buffer ((index  output-index)
-                        (buffer (eql nil)))
+(defmethod make-buffer ((index    output-index)
+                        (previous (eql nil)))
   (make-buffer index (make-instance 'indx
-                                    :channel-id (index-channel index))))
+                                    :channel-id (index-channel index)
+                                    :entries    (make-array 0
+                                                            :adjustable   t
+                                                            :fill-pointer 0))))
 
-(defmethod make-buffer ((index  output-index)
-                        (buffer indx))
-  (reinitialize-instance buffer
-                         :count   0
-                         :entries (make-array 0
-                                              :adjustable   t
-                                              :fill-pointer 0)))
+(defmethod make-buffer ((index    output-index)
+                        (previous indx))
+  (setf (fill-pointer (indx-entries previous)) 0)
+  (reinitialize-instance previous :count 0))
 
 (defmethod write-buffer ((index  output-index)
                          (buffer indx))
@@ -263,14 +262,12 @@
              insertions.~@:>")
       (setf entries (sort entries #'< :key #'index-entry-timestamp)))
 
-    ;; If we have anything to write, write it and reset fill pointers
+    ;; If we have anything to write, write it and reset fill pointer
     ;; so we can start filling the buffer again.
     (unless (zerop (indx-count buffer))
       (bt:with-lock-held ((index-%lock index))
         (pack buffer stream)
-        (force-output stream))
-      ;; TODO
-      #+no (fill (indx-entries buffer) 0))))
+        (force-output stream)))))
 
 (defmethod buffer-property ((backend output-index)
                             (buffer  indx)

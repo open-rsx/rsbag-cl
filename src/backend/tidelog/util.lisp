@@ -35,3 +35,19 @@
     (declare (type non-negative-integer     secs)
              (type (integer 0 (1000000000)) nsecs))
     (+ (* (expt 10 9) secs) nsecs)))
+
+;;; Buffering
+
+(defmacro make-or-reuse-instance (array class &rest initargs)
+  (once-only (array)
+    (with-unique-names (fill-pointer element)
+      `(let* ((,fill-pointer (fill-pointer ,array))
+              (,element      (when (> (array-total-size ,array) ,fill-pointer)
+                               (aref ,array ,fill-pointer))))
+         (if (typep ,element ',class)
+             (progn
+               (incf (fill-pointer ,array))
+               (reinitialize-instance ,element ,@initargs))
+             (let ((,element (make-instance ',class ,@initargs)))
+               (vector-push-extend ,element ,array)
+               ,element))))))

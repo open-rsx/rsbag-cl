@@ -284,19 +284,20 @@
           file)
          (timestamp* (timestamp->uint64 timestamp))
          (size       (length entry))
-         (entry      (make-instance 'chunk-entry
-                                    :channel-id channel
-                                    :timestamp  timestamp*
-                                    :size       size
-                                    :entry      entry))
          (index      (gethash channel indices)))
 
     ;; Update timestamps.
     (minf (chnk-start buffer) timestamp*)
     (maxf (chnk-end buffer) timestamp*)
 
-    ;; (incf (chnk-count buffer))
-    (vector-push-extend entry (chnk-entries buffer))
+    ;; Make or reuse a `chunk-entry' instance in the entries vector of
+    ;; BUFFER.
+    (make-or-reuse-instance
+     (chnk-entries buffer) chunk-entry
+     :channel-id channel
+     :timestamp  timestamp*
+     :size       size
+     :entry      entry)
 
     ;; Update index. Abuse chnk-count for tracking offsets
     (put-entry index timestamp* (chnk-count buffer) (chnk-chunk-id buffer))
@@ -320,19 +321,20 @@
 (defmethod make-buffer ((file     file)
                         (previous (eql nil)))
   (make-buffer file (make-instance 'chnk
-                                   :compression 0)))
+                                   :compression 0
+                                   :entries     (make-array 0
+                                                            :adjustable   t
+                                                            :fill-pointer 0))))
 
 (defmethod make-buffer ((file     file)
                         (previous chnk))
   (let+ (((&accessors (next-chunk-id file-%next-chunk-id)) file))
+    (setf (fill-pointer (chnk-entries previous)) 0)
     (reinitialize-instance previous
                            :chunk-id (incf next-chunk-id)
                            :start    (1- (ash 1 64))
                            :end      0
-                           :count    0
-                           :entries  (make-array 0
-                                                 :adjustable   t
-                                                 :fill-pointer 0))))
+                           :count    0)))
 
 (defmethod write-buffer ((file   file)
                          (buffer chnk))
@@ -346,16 +348,13 @@
         (pack buffer stream)
         (force-output stream))
 
-
       ;; For the sake of conservative garbage collectors, we
       ;; dereference as much as possible here. On SBCL we even garbage
       ;; collect explicitly.
-      (map-into entries
-                (lambda (entry)
-                  (setf (chunk-entry-entry entry) (nibbles:octet-vector))
-                  nil)
-                entries)
-      #+sbcl (sb-ext:gc))))
+      (let ((empty (load-time-value (nibbles:octet-vector) t)))
+        (map nil (lambda (entry)
+                   (setf (chunk-entry-entry entry) empty))
+             entries)))))
 
 (defmethod buffer-property ((backend file)
                             (buffer  chnk)
