@@ -300,17 +300,15 @@
 (defmethod get-entry ((file    file)
                       (channel integer)
                       (index   integer))
-  (bt:with-lock-held ((rsbag.backend::backend-lock file))
-    (let+ (((&accessors (stream backend-stream)) file)
-           (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
-           (offset (index-offset index1 index))
-           (length (prog2
-                       (file-position stream (+ offset 12))
-                       (nibbles:read-ub32/le stream)
-                     (file-position stream offset)))
-           (entry  (allocate-instance (find-class 'chunk-entry)))) ; TODO(jmoringe): keep instead of reallocating?
-      (unpack (read-chunk-of-length (+ 16 length) stream) entry)
-      (chunk-entry-entry entry))))
+  (let+ (((&accessors (stream backend-stream)
+                      (lock   rsbag.backend::backend-lock))
+          file)
+         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
+         (offset (index-offset index1 index)))
+    (bt:with-lock-held (lock)
+      (file-position stream (+ offset 12))
+      (let ((length (nibbles:read-ub32/le stream)))
+        (read-chunk-of-length length stream)))))
 
 ;;; Buffering
 
