@@ -108,9 +108,17 @@
       (:input
        (make-it 'input-index))
       (:output
-       (apply #'make-it 'output-index
-              (when flush-strategy
-                (list :flush-strategy flush-strategy))))
+       (let ((derived (when flush-strategy
+                        (let ((class (find-class 'output-index)))
+                          (c2mop:finalize-inheritance class)
+                          (index-derive-flush-strategy
+                           (c2mop:class-prototype class)
+                          flush-strategy)))))
+         (log:info "~@<From flush strategy ~A, derived flush strategy ~
+                    ~A~:@>"
+                   flush-strategy derived)
+         (apply #'make-it 'output-index
+                (when derived (list :flush-strategy derived)))))
       (:io
        (make-it 'io-index)))))
 
@@ -200,8 +208,8 @@
                entries are not sorted."))
   (:default-initargs
    :flush-strategy (make-flush-strategy :property-limit
-                                        :property :length/entries
-                                        :limit    most-positive-fixnum))
+                                        :property :length/bytes
+                                        :limit    (expt 2 22)))
   (:documentation
    "Instances of this class store partial index information for
     individual channels until it is written to the output stream.
@@ -209,12 +217,30 @@
     These indices do not generally store information for all events in
     one channel and cannot be queried."))
 
-(defmethod initialize-instance :after ((instance output-index) &key)
-  (setf (indx-channel-id (backend-buffer instance))
-        (index-channel instance)))
+(defmethod index-derive-flush-strategy ((index          output-index)
+                                        (flush-strategy t))
+  flush-strategy)
+
+(defmethod index-derive-flush-strategy
+    ((index          output-index)
+     (flush-strategy rsbag.backend::property-limit))
+  (if (eq :length/bytes (rsbag.backend::flush-strategy-property flush-strategy))
+      (let ((limit (rsbag.backend::flush-strategy-limit flush-strategy)))
+        (make-flush-strategy :property-limit
+                             :property :length/bytes
+                             :limit    (floor limit 4)))
+      flush-strategy))
+
+(defmethod index-derive-flush-strategy
+    ((index          output-index)
+     (flush-strategy rsbag.backend::composite-flush-strategy-mixin))
+  (apply #'make-flush-strategy
+         (class-of flush-strategy)
+         (mapcar (compose #'list (curry #'index-derive-flush-strategy index))
+                 (rsbag.backend::flush-strategy-children flush-strategy))))
 
 (defmethod index-num-entries ((index output-index))
-  (indx-count (backend-buffer index))) ; TODO wrong after flushing
+  (indx-count (backend-buffer index)))  ; TODO wrong after flushing
 
 (defmethod put-entry ((index     output-index)
                       (timestamp integer)
