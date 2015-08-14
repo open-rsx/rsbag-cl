@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Backend protocol of the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -144,6 +144,10 @@
   (:documentation
    "Return (potentially creating it first) an instance of the flushing
     strategy designated by THING."))
+
+(defmethod make-flush-strategy ((thing standard-object) &rest args)
+  (assert (not args))
+  thing)
 
 (defmethod make-flush-strategy ((thing symbol) &rest args)
   (apply #'make-flush-strategy

@@ -1,6 +1,6 @@
 ;;;; flush-strategies.lisp --- Flush strategy classes provided by backend module.
 ;;;;
-;;;; Copyright (C) 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -47,8 +47,7 @@
 (defmethod flush? ((strategy property-limit)
                    (backend  t)
                    (buffer   t))
-  (let+ (((&accessors-r/o (property flush-strategy-property)
-                          (limit    flush-strategy-limit)) strategy))
+  (let+ (((&structure-r/o flush-strategy- property limit) strategy))
     (> (buffer-property backend buffer property) limit)))
 
 (defmethod print-object ((object property-limit) stream)
@@ -62,7 +61,7 @@
 (defclass composite-flush-strategy-mixin ()
   ((children :initarg  :children
              :type     list
-             :accessor children
+             :accessor flush-strategy-children
              :initform nil
              :documentation
              "A list of child strategies which are consulted to
@@ -76,7 +75,7 @@
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A (~D)"
             (class-name (class-of object))
-            (length (children object)))))
+            (length (flush-strategy-children object)))))
 
 (macrolet
     ((define-simple-composite-strategy (name
@@ -99,7 +98,8 @@
           (defmethod flush? ((strategy ,class-name)
                              (backend  t)
                              (buffer   t))
-            (,reducer (rcurry #'flush? backend buffer) (children strategy)))
+            (,reducer (rcurry #'flush? backend buffer)
+                      (flush-strategy-children strategy)))
 
           (defmethod make-flush-strategy ((thing (eql (find-class ',class-name)))
                                           &rest args)
