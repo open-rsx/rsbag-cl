@@ -160,6 +160,9 @@
     These indices only store event timestamps and corresponding
     offsets, are immutable and never write back any data."))
 
+(defmethod close ((stream input-index) &key abort)
+  (declare (ignore abort))) ; nothing to do
+
 (defmethod index-num-entries ((index input-index))
   (/ (length (index-entries index)) 2))
 
