@@ -177,19 +177,11 @@
                 (:module     "view"
                  :pathname   "src/view"
                  :depends-on ("src")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol"
-                               :depends-on ("package"))
-
-                              (:file       "multi-sequence-mixins"
-                               :depends-on ("package"))
-                              (:file       "elt-via-iterator-mixin"
-                               :depends-on ("package"))
-
-                              (:file       "serialized"
-                               :depends-on ("package" "protocol"
-                                            "multi-sequence-mixins"
-                                            "elt-via-iterator-mixin"))))
+                              (:file       "protocol")
+                              (:file       "mixins")
+                              (:file       "serialized")))
 
                 (:module     "rsb-serialization"
                  :pathname   "."
