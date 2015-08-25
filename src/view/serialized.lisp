@@ -1,10 +1,68 @@
 ;;;; serialized.lisp --- Serialized view on data from multiple channels.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.view)
+
+;;; Utility functions
+
+(declaim (inline %iterator-step)
+         (ftype (function (list function boolean) list) %iterator-step))
+
+(defun+ %iterator-step ((&whole state &ign sequence iterator &ign from-end*)
+                        key from-end)
+  "Destructively perform a step with iterator STATE and update its
+   sorting key using KEY. Return the modified STATE."
+  (declare (type function key))
+  ;; Update the iterator and its sorting key.
+  (setf (third state) (sequence:iterator-step
+                       sequence iterator (xor from-end from-end*))
+        (first state) (apply key (rest state)))
+  state)
+
+(declaim (inline %iterator-min)
+         (ftype (function (list list function) list) %iterator-min))
+
+(defun %iterator-min (left right compare)
+  (cond
+    ((null (first left))
+     right)
+    ((null (first right))
+     left)
+    ((funcall compare (first left) (first right))
+     left)
+    (t
+     right)))
+
+(declaim (inline %iterator-for-forward-step)
+         (ftype (function (list function) (or null list))
+                %iterator-for-forward-step))
+
+(defun %iterator-for-forward-step (iterators compare)
+  "Return the iterator in ITERATORS that should be used to retrieve
+   the next element of the serialized sequence or nil."
+  (when iterators
+    (reduce (rcurry #'%iterator-min compare) iterators)))
+
+(declaim (ftype (function (list function function) (or null list))
+                %iterator-for-backward-step))
+
+(defun %iterator-for-backward-step (iterators key compare)
+  "Return the iterator in ITERATORS that should be used to retrieve
+   the previous element of the serialized sequence of nil."
+  (let+ (((&flet cannot-step-back? (iterator)
+            (when-let ((index (sequence:iterator-index
+                               (second iterator) (third iterator))))
+              (zerop index))))
+         ((&flet back (iterator)
+            (cons (%iterator-step (copy-list iterator) key t) iterator))))
+    (cdr (reduce
+          (lambda (left right)
+            (if (eq (%iterator-min (car left) (car right) compare) (car left))
+                right left))
+          (mapcar #'back (remove-if #'cannot-step-back? iterators))))))
 
 ;;; Construction methods
 
@@ -96,9 +154,7 @@
                                                    from-end
                                                    (start   0)
                                                    end)
-  (let+ (((&accessors-r/o (sequences view-sequences)
-                          (compare   view-compare)
-                          (key       view-key)) view)
+  (let+ (((&structure-r/o view- sequences compare key) view)
          ((&flet make-iterator (sequence)
             (let+ (((&values iterator limit from-end)
                     (sequence:make-simple-sequence-iterator
@@ -145,9 +201,8 @@
 (defmethod sequence:iterator-step ((sequence serialized)
                                    (iterator serialized-iterator)
                                    (from-end t))
-  (let+ (((&accessors-r/o (compare view-compare)
-                          (key     view-key)) sequence)
-         ((&accessors-r/o (iterators iterator-%iterators)) iterator))
+  (let+ (((&structure-r/o view- compare key) sequence)
+         ((&structure-r/o iterator- (iterators %iterators)) iterator))
     (declare (type function compare key))
     ;; Step the appropriate sub-iterator (depending on forward
     ;; vs. backward step), then find and store the next sub-iterator.
@@ -162,61 +217,6 @@
 (defmethod sequence:iterator-element ((sequence serialized)
                                       (iterator serialized-iterator))
   (let+ (((&accessors-r/o
-           ((&ign sequence* iterator* &rest &ign) iterator-%current)) iterator))
+           ((&ign sequence* iterator* &rest &ign) iterator-%current))
+          iterator))
     (sequence:iterator-element sequence* iterator*)))
-
-;;; Utility functions
-
-(declaim (inline %iterator-step)
-         (ftype (function (list function boolean) list) %iterator-step))
-
-(defun+ %iterator-step ((&whole state &ign sequence iterator &ign from-end*) key from-end)
-  "Destructively perform a step with iterator STATE and update its
-   sorting key using KEY. Return the modified STATE."
-  ;; Update the iterator and its sorting key.
-  (setf (third state) (sequence:iterator-step
-                       sequence iterator (xor from-end from-end*))
-        (first state) (apply key (rest state)))
-  state)
-
-(declaim (inline %iterator-min)
-         (ftype (function (list list function) list) %iterator-min))
-
-(defun %iterator-min (left right compare)
-  (cond
-    ((null (first left))
-     right)
-    ((null (first right))
-     left)
-    ((funcall compare (first left) (first right))
-     left)
-    (t
-     right)))
-
-(declaim (inline %iterator-for-forward-step)
-         (ftype (function (list function) (or null list))
-                %iterator-for-forward-step))
-
-(defun %iterator-for-forward-step (iterators compare)
-  "Return the iterator in ITERATORS that should be used to retrieve
-   the next element of the serialized sequence or nil."
-  (when iterators
-    (reduce (rcurry #'%iterator-min compare) iterators)))
-
-(declaim (ftype (function (list function function) (or null list))
-                %iterator-for-backward-step))
-
-(defun %iterator-for-backward-step (iterators key compare)
-  "Return the iterator in ITERATORS that should be used to retrieve
-   the previous element of the serialized sequence of nil."
-  (let+ (((&flet cannot-step-back? (iterator)
-            (when-let ((index (sequence:iterator-index
-                               (second iterator) (third iterator))))
-              (zerop index))))
-         ((&flet back (iterator)
-            (cons (%iterator-step (copy-list iterator) key t) iterator))))
-    (cdr (reduce
-          (lambda (left right)
-            (if (eq (%iterator-min (car left) (car right) compare) (car left))
-                right left))
-          (mapcar #'back (remove-if #'cannot-step-back? iterators))))))
