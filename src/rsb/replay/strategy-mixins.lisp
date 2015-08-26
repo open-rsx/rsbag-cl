@@ -1,6 +1,6 @@
 ;;;; strategy-mixin.lisp --- Mixins classes for replay strategy classes.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -184,17 +184,23 @@
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   time-bounds-mixin)
                            &key &allow-other-keys)
-  (let+ (((&accessors-r/o (bag connection-bag)) connection)
-         ((&accessors (start-time  strategy-%start-time)
-                      (start-index strategy-start-index)
-                      (end-time    strategy-%end-time)
-                      (end-index   strategy-end-index)) strategy)
-         (sequence            (make-view connection strategy
-                                         :selector #'channel-timestamps))
-         (sequence-start-time (unless (emptyp sequence)
-                                (first-elt sequence)))
-         (sequence-end-time   (unless (emptyp sequence)
-                                (last-elt sequence)))
+  (let+ (((&structure-r/o connection- bag) connection)
+         ((&structure strategy-
+                      (start-time %start-time) start-index
+                      (end-time   %end-time)   end-index)
+          strategy)
+         (sequence (make-view connection strategy
+                              :selector #'channel-timestamps))
+         sequence-start-time
+         ((&flet sequence-start-time ()
+            (or sequence-start-time
+                (setf sequence-start-time (unless (emptyp sequence)
+                                            (first-elt sequence))))))
+         sequence-end-time
+         ((&flet sequence-end-time ()
+            (or sequence-end-time
+                (setf sequence-end-time (unless (emptyp sequence)
+                                          (last-elt sequence))))))
          ((&labels index-difference (index timestamp)
             (let ((index-timestamp (elt sequence index)))
               (values (abs (local-time:timestamp-difference
@@ -209,17 +215,17 @@
                (timestamp->index
                 (local-time:adjust-timestamp
                  (if (minusp timestamp)
-                     sequence-end-time
-                     sequence-start-time)
+                     (sequence-end-time)
+                     (sequence-start-time))
                  (:offset :sec  (floor timestamp))
                  (:offset :nsec (mod (floor timestamp 1/1000000000)
                                      1000000000)))
                 name))
               (local-time:timestamp
                (if-let ((index (when (local-time:timestamp<=
-                                      sequence-start-time
+                                      (sequence-start-time)
                                       timestamp
-                                      sequence-end-time)
+                                      (sequence-end-time))
                                  (position timestamp sequence
                                            :test #'local-time:timestamp<=))))
                  (values
@@ -232,7 +238,7 @@
                  (error "~@<Could not find requested timestamp ~A in ~
                          bag ~A (with temporal range [~A, ~A]).~@:>"
                         timestamp (connection-bag connection)
-                        sequence-start-time sequence-end-time))))))
+                        (sequence-start-time) (sequence-end-time)))))))
          ((&flet check-index (index timestamp name)
             (let+ (((&values difference effective)
                     (index-difference index timestamp)))
@@ -245,7 +251,7 @@
                       name effective difference name timestamp))))))
     (cond
       ((not start-time))
-      ((and sequence-start-time sequence-end-time)
+      ((and (sequence-start-time) (sequence-end-time))
        (multiple-value-setq (start-index start-time)
          (timestamp->index start-time "start time"))
        (check-index start-index start-time "start time"))
@@ -255,7 +261,7 @@
              bag start-time)))
     (cond
       ((not end-time))
-      ((and sequence-start-time sequence-end-time)
+      ((and (sequence-start-time) (sequence-end-time))
        (multiple-value-setq (end-index end-time)
          (timestamp->index end-time "end time"))
        (check-index end-index end-time "end time"))
