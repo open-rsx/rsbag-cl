@@ -330,7 +330,9 @@
                    progress)
   (macrolet ((do-entries (&optional end-index)
                `(iter (when (first-iteration-p)
-                        (setf *skip* (lambda () (next-iteration))))
+                        (setf *skip* (lambda () (next-iteration)))
+                        (when update-progress
+                          (funcall update-progress nil nil)))
                       (for (timestamp event sink) each sequence
                            :from start-index
                            ,@(when end-index '(:below end-index)))
@@ -702,11 +704,14 @@
 
     (iter (until terminate?)
           (when (first-iteration-p)
-            (setf *skip* (lambda () (next-iteration))))
+            (setf *skip* (lambda () (next-iteration)))
+            (when update-progress
+              (funcall update-progress nil nil)))
           (for command next (next-command strategy))
           (execute-command strategy command)
           (when update-progress
-            (funcall update-progress (index) (first (element)))))))
+            (funcall update-progress
+                     (index) (unless (end? nil) (first (element))))))))
 
 ;;; Utility functions
 

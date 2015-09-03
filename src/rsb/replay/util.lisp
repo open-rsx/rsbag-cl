@@ -1,6 +1,6 @@
 ;;;; util.lisp ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -43,8 +43,10 @@
    appropriate way if CALLBACK is non-nil."
   (when callback
     (let ((start 0)
-          (end   (1- (length sequence))))
+          (end   (max 0 (1- (length sequence)))))
       (lambda (index timestamp)
-        (funcall callback
-                 (/ (1+ (- index start)) (- (1+ end) start))
-                 index start end timestamp)))))
+        (if index
+            (funcall callback
+                     (/ (1+ (- index start)) (- (1+ end) start))
+                     index start end timestamp)
+            (funcall callback nil nil nil nil nil))))))
