@@ -93,14 +93,13 @@
 (defmethod replay :before ((connection replay-bag-connection)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
-  (let+ (((&accessors (start-index strategy-%start-index)
-                      (end-index   strategy-end-index)) strategy)
+  (let+ (((&structure strategy- (start-index %start-index) end-index) strategy)
          (length)
          ((&flet length1 ()
-            (setf length
-                  (or length
-                      (length (make-view connection strategy
-                                         :selector #'channel-timestamps))))))
+            (or length
+                (setf length (length (make-view
+                                      connection strategy
+                                      :selector #'channel-timestamps))))))
          ((&flet from-end (index name)
             (when (> (abs index) (length1))
               (error "~@<Requested ~A, ~:D elements from the end, is ~
@@ -433,8 +432,7 @@
   ;; When this happens, no wait is performed and the negative
   ;; PREVIOUS-DELAY hopefully leads to a compensation in the next
   ;; call.
-  (let+ (((&accessors (previous-delay strategy-previous-delay)
-                      (previous-call  strategy-previous-call)) strategy)
+  (let+ (((&structure strategy- previous-delay previous-call) strategy)
          (now          (local-time:now))
          (actual-delay (when previous-call
                          (local-time:timestamp-difference
@@ -644,8 +642,7 @@
                    (strategy   external-driver-mixin)
                    &key
                    progress)
-  (let+ (((&accessors-r/o (start-index strategy-start-index)
-                          (end-index   strategy-end-index)) strategy)
+  (let+ (((&structure-r/o strategy- start-index end-index) strategy)
          (sequence        (make-view connection strategy))
          (update-progress (%make-progress-reporter sequence progress))
          terminate?
