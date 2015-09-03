@@ -661,7 +661,7 @@
             (sequence:iterator-endp
              sequence current
              (if back? (1- start-index) limit) (xor back? from-end?))))
-         ((&flet step* (back?)
+         ((&labels step* (back?)
             (setf current (sequence:iterator-step
                            sequence current (xor back? from-end?)))
             (when (end? back?)
@@ -670,13 +670,17 @@
               (error "~@<Attempt to step beyond ~:[end~;beginning~] of ~
                       sequence. Current position ~:D, valid range ~
                       [~:D, ~:D[.~@:>"
-                     back? (sequence:iterator-index sequence current)
-                     start-index end-index))))
+                     back? (index) start-index (or end-index (length*))))))
          ((&labels index (&optional relative-to-bounds?)
             (if relative-to-bounds?
                 (- (index) start-index)
                 (sequence:iterator-index sequence current))))
          ((&flet element ()
+            (when (end? nil)
+              (error "~@<Attempt to access out-of-bounds ~
+                      element. Current position ~:D, valid range ~
+                      [~:D, ~:D[~@:>."
+                     (index) start-index (or end-index (length*))))
             (sequence:iterator-element sequence current)))
          ((&flet emit ()
             (let+ (((timestamp event sink) (element)))
