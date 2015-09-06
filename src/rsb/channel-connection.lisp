@@ -53,8 +53,9 @@
   (setf (rsb.ep:processor-error-policy instance)
         (rsb.ep:processor-error-policy instance)))
 
-(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
-                                                         (object    participant-channel-connection))
+(defmethod (setf rsb.ep:processor-error-policy) :before
+    ((new-value t)
+     (object    participant-channel-connection))
   (setf (hooks:hook-handlers (rsb:participant-error-hook (connection-endpoint object)))
         (when new-value (list new-value))))
 
@@ -93,8 +94,7 @@
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
                           (event event))
-  (let+ (((&accessors-r/o (timestamp connection-timestamp)
-                          (strategy  connection-strategy)) sink)
+  (let+ (((&structure-r/o connection- timestamp strategy) sink)
          ((&values channel found?)
           (ensure-channel-for sink event strategy)))
     (unless found?
