@@ -1,6 +1,6 @@
 ;;;; channel-strategies.lisp --- Strategy classes for allocating channels.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -49,9 +49,8 @@
 (defmethod make-channel-for ((connection participant-channel-connection)
                              (event      event)
                              (strategy   scope-and-type))
-  (let+ (((&accessors-r/o (bag         connection-bag)
-                          (participant connection-endpoint)) connection)
-         ((&accessors-r/o (id participant-id)) participant)
+  (let+ (((&structure-r/o connection- bag (participant endpoint)) connection)
+         ((&structure-r/o participant- id) participant)
          (name        (channel-name-for connection event strategy))
          (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
          (transform   (make-transform +rsb-schema-name+ wire-schema))
