@@ -104,11 +104,7 @@
 (defmethod channel-name-for ((connection channel-connection)
                              (event      event)
                              (strategy   scope-and-type))
-  (if-let ((scope       (scope-string (event-scope event)))
-           (wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
-    (format nil "~A:~A" scope wire-schema)
-    (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
-           event :rsb.transport.wire-schema)))
+  (scope+wire-schema->channel-name event))
 
 (defmethod channel-transform-for ((connection participant-channel-connection)
                                   (event      event)
@@ -128,3 +124,41 @@
                   :source-config (princ-to-string
                                   (abstract-uri participant)))
             (when format (list :format format)))))
+
+;;; `collapse-reserved'
+
+(defmethod find-channel-strategy-class ((spec (eql :collapse-reserved)))
+  (find-class 'collapse-reserved))
+
+(defclass collapse-reserved (ensure-channel-mixin
+                             delegating-mixin)
+  ()
+  (:default-initargs
+   :next (missing-required-initarg 'collapse-reserved :next))
+  (:documentation
+   "Collapsed scopes reserved by RSB into their first three components.
+
+    This, for example, prevents introspection scopes like
+    /__rsb/introspection/participants/ID/…  from creating two
+    channels (Hello and Bye) for each participant."))
+
+(defmethod channel-name-for ((connection channel-connection)
+                             (event      event)
+                             (strategy   collapse-reserved))
+  (let ((scope (event-scope event)))
+    (if (sub-scope?/no-coerce scope *reserved-scope*)
+        ;; Collapse reserved scopes to three components.
+        (scope+wire-schema->channel-name
+         event (make-scope (subseq (scope-components scope) 0 3)))
+        ;; All other events go into the usual channels.
+        (channel-name-for connection event (strategy-next strategy)))))
+
+;;; Utility functions
+
+(defun scope+wire-schema->channel-name (event
+                                        &optional
+                                        (scope (event-scope event)))
+  (if-let ((wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
+    (format nil "~A:~A" (scope-string scope) wire-schema)
+    (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
+           event :rsb.transport.wire-schema)))
