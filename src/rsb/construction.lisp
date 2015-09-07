@@ -49,7 +49,7 @@
                         args
                         &key
                         (error-policy nil error-policy-supplied?))
-  (apply #'make-instance 'bag-connection
+  (apply #'make-instance 'recording-bag-connection
          :bag      dest
          :channels (map 'list
                         (lambda (source)
