@@ -100,18 +100,19 @@
   :defsystem-depends-on (:cl-protobuf)
   :depends-on  (:alexandria
                 :split-sequence
-                (:version :let-plus "0.2")
+                (:version :let-plus          "0.2")
                 :iterate
                 :cl-dynamic-classes
                 :more-conditions
-                (:version :log4cl   "1.1.1")
+                (:version :log4cl            "1.1.1")
 
                 :bordeaux-threads
                 :lparallel
                 :local-time
                 :nibbles
 
-                (:version :cl-rsb #.(version/string :revision? nil)))
+                (:version :cl-rsb            #.(version/string :revision? nil))
+                (:version :rsb-introspection #.(version/string :revision? nil)))
   :components  ((:module     "src/early"
                  :pathname   "src"
                  :components ((:file       "package")

@@ -67,6 +67,34 @@
   (:documentation
    "Instances of this class are used to record events into a bag."))
 
+(defmethod start :after ((connection recording-bag-connection))
+  ;; After the recording has been started, perform an introspection
+  ;; survey, recording the introspection replies. This inserts an
+  ;; introspection snapshot at the beginning of the recording in
+  ;; relation to which the differential introspection information in
+  ;; the remainder of the recording can be interpreted.
+  (restart-case
+      ;; TODO the transport should normalize this
+      (let+ (((&flet normalize-url (url)
+                (puri:copy-uri url :path nil :parsed-path nil :fragment nil)))
+             (urls (mapcar #'normalize-url
+                           (mappend (compose #'rsb:transport-specific-urls
+                                             #'connection-endpoint)
+                                    (connection-channels connection))))
+             (urls (remove-duplicates urls :test #'puri:uri=)))
+        (rsb:with-participant
+            (introspection :remote-introspection
+                           rsb.introspection:+introspection-scope+
+                           :receiver-uris   urls
+                           :update-interval nil
+                           :error-policy    #'continue)
+          (declare (ignore introspection))))
+    (continue ()
+      :report (lambda (stream)
+                (format stream "~@<Continue recording using ~A without ~
+                                an introspection survey.~@:>"
+                        connection)))))
+
 ;;; `replay-bag-connection' class
 
 (defclass replay-bag-connection (bag-connection)

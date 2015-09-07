@@ -1,6 +1,6 @@
 ;;;; channel-connection.lisp --- A class for bag channel <-> RSB connections.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -86,11 +86,17 @@
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
                           (event event))
+  ;; HACK: If necessary, hack our own survey event into compliance.
+  (unless (rsb:meta-data event :rsb.transport.wire-schema)
+    (setf (rsb:meta-data event :rsb.transport.wire-schema) "void"
+          (event-data event)                               (nibbles:octet-vector)))
+
   (let+ (((&structure-r/o connection- timestamp strategy) sink)
          ((&values channel found?)
           (ensure-channel-for sink event strategy)))
     (unless found?
       (push channel (connection-channels sink)))
+
     (setf (entry channel (timestamp event timestamp)) event)))
 
 (defmethod start ((connection recording-channel-connection))

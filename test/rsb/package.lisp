@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for unit tests of the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -26,8 +26,14 @@
 
 (cl:in-package #:rsbag.rsb.test)
 
+(defparameter *test-configuration*
+  '(((:transport :inprocess :enabled) . t)
+    ((:introspection :enabled)        . nil)))
+
 (deftestsuite rsb-root (root)
   ()
+  (:dynamic-variables
+   (rsb:*configuration* *test-configuration*))
   (:documentation
    "Root unit test suite for the rsb module."))
 
