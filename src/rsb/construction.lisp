@@ -13,15 +13,13 @@
                         &key
                         (timestamp        :send)
                         (channel-strategy :scope-and-type)
-                        (start?           t)
                         &allow-other-keys)
   (make-instance 'recording-channel-connection
                  :bag       dest
                  :endpoint  source
                  :timestamp timestamp
                  :strategy  (apply #'make-channel-strategy
-                                   (ensure-list channel-strategy))
-                 :start?    start?))
+                                   (ensure-list channel-strategy))))
 
 (defmethod events->bag ((source puri:uri)
                         (dest   bag)
@@ -48,16 +46,21 @@
                         &rest
                         args
                         &key
-                        (error-policy nil error-policy-supplied?))
-  (apply #'make-instance 'recording-bag-connection
-         :bag      dest
-         :channels (map 'list
-                        (lambda (source)
-                          (apply #'events->bag source dest
-                                 (remove-from-plist args :error-policy)))
-                        source)
-         (when error-policy-supplied?
-           (list :error-policy error-policy))))
+                        (error-policy nil error-policy-supplied?)
+                        (start?       t))
+  (let* ((args/channel (remove-from-plist args :error-policy :start?))
+         (connection   (apply #'make-instance 'recording-bag-connection
+                              :bag      dest
+                              :channels (map 'list
+                                             (lambda (source)
+                                               (apply #'events->bag source dest
+                                                      args/channel))
+                                             source)
+                              (when error-policy-supplied?
+                                (list :error-policy error-policy)))))
+    (when start?
+      (start connection))
+    connection))
 
 (defun %events->bag/streamish (source dest
                                &rest args

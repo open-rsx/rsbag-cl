@@ -35,9 +35,8 @@
     sources or sinks and connected to event sources or sinks such as
     functions or RSB participants."))
 
-(defmethod close ((connection channel-connection)
-                  &key abort)
-  (declare (ignore abort))) ;; nothing to do
+(defmethod close ((connection channel-connection) &key abort)
+  (declare (ignore abort))) ; nothing to do
 
 ;;; `participant-channel-connection' class
 
@@ -59,8 +58,7 @@
   (setf (hooks:hook-handlers (rsb:participant-error-hook (connection-endpoint object)))
         (when new-value (list new-value))))
 
-(defmethod close ((connection participant-channel-connection)
-                  &key abort)
+(defmethod close ((connection participant-channel-connection) &key abort)
   (declare (ignore abort))
   (detach/ignore-errors (connection-endpoint connection)))
 
@@ -85,12 +83,6 @@
    "Instances of this represent class represent connections being
     established between RSB listeners and bag channels when RSB events
     are recorded into bag channels."))
-
-(defmethod initialize-instance :after ((instance recording-channel-connection)
-                                       &key
-                                       (start? t))
-  (when start?
-    (start instance)))
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
                           (event event))
