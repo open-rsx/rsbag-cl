@@ -264,9 +264,11 @@
   :license     "LGPLv3" ; see COPYING file for details.
   :description "Unit tests for the cl-rsbag system."
   :depends-on  (:flexi-streams
-                (:version :lift     "1.7.1")
+                (:version :lift                    "1.7.1")
 
-                (:version :cl-rsbag #.(version/string)))
+                (:version :cl-rsbag                #.(version/string))
+
+                (:version :rsb-transport-inprocess #.(version/string :revision? nil)))
   :components  ((:module     "test"
                  :serial     t
                  :components ((:file       "package")
