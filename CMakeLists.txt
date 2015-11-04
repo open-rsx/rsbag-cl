@@ -1,6 +1,6 @@
 # CMakeLists.txt --- CMake build description file.
 #
-# Copyright (C) 2012, 2013, 2014 Jan Moringen
+# Copyright (C) 2012, 2013, 2014, 2015 Jan Moringen
 #
 # Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -158,6 +158,7 @@ endfunction()
 test(test         ${SYSTEM_NAME})
 test(test-tidelog rsbag-tidelog)
 test(test-elan    rsbag-elan)
+test(test-builder rsbag-builder)
 
 # Installation
 file(GLOB ASD_FILES
