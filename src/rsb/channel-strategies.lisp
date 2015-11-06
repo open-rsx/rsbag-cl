@@ -6,12 +6,41 @@
 
 (cl:in-package #:rsbag.rsb)
 
+;;; `ensure-channel-mixin'
+
+(defclass ensure-channel-mixin ()
+  ()
+  (:documentation
+   "Adds basic {ensure,make}-channel-for behavior to strategy classes."))
+
+(defvar *name* nil)
+
+(defmethod ensure-channel-for ((connection channel-connection)
+                               (event      event)
+                               (strategy   ensure-channel-mixin))
+  (let* ((name    (channel-name-for connection event strategy))
+         (bag     (connection-bag connection))
+         (channel (bag-channel bag name :if-does-not-exist nil)))
+    (if channel
+        (values channel t)
+        (let ((*name* name))
+          (make-channel-for connection event strategy)))))
+
+(defmethod make-channel-for ((connection participant-channel-connection)
+                             (event      event)
+                             (strategy   ensure-channel-mixin))
+  (let+ (((&structure-r/o connection- bag) connection)
+         (name (or *name* (channel-name-for connection event strategy)))
+         (transform (channel-transform-for connection event strategy))
+         (meta-data (channel-meta-data-for connection transform event strategy)))
+    (setf (bag-channel bag name :transform transform) meta-data)))
+
 ;;; `scope-and-type' channel allocation strategy class
 
 (defmethod find-channel-strategy-class ((spec (eql :scope-and-type)))
   (find-class 'scope-and-type))
 
-(defclass scope-and-type ()
+(defclass scope-and-type (ensure-channel-mixin)
   ()
   (:documentation
    "This strategy allocates a separate channel for each combination of
@@ -53,23 +82,3 @@
                   :source-config (princ-to-string
                                   (abstract-uri participant)))
             (when format (list :format format)))))
-
-(defmethod make-channel-for ((connection participant-channel-connection)
-                             (event      event)
-                             (strategy   scope-and-type))
-  (let+ (((&structure-r/o connection- bag) connection)
-         (name (channel-name-for connection event strategy))
-         (transform (channel-transform-for connection event strategy))
-         (meta-data (channel-meta-data-for connection transform event strategy)))
-    (setf (bag-channel bag name :transform transform) meta-data)))
-
-;; TODO(jmoringe, 2012-02-17): move to protocol or mixin
-(defmethod ensure-channel-for ((connection channel-connection)
-                               (event      event)
-                               (strategy   scope-and-type))
-  (let* ((name    (channel-name-for connection event strategy))
-         (bag     (connection-bag connection))
-         (channel (bag-channel bag name :if-does-not-exist nil)))
-    (if channel
-        (values channel t)
-        (make-channel-for connection event strategy))))
