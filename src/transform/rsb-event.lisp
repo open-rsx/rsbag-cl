@@ -6,6 +6,61 @@
 
 (cl:in-package #:rsbag.transform)
 
+;;; Utility functions
+
+(defvar *keyword-readtable*
+  (let ((readtable (copy-readtable nil)))
+    (setf (readtable-case readtable) :invert)
+    readtable)
+  "This readtable is used to print and read keywords. The goal is to
+   get a natural mapping between Lisp keywords and corresponding
+   strings for most cases.")
+
+(defun timestamp->unix-microseconds (timestamp)
+  "Convert the `local-time:timestamp' instance TIMESTAMP into an
+   integer which counts the number of microseconds since UNIX epoch."
+  (+ (* 1000000 (local-time:timestamp-to-unix timestamp))
+     (* 1       (local-time:timestamp-microsecond timestamp))))
+
+(defun unix-microseconds->timestamp (unix-microseconds)
+  "Convert UNIX-MICROSECONDS to an instance of
+   `local-time:timestamp'."
+  (let+ (((&values unix-seconds microseconds)
+          (floor unix-microseconds 1000000)))
+    (local-time:unix-to-timestamp
+     unix-seconds :nsec (* 1000 microseconds))))
+
+(declaim (inline string->bytes bytes->string))
+
+(defun string->bytes (string)
+  "Converter STRING into a `simple-octet-vector'."
+  (sb-ext:string-to-octets string :external-format :ascii))
+
+(defun bytes->string (bytes)
+  "Convert BYTES into a string."
+  (sb-ext:octets-to-string bytes :external-format :ascii))
+
+(declaim (ftype (function (keyword) simple-octet-vector) keyword->bytes))
+
+(defun keyword->bytes (keyword)
+  "Convert the name of KEYWORD into a `simple-octet-vector'."
+  (if (find #\: (symbol-name keyword))
+      (string->bytes (symbol-name keyword))
+      (let ((*readtable* *keyword-readtable*))
+        (string->bytes (princ-to-string keyword)))))
+
+(declaim (ftype (function (simple-octet-vector) keyword) bytes->keyword))
+
+(defun bytes->keyword (bytes)
+  "Converter BYTES into a keyword."
+  (if (find (char-code #\:) bytes)
+      (intern (bytes->string bytes) #.(find-package '#:keyword))
+      (let ((*package*   #.(find-package '#:keyword))
+            (*readtable* *keyword-readtable*))
+        (read-from-string (bytes->string bytes)))))
+
+;;; Transform
+
 (defconstant +rsb-schema-name+
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
                  (cl-rsbag-system:serialization-version/list)))
@@ -49,7 +104,7 @@
 ;; TODO(jmoringe, 2012-03-04): this is a horrible hack
 ;; maybe the converter should supply the schema information?
 (defmethod transform-format ((transform rsb-event))
-  (let+ (((&accessors-r/o (wire-schema transform-wire-schema)) transform))
+  (let+ (((&structure-r/o transform- wire-schema) transform))
     (with-output-to-string (stream)
       ;; Outer serialization: RSB event serialization.
       (pbb:emit
@@ -74,7 +129,8 @@
   (let+ (((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
-                          (causes    rsb.protocol:notification-causes)) holder)
+                          (causes    rsb.protocol:notification-causes))
+          holder)
          ((&flet process-timestamp (name)
             (if-let ((value (rsb:timestamp domain-object name)))
               (timestamp->unix-microseconds value)
@@ -142,7 +198,8 @@
          ((&accessors-r/o (holder transform-%holder)) transform)
          ((&accessors-r/o (id        rsb.protocol:notification-event-id)
                           (meta-data rsb.protocol:notification-meta-data)
-                          (causes    rsb.protocol:notification-causes)) holder)
+                          (causes    rsb.protocol:notification-causes))
+          holder)
          ;; Create output event.
          (event
           (progn
@@ -195,56 +252,3 @@
 (defmethod print-object ((object rsb-event) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A" (transform-wire-schema object))))
-
-;;; Utility functions
-
-(defvar *keyword-readtable*
-  (let ((readtable (copy-readtable nil)))
-    (setf (readtable-case readtable) :invert)
-    readtable)
-  "This readtable is used to print and read keywords. The goal is to
-   get a natural mapping between Lisp keywords and corresponding
-   strings for most cases.")
-
-(defun timestamp->unix-microseconds (timestamp)
-  "Convert the `local-time:timestamp' instance TIMESTAMP into an
-   integer which counts the number of microseconds since UNIX epoch."
-  (+ (* 1000000 (local-time:timestamp-to-unix timestamp))
-     (* 1       (local-time:timestamp-microsecond timestamp))))
-
-(defun unix-microseconds->timestamp (unix-microseconds)
-  "Convert UNIX-MICROSECONDS to an instance of
-   `local-time:timestamp'."
-  (let+ (((&values unix-seconds microseconds)
-          (floor unix-microseconds 1000000)))
-    (local-time:unix-to-timestamp
-     unix-seconds :nsec (* 1000 microseconds))))
-
-(declaim (inline string->bytes bytes->string))
-
-(defun string->bytes (string)
-  "Converter STRING into a `simple-octet-vector'."
-  (sb-ext:string-to-octets string :external-format :ascii))
-
-(defun bytes->string (bytes)
-  "Convert BYTES into a string."
-  (sb-ext:octets-to-string bytes :external-format :ascii))
-
-(declaim (ftype (function (keyword) simple-octet-vector) keyword->bytes))
-
-(defun keyword->bytes (keyword)
-  "Convert the name of KEYWORD into a `simple-octet-vector'."
-  (if (find #\: (symbol-name keyword))
-      (string->bytes (symbol-name keyword))
-      (let ((*readtable* *keyword-readtable*))
-        (string->bytes (princ-to-string keyword)))))
-
-(declaim (ftype (function (simple-octet-vector) keyword) bytes->keyword))
-
-(defun bytes->keyword (bytes)
-  "Converter BYTES into a keyword."
-  (if (find (char-code #\:) bytes)
-      (intern (bytes->string bytes) #.(find-package '#:keyword))
-      (let ((*package*   #.(find-package '#:keyword))
-            (*readtable* *keyword-readtable*))
-        (read-from-string (bytes->string bytes)))))

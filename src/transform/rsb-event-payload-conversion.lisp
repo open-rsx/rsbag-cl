@@ -1,6 +1,6 @@
 ;;;; rsb-event-payload-conversion.lisp --- (De)serialization of RSB events.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -24,7 +24,7 @@
 (defmethod encode ((transform     rsb-event/payload-conversion)
                    (domain-object rsb:event))
   ;; Encode the payload in-place.
-  (let+ (((&accessors-r/o (converter transform-converter)) transform))
+  (let+ (((&structure-r/o transform- converter) transform))
     (setf (rsb:event-data domain-object)
           (rsb.converter:domain->wire
            converter (rsb:event-data domain-object))))
@@ -35,8 +35,7 @@
                    (data      simple-array))
   ;; Retrieve event (with encoded payload) from next method and decode
   ;; payload in-place.
-  (let+ (((&accessors-r/o (wire-schema transform-wire-schema)
-                          (converter   transform-converter)) transform)
+  (let+ (((&structure-r/o transform- wire-schema converter) transform)
          (event (call-next-method)))
     (setf (rsb:event-data event)
           (rsb.converter:wire->domain
