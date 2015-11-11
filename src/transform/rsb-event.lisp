@@ -69,7 +69,10 @@
           holder))
     (setf (fill-pointer (rsb.protocol:event-meta-data-user-infos meta-data)) 0
           (fill-pointer (rsb.protocol:event-meta-data-user-times meta-data)) 0
-          (fill-pointer causes)                                              0))
+          (fill-pointer causes)                                              0
+          (rsb.protocol:notification-data holder)
+          (load-time-value
+           (nibbles:octet-vector) t)))
   holder)
 
 ;;; Transform
