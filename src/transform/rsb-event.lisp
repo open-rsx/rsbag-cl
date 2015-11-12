@@ -1,6 +1,6 @@
 ;;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -148,7 +148,9 @@
           (progn
             (setf (fill-pointer (rsb.protocol:event-meta-data-user-infos meta-data)) 0
                   (fill-pointer (rsb.protocol:event-meta-data-user-times meta-data)) 0
-                  (fill-pointer causes)                                              0)
+                  (fill-pointer causes)                                              0
+                  (rsb.protocol:notification-data holder)
+                  (load-time-value (nibbles:octet-vector) t))
             (pb:unpack data holder)
 
             (make-instance
