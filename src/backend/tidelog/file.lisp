@@ -14,9 +14,9 @@
                 async-double-buffered-writer-mixin
                 buffering-writer-mixin
                 last-write-time-mixin)
-  ((channels        :type     list
-                    :reader   get-channels
+  ((channels        :type     hash-table
                     :accessor file-%channels
+                    :initform (make-hash-table)
                     :documentation
                     "Stores information of the channels present in the
                      file. Entries are of the form
@@ -82,30 +82,27 @@
           (when (member direction '(:input :io))
             (scan stream :tide)))
          ((&flet check-channel (id)
-            (or (find id channels :test #'= :key #'first)
-                (restart-case
-                    (progn
-                      (setf complete? nil)
-                      (error "~@<No channel with id ~D.~@:>" id))
-                  (continue (&optional condition)
-                    :report (lambda (stream)
-                              (format stream "~@<Reconstruct channel ~D.~@:>"
-                                      id))
-                    (declare (ignore condition))
-                    (log:info "~@<Reconstructing channel ~D~@:>" id)
-                    (let* ((name    (format nil "reconstructed~D" id))
-                           (channel `(,id ,name (:type :bytes))))
-                      (push channel channels)
-                      channel))
-                  (use-value (name meta-data)
-                    :report (lambda (stream)
-                              (format stream "~@<Use the supplied ~
-                                              description for channel ~
-                                              ~D.~@:>"
-                                      id))
-                    (let ((channel (list id name meta-data)))
-                      (push channel channels)
-                      channel))))))
+            (ensure-gethash
+             id channels
+             (restart-case
+                 (progn
+                   (setf complete? nil)
+                   (error "~@<No channel with id ~D.~@:>" id))
+               (continue (&optional condition)
+                 :report (lambda (stream)
+                           (format stream "~@<Reconstruct channel ~D.~@:>"
+                                   id))
+                 (declare (ignore condition))
+                 (log:info "~@<Reconstructing channel ~D~@:>" id)
+                 (let ((name (format nil "reconstructed~D" id)))
+                   (list id name '(:type :bytes))))
+               (use-value (name meta-data)
+                 :report (lambda (stream)
+                           (format stream "~@<Use the supplied ~
+                                           description for channel ~
+                                           ~D.~@:>"
+                                   id))
+                 (list id name meta-data))))))
          ((&flet make-index (channel-id)
             (let ((lock (rsbag.backend::backend-lock instance)))
               (setf (gethash channel-id indices)
@@ -133,16 +130,20 @@
                 (make-index channel-id)))))
 
     ;; Sort chunks for faster lookup during index building step.
-    (setf chnks           (sort (coerce chnks 'vector) #'<
-                                :key #'car)
-          next-chunk-id   (1+ (reduce #'max chnks
-                                      :initial-value -1
-                                      :key           #'car))
-          next-channel-id (1+ (reduce #'max chans
-                                      :initial-value -1
-                                      :key           #'chan-id))
-          channels        (map 'list #'make-channel chans))
-    (setf (chnk-chunk-id buffer) next-chunk-id)
+    (setf chnks                  (sort (coerce chnks 'vector) #'<
+                                       :key #'car)
+          next-chunk-id          (1+ (reduce #'max chnks
+                                             :initial-value -1
+                                             :key           #'car))
+          next-channel-id        (1+ (reduce #'max chans
+                                             :initial-value -1
+                                             :key           #'chan-id))
+          (chnk-chunk-id buffer) next-chunk-id)
+    (map nil (lambda (chan)
+               (let ((channel (make-channel chan)))
+                 (setf (gethash (first channel) channels) channel)))
+         chans)
+
 
     ;; Construct `index' instances and, when necessary, missing
     ;; channels.
@@ -182,7 +183,7 @@
                 #+no (mapc (compose #'check-index #'first) channels)
                 ;; INDX chunks may currently be omitted for empty
                 ;; channels.
-                (mapc (compose #'ensure-index #'first) channels)
+                (mapc #'ensure-index (hash-table-keys channels))
 
                 ;; If nothing above signaled an error but we still
                 ;; know that the data is incomplete, signal an error
@@ -229,6 +230,9 @@
       (file-%next-channel-id file)
     (incf (file-%next-channel-id file))))
 
+(defmethod get-channels ((file file))
+  (hash-table-values (file-%channels file)))
+
 (defmethod put-channel ((file      file)
                         (channel   integer)
                         (name      string)
@@ -252,7 +256,7 @@
                    :source-name   source-name
                    :source-config source-config
                    :format        format)))
-    (push (list channel name meta-data) channels)
+    (setf (gethash channel channels) (list channel name meta-data))
 
     ;; Add an index for the new channel
     (setf (gethash channel indices)
