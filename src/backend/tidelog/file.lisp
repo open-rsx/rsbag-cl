@@ -418,29 +418,26 @@
     (t
      (make-keyword type))))
 
-(declaim (ftype (function ((unsigned-byte 32)
-                           (array (cons (unsigned-byte 32) (unsigned-byte 64)) (*))
-                           &optional
-                           non-negative-fixnum
-                           non-negative-fixnum)
-                          (unsigned-byte 64))
-                %chunk-id->offset))
-
 (defun %chunk-id->offset (id chunks
                           &optional
                           (start 0)
                           (end   (length chunks)))
-  (when (= start end)
-    (error "~@<Referenced chunk with id ~:D is not in chunk ~
-            list.~@:>"
-           id))
+  (declare (type (unsigned-byte 32) id start end)
+           (type (simple-array (cons (unsigned-byte 32) (unsigned-byte 64)) (*)) chunks))
+  (labels ((rec (start end)
+             (declare (type (unsigned-byte 32) start end))
+             (when (= start end)
+               (error "~@<Referenced chunk with id ~:D is not in chunk ~
+                       list.~@:>"
+                      id))
 
-  (let* ((pivot  (ash (+ start end) -1))
-         (pivot* (car (aref chunks pivot))))
-    (cond
-      ((< pivot* id)
-       (%chunk-id->offset id chunks (1+ pivot) end))
-      ((> pivot* id)
-       (%chunk-id->offset id chunks start pivot))
-      (t
-       (cdr (aref chunks pivot))))))
+             (let* ((pivot  (ash (+ start end) -1))
+                    (pivot* (car (aref chunks pivot))))
+               (cond
+                 ((< pivot* id)
+                  (rec (1+ pivot) end))
+                 ((> pivot* id)
+                  (rec start pivot))
+                 (t
+                  (cdr (aref chunks pivot)))))))
+    (rec start end)))
