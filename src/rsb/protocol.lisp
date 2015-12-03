@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol functions used in the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -246,38 +246,44 @@
 
 ;;; Channel allocation protocol
 
-(defgeneric channel-name-for (bag event strategy)
+(defgeneric channel-name-for (connection event strategy)
   (:documentation
-   "Return a channel name string designating the channel within BAG in
-    which EVENT should be stored according to STRATEGY."))
+   "Return a channel name string designating the channel within
+    CONNECTION in which EVENT should be stored according to
+    STRATEGY."))
 
-(defgeneric channel-format-for (bag transform event strategy)
+(defgeneric channel-format-for (connection transform event strategy)
   (:documentation
    "Return a representation of the type of data/serialization
     mechanism according to which the data of EVENT, after being
-    encoded by TRANSFORM, will be stored in the channel within BAG
-    allocated by STRATEGY."))
+    encoded by TRANSFORM, will be stored in the channel within
+    CONNECTION allocated by STRATEGY."))
 
-(defgeneric make-channel-for (bag event strategy)
+(defgeneric make-channel-for (connection event strategy)
   (:documentation
-   "Make and return a channel in BAG in which EVENT can be stored
-    according to STRATEGY."))
+   "Make and return a channel in CONNECTION in which EVENT can be
+    stored according to STRATEGY."))
+
+(defgeneric ensure-channel-for (connection event strategy)
+  (:documentation
+   "Find or make and return a channel in CONNECTION in which EVENT can
+    be stored according to STRATEGY."))
 
 ;;; Default behavior
 
-(defmethod channel-format-for ((bag       t)
-                               (transform (eql nil))
-                               (event     t)
-                               (strategy  t))
-  "Default behavior is to not associate a channel format."
+(defmethod channel-format-for ((connection t)
+                               (transform  (eql nil))
+                               (event      t)
+                               (strategy   t))
+  ;; Default behavior is to not associate a channel format.
   nil)
 
-(defmethod channel-format-for ((bag       t)
-                               (transform t)
-                               (event     t)
-                               (strategy  t))
-  "Default behavior for non-nil TRANSFORM is to retrieve the channel
-   format from TRANSFORM."
+(defmethod channel-format-for ((connection t)
+                               (transform  t)
+                               (event      t)
+                               (strategy   t))
+  ;; Default behavior for non-nil TRANSFORM is to retrieve the channel
+  ;; format from TRANSFORM.
   (transform-format transform))
 
 ;;; Channel allocation strategy class family

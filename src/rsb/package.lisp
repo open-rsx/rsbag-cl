@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -93,7 +93,9 @@
   (:export
    #:channel-name-for
    #:channel-format-for
+
    #:make-channel-for
+   #:ensure-channel-for
 
    #:no-such-channel-strategy-class
    #:find-channel-strategy-class
