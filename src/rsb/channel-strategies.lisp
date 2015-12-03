@@ -35,6 +35,52 @@
          (meta-data (channel-meta-data-for connection transform event strategy)))
     (setf (bag-channel bag name :transform transform) meta-data)))
 
+;;; `delegating-mixin'
+
+(defclass delegating-mixin ()
+  ((next :reader   strategy-next
+         :accessor strategy-%next
+         :documentation
+         "Stores a strategy that should be used to perform operations
+          not or partially implemented by this strategy."))
+  (:default-initargs
+   :next (missing-required-initarg 'delegating-mixin :next))
+  (:documentation
+   "Adds delegation of operations to another strategy instance.
+
+    Intended to be mixed into strategy classes that implement only
+    some aspects of the protocol and delegate other aspect to a
+    different strategy."))
+
+(defmethod shared-initialize :after ((instance    delegating-mixin)
+                                     (slots-names t)
+                                     &key
+                                     (next nil next-supplied?))
+  (when next-supplied?
+    (setf (strategy-%next instance) (make-channel-strategy next))))
+
+(defmethod channel-name-for ((connection t)
+                             (event      t)
+                             (strategy   delegating-mixin))
+  (channel-name-for connection event (strategy-next strategy)))
+
+(defmethod channel-transform-for ((connection t)
+                                  (event      t)
+                                  (strategy   delegating-mixin))
+  (channel-transform-for connection event (strategy-next strategy)))
+
+(defmethod channel-format-for ((connection t)
+                               (transform  t)
+                               (event      t)
+                               (strategy  delegating-mixin))
+  (channel-format-for connection transform event (strategy-next strategy)))
+
+(defmethod channel-meta-data-for ((connection t)
+                                  (transform  t)
+                                  (event      t)
+                                  (strategy   delegating-mixin))
+  (channel-meta-data-for connection transform event (strategy-next strategy)))
+
 ;;; `scope-and-type' channel allocation strategy class
 
 (defmethod find-channel-strategy-class ((spec (eql :scope-and-type)))
