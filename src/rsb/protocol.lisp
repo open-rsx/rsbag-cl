@@ -252,12 +252,25 @@
     CONNECTION in which EVENT should be stored according to
     STRATEGY."))
 
+(defgeneric channel-transform-for (connection event strategy)
+  (:documentation
+   "Derive, construct and return a transform for the channel within
+    CONNECTION in which EVENT should be stored according to
+    STRATEGY."))
+
 (defgeneric channel-format-for (connection transform event strategy)
   (:documentation
    "Return a representation of the type of data/serialization
     mechanism according to which the data of EVENT, after being
     encoded by TRANSFORM, will be stored in the channel within
     CONNECTION allocated by STRATEGY."))
+
+(defgeneric channel-meta-data-for (connection transform event strategy)
+  (:documentation
+   "Construct and return a meta-data plist for the channel within
+    CONNECTION in which EVENT should be stored according to STRATEGY
+    taking into account TRANSFORM, the associated transform for the
+    channel."))
 
 (defgeneric make-channel-for (connection event strategy)
   (:documentation

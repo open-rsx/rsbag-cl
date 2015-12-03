@@ -92,7 +92,9 @@
   ;; channel allocation strategy protocol
   (:export
    #:channel-name-for
+   #:channel-transform-for
    #:channel-format-for
+   #:channel-meta-data-for
 
    #:make-channel-for
    #:ensure-channel-for

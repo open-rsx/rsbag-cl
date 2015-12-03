@@ -35,6 +35,34 @@
     (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
            event :rsb.transport.wire-schema)))
 
+(defmethod channel-transform-for ((connection participant-channel-connection)
+                                  (event      event)
+                                  (strategy   scope-and-type))
+  (let ((wire-schema (make-keyword (rsb:meta-data
+                                    event :rsb.transport.wire-schema))))
+    (make-transform +rsb-schema-name+ wire-schema)))
+
+(defmethod channel-meta-data-for ((connection participant-channel-connection)
+                                  (transform  t)
+                                  (event      event)
+                                  (strategy   scope-and-type))
+  (let+ (((&structure-r/o connection- bag (participant endpoint)) connection)
+         ((&structure-r/o participant- id) participant)
+         (format (channel-format-for bag transform event strategy)))
+    (append (list :source-name   (princ-to-string id)
+                  :source-config (princ-to-string
+                                  (abstract-uri participant)))
+            (when format (list :format format)))))
+
+(defmethod make-channel-for ((connection participant-channel-connection)
+                             (event      event)
+                             (strategy   scope-and-type))
+  (let+ (((&structure-r/o connection- bag) connection)
+         (name (channel-name-for connection event strategy))
+         (transform (channel-transform-for connection event strategy))
+         (meta-data (channel-meta-data-for connection transform event strategy)))
+    (setf (bag-channel bag name :transform transform) meta-data)))
+
 ;; TODO(jmoringe, 2012-02-17): move to protocol or mixin
 (defmethod ensure-channel-for ((connection channel-connection)
                                (event      event)
@@ -45,20 +73,3 @@
     (if channel
         (values channel t)
         (make-channel-for connection event strategy))))
-
-(defmethod make-channel-for ((connection participant-channel-connection)
-                             (event      event)
-                             (strategy   scope-and-type))
-  (let+ (((&structure-r/o connection- bag (participant endpoint)) connection)
-         ((&structure-r/o participant- id) participant)
-         (name        (channel-name-for connection event strategy))
-         (wire-schema (make-keyword (rsb:meta-data event :rsb.transport.wire-schema)))
-         (transform   (make-transform +rsb-schema-name+ wire-schema))
-         (format      (channel-format-for bag transform event strategy)))
-    (setf (bag-channel bag name :transform transform)
-          (append
-           (list :source-name   (princ-to-string id)
-                 :source-config (princ-to-string
-                                 (abstract-uri participant)))
-           (when format
-             (list :format format))))))
