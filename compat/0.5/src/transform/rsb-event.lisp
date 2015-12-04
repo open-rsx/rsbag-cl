@@ -1,6 +1,6 @@
 ;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011, 2012, 2015 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -197,8 +197,6 @@ integer which counts the number of microseconds since UNIX epoch."
 	  (floor unix-microseconds 1000000)))
     (local-time:unix-to-timestamp
      unix-seconds :nsec (* 1000 microseconds))))
-
-(declaim (inline string->bytes bytes->string))
 
 (defun string->bytes (string)
   "Converter STRING into an octet-vector."
