@@ -112,6 +112,7 @@
                 :lparallel
                 :local-time
                 :nibbles
+                :pileup
 
                 (:version :cl-rsb                        #.(version/string :revision? nil))
                 (:version :rsb-introspection             #.(version/string :revision? nil)))

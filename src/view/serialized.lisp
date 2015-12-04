@@ -39,30 +39,20 @@
           (funcall key sequence iterator limit from-end)))
   state)
 
-(declaim (inline %iterator-min)
+(declaim (inline %iterator<)
          (ftype (function (%iterator %iterator function)
-                          (values %iterator &optional))
-                %iterator-min))
-(defun %iterator-min (left right compare)
+                          (values boolean &optional))
+                %iterator<))
+(defun %iterator< (left right compare)
   (cond
     ((null (%iterator-key left))
-     right)
+     nil)
     ((null (%iterator-key right))
-     left)
+     t)
     ((funcall compare (%iterator-key left) (%iterator-key right))
-     left)
+     t)
     (t
-     right)))
-
-(declaim (inline %iterator-for-forward-step)
-         (ftype (function (list function)
-                          (values (or null %iterator) &optional))
-                %iterator-for-forward-step))
-(defun %iterator-for-forward-step (iterators compare)
-  "Return the iterator in ITERATORS that should be used to retrieve
-   the next element of the serialized sequence or nil."
-  (when iterators
-    (reduce (rcurry #'%iterator-min compare) iterators)))
+     nil)))
 
 (declaim (ftype (function (list function function)
                           (values (or null %iterator) &optional))
@@ -78,8 +68,7 @@
             (cons (%iterator-step (copy-%iterator iterator) key t) iterator))))
     (cdr (reduce
           (lambda (left right)
-            (if (eq (%iterator-min (car left) (car right) compare) (car left))
-                right left))
+            (if (%iterator< (car left) (car right) compare) right left))
           (mapcar #'back (remove-if #'cannot-step-back? iterators))))))
 
 ;;; Construction methods
@@ -193,7 +182,12 @@
 ;;; `serialized-iterator' class
 
 (defclass serialized-iterator (multi-sequence-iterator-mixin)
-  ((current :accessor iterator-%current
+  ((sorted  :type     pileup:heap
+            :accessor iterator-%sorted
+            :documentation
+            "Stores the set of iterators sorted with respect to the
+             comparison function and their respective key.")
+   (current :accessor iterator-%current
             :documentation
             "Stores the iterator that holds the current element and
              has to be stepped in order to step in the serialized
@@ -205,9 +199,15 @@
 (defmethod shared-initialize :after ((instance   serialized-iterator)
                                      (slot-names t)
                                      &key
+                                     iterators
                                      compare)
-  (setf (iterator-%current instance)
-        (%iterator-for-forward-step (iterator-%iterators instance) compare)))
+  (declare (type function compare))
+  (let+ (((&structure iterator-% sorted current) instance)
+         ((&flet predicate (left right)
+            (%iterator< left right compare))))
+    (setf sorted (pileup:make-heap #'predicate))
+    (map nil (rcurry #'pileup:heap-insert sorted) iterators)
+    (setf current (pileup:heap-top sorted))))
 
 (defmethod sequence:iterator-endp ((sequence serialized)
                                    (iterator serialized-iterator)
@@ -221,16 +221,21 @@
                                    (iterator serialized-iterator)
                                    (from-end t))
   (let+ (((&structure-r/o view- compare key) sequence)
-         ((&structure-r/o iterator- (iterators %iterators)) iterator))
+         ((&structure iterator-% iterators sorted current) iterator)
+         (to-be-stepped
+          (if from-end
+              (%iterator-for-backward-step iterators key compare)
+              (pileup:heap-pop sorted))))
     (declare (type function compare key))
     ;; Step the appropriate sub-iterator (depending on forward
     ;; vs. backward step), then find and store the next sub-iterator.
-    (%iterator-step (if from-end
-                        (%iterator-for-backward-step iterators key compare)
-                        (iterator-%current iterator))
-                    key from-end)
-    (setf (iterator-%current iterator)
-          (%iterator-for-forward-step iterators compare)))
+    (%iterator-step to-be-stepped key from-end)
+    (if from-end
+        (progn
+          (setf sorted (pileup:make-heap (pileup:heap-predicate sorted)))
+          (map nil (rcurry #'pileup:heap-insert sorted) iterators))
+        (pileup:heap-insert to-be-stepped sorted))
+    (setf current (pileup:heap-top sorted)))
   iterator)
 
 (defmethod sequence:iterator-element ((sequence serialized)
