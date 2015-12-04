@@ -114,8 +114,8 @@
                           (index-derive-flush-strategy
                            (c2mop:class-prototype class)
                           flush-strategy)))))
-         (log:info "~@<From flush strategy ~A, derived flush strategy ~
-                    ~A~:@>"
+         (log:debug "~@<From flush strategy ~A, derived flush strategy ~
+                     ~A~:@>"
                    flush-strategy derived)
          (apply #'make-it 'output-index
                 (when derived (list :flush-strategy derived)))))
