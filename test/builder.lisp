@@ -53,19 +53,19 @@
         (let ((channel (first (bag-channels bag-2))))
           (check-un-build-calls
            t 'string
-           `((,bag-1 ((:peek  () ,bag-1)
-                      (:visit () ,bag-1 rsbag:bag ((:channel . (:map . :name)))
+           `((,bag-1 ((:peek  nil () ,bag-1)
+                      (:visit nil () ,bag-1 rsbag:bag ((:channel . (:map . :name)))
                               (:location nil :event-count 0))))
-             (,bag-2 ((:peek  () ,bag-2)
-                      (:visit () ,bag-2 rsbag:bag ((:channel . (:map . :name)))
+             (,bag-2 ((:peek  nil () ,bag-2)
+                      (:visit nil () ,bag-2 rsbag:bag ((:channel . (:map . :name)))
                               (:location nil
                                :event-count 2
                                :start       ,start
                                :end         ,end
                                :duration    1
                                :rate        2))
-                      (:peek  (:name "foo") ,channel)
-                      (:visit (:name "foo") ,channel rsbag:channel ()
+                      (:peek  :channel (:name "foo") ,channel)
+                      (:visit :channel (:name "foo") ,channel rsbag:channel ()
                               (:name        "foo"
                                :event-count 2
                                :start       ,start
@@ -87,8 +87,8 @@
       (let ((channel (first (bag-channels bag))))
         (check-un-build-calls
          t '(or string cons)
-         `((,channel ((:peek  () ,channel)
-                      (:visit () ,channel rsbag:channel
+         `((,channel ((:peek  nil () ,channel)
+                      (:visit nil () ,channel rsbag:channel
                               ((:type . 1))
                               (:name        "foo"
                                :event-count 2
@@ -96,4 +96,4 @@
                                :end         ,end
                                :duration    1
                                :rate        2))
-                      (:peek  () ,type)))))))))
+                      (:peek  :type () ,type)))))))))
