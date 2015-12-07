@@ -63,7 +63,13 @@
 ;;; `recording-bag-connection' class
 
 (defclass recording-bag-connection (bag-connection)
-  ()
+  ((introspection-survey? :initarg  :introspection-survey?
+                          :reader   connection-introspection-survey?
+                          :initform t
+                          :documentation
+                          "Controls whether the connection should
+                           perform an RSB introspection survey when
+                           the recording is started."))
   (:documentation
    "Instances of this class are used to record events into a bag."))
 
@@ -73,27 +79,30 @@
   ;; introspection snapshot at the beginning of the recording in
   ;; relation to which the differential introspection information in
   ;; the remainder of the recording can be interpreted.
-  (restart-case
-      ;; TODO the transport should normalize this
-      (let+ (((&flet normalize-url (url)
-                (puri:copy-uri url :path nil :parsed-path nil :fragment nil)))
-             (urls (mapcar #'normalize-url
-                           (mappend (compose #'rsb:transport-specific-urls
-                                             #'connection-endpoint)
-                                    (connection-channels connection))))
-             (urls (remove-duplicates urls :test #'puri:uri=)))
-        (rsb:with-participant
-            (introspection :remote-introspection
-                           rsb.introspection:+introspection-scope+
-                           :receiver-uris   urls
-                           :update-interval nil
-                           :error-policy    #'continue)
-          (declare (ignore introspection))))
-    (continue ()
-      :report (lambda (stream)
-                (format stream "~@<Continue recording using ~A without ~
-                                an introspection survey.~@:>"
-                        connection)))))
+  (when (connection-introspection-survey? connection)
+    (log:info "~@<~A is performing introspection survey.~@:>" connection)
+    (restart-case
+        ;; TODO the transport should normalize this
+        (let+ (((&flet normalize-url (url)
+                  (puri:copy-uri url :path nil :parsed-path nil :fragment nil)))
+               (urls (mapcar #'normalize-url
+                             (mappend (compose #'rsb:transport-specific-urls
+                                               #'connection-endpoint)
+                                      (connection-channels connection))))
+               (urls (remove-duplicates urls :test #'puri:uri=)))
+          (rsb:with-participant
+              (introspection :remote-introspection
+                             rsb.introspection:+introspection-scope+
+                             :receiver-uris   urls
+                             :update-interval nil
+                             :error-policy    #'continue)
+            (declare (ignore introspection))))
+      (continue ()
+        :report (lambda (stream)
+                  (format stream "~@<Continue recording using ~A ~
+                                  without an introspection ~
+                                  survey.~@:>"
+                          connection))))))
 
 ;;; `replay-bag-connection' class
 

@@ -41,14 +41,15 @@
                         &rest args &key)
   (apply #'events->bag (puri:parse-uri source) dest args))
 
-(defmethod events->bag ((source sequence)
-                        (dest   bag)
-                        &rest
-                        args
-                        &key
-                        (error-policy nil error-policy-supplied?)
-                        (start?       t))
-  (let* ((args/channel (remove-from-plist args :error-policy :start?))
+(defmethod events->bag
+    ((source sequence)
+     (dest   bag)
+     &rest args &key
+     (error-policy          nil error-policy-supplied?)
+     (introspection-survey? t   introspection-survey?-supplied?)
+     (start?                t))
+  (let* ((args/channel (remove-from-plist
+                        args :error-policy :introspection-survey? :start?))
          (connection   (apply #'make-instance 'recording-bag-connection
                               :bag      dest
                               :channels (map 'list
@@ -56,8 +57,12 @@
                                                (apply #'events->bag source dest
                                                       args/channel))
                                              source)
-                              (when error-policy-supplied?
-                                (list :error-policy error-policy)))))
+                              (append
+                               (when introspection-survey?-supplied?
+                                 (list :introspection-survey?
+                                       introspection-survey?))
+                               (when error-policy-supplied?
+                                 (list :error-policy error-policy))))))
     (when start?
       (start connection))
     connection))
