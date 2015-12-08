@@ -104,6 +104,14 @@
 
 ;;; bag -> RSB events
 
+;; Relies on string-specialized method.
+(defmethod bag->events ((source sequence) (dest t) &rest args &key)
+  (unless (length= 1 source)
+    (error "~@<~S cannot be applied to ~S: more than one source is not ~
+            currently supported.~@:>"
+           'bag->events source))
+  (apply #'bag->events (first-elt source) dest args))
+
 (defun %bag->events/streamish (source dest
                                &rest args
                                &key
@@ -165,7 +173,7 @@
            (when error-policy-supplied?
              (list :error-policy error-policy)))))
 
-(defmethod bag->events ((source t)
+(defmethod bag->events ((source channel)
                         (dest   string)
                         &rest args &key)
   (apply #'bag->events source (puri:parse-uri dest) args))

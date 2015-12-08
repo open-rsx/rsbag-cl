@@ -67,25 +67,30 @@
           "Smoke test for the `bag->events' function.")
   smoke
 
-  (ensure-cases (args &optional expected)
-      '(;; Invalid channel strategy => error
-        ((:replay-strategy :no-such-strategy)
+  (ensure-cases (source args &optional expected)
+      `(;; Invalid channel strategy => error
+        (,(simple-bag)    (:replay-strategy :no-such-strategy)
          no-such-replay-strategy-class)
 
         ;; Cannot supply and arguments which would have applied to
         ;; opening the bag => error
-        ((:backend   :does-not-matter) incompatible-arguments)
-        ((:transform :does-not-matter) incompatible-arguments)
-        ((:bag-class :does-not-matter) incompatible-arguments)
+        (,(simple-bag)    (:backend   :does-not-matter)
+         incompatible-arguments)
+        (,(simple-bag)    (:transform :does-not-matter)
+         incompatible-arguments)
+        (,(simple-bag)    (:bag-class :does-not-matter)
+         incompatible-arguments)
 
         ;; These are valid.
-        ((:replay-strategy :as-fast-as-possible)))
+        (,(simple-bag)    (:replay-strategy :as-fast-as-possible))
+        ((,(simple-bag))  (:replay-strategy :as-fast-as-possible))
+        (#(,(simple-bag)) (:replay-strategy :as-fast-as-possible)))
 
     (let+ (((&flet do-it ()
               (collecting-events (record)
                 (with-open-connection
                     (connection
-                     (apply #'bag->events (simple-bag) #'record args))
+                     (apply #'bag->events source #'record args))
                   (replay connection (connection-strategy connection)))
                 (record)))))
       (case expected
