@@ -1,6 +1,6 @@
 ;;;; threadpool.lisp --- A threadpool for async rsbag operations.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2015 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -19,7 +19,7 @@
 (defun stop-threadpool ()
   "Stop all threads of the threadpool used by the rsbag system."
   (let ((lparallel:*kernel* *threadpool*))
-    (lparallel:end-kernel :wait t))
+    (mapc #'bt:join-thread (lparallel:end-kernel :wait t)))
   (setf *threadpool* nil))
 
 (defmacro with-threadpool (&body body)
