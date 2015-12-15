@@ -236,7 +236,7 @@
                   timestamp)
                  (error "~@<Could not find requested timestamp ~A in ~
                          bag ~A (with temporal range [~A, ~A]).~@:>"
-                        timestamp (connection-bag connection)
+                        timestamp bag
                         (sequence-start-time) (sequence-end-time)))))))
          ((&flet check-index (index timestamp name)
             (let+ (((&values difference effective)

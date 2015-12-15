@@ -40,11 +40,10 @@
   (iter (for channel in (connection-channels object))
         (setf (rsb.ep:processor-error-policy channel) new-value)))
 
-(defmethod close ((connection bag-connection)
-                  &key &allow-other-keys)
-  "Close all channel connections, then close the bag."
-  (map nil #'close (connection-channels connection))
-  (close (connection-bag connection)))
+(defmethod close ((connection bag-connection) &key abort)
+  ;; Close all channel connections, then close the bag.
+  (map nil (rcurry #'close :abort abort) (connection-channels connection))
+  (close (connection-bag connection) :abort abort))
 
 (defmethod wait ((connection bag-connection))
   "Wait for all channel connections."
@@ -119,7 +118,8 @@
     source bag and `rsb:informer' instances to collaboratively replay
     the events from the bag."))
 
-(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
-                                                         (object    replay-bag-connection))
-  (let+ (((&accessors-r/o (strategy connection-strategy)) object))
+(defmethod (setf rsb.ep:processor-error-policy) :before
+    ((new-value t)
+     (object    replay-bag-connection))
+  (let+ (((&structure-r/o connection- strategy) object))
     (setf (rsb.ep:processor-error-policy strategy) new-value)))

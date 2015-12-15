@@ -149,9 +149,9 @@
                         (transform       nil transform-supplied?)
                         (bag-class       nil bag-class-supplied?))
   (let+ (((&flet check-arg (name value supplied?)
-           (when supplied?
-             (more-conditions:incompatible-arguments
-              'source source name value)))))
+            (when supplied?
+              (more-conditions:incompatible-arguments
+               'source source name value)))))
     (check-arg :backend   backend   backend-supplied?)
     (check-arg :transform transform transform-supplied?)
     (check-arg :bag-class bag-class bag-class-supplied?))

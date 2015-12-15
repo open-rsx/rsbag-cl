@@ -45,7 +45,7 @@
     RSBAG> (open-bag #p\"/tmp/mylog.tide\" :direction :input)
     #<BAG \"mylog.tide\" r- (1) {100A2ECDF3}>"))
 
-;;; Default behavior
+;; Default behavior
 
 (defmethod open-bag :around ((source t)
                              &rest args &key)
