@@ -14,6 +14,9 @@
 
    #:rsbag)
 
+  (:export
+   #:unbuilder)
+
   (:documentation
    "Support of the (un-)build protocol for rsbag objects."))
 
