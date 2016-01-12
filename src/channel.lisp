@@ -1,6 +1,6 @@
 ;;;; channel.lisp --- The channel class represents a time-series of homogeneous data.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -55,9 +55,13 @@
       (:length    ,length   " (~:D)"    ((:after :name)))
       (:transform ,transform "~@[ ~A~]" ((:after :length))))))
 
-(defmethod channel-timestamps ((channel channel))
+(defmethod channel-timestamps/raw ((channel channel))
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))
     (rsbag.backend:get-timestamps backend id)))
+
+(defmethod channel-timestamps ((channel channel))
+  (make-instance 'channel-timestamps
+                 :timestamps (channel-timestamps/raw channel)))
 
 #+sbcl
 (defmethod channel-entries ((channel channel))
@@ -69,8 +73,7 @@
 (defmethod channel-items ((channel channel))
   ;; Return an instance of `channel-items' which presents pairs of
   ;; timestamps and entries.
-  (make-instance 'channel-items
-                 :channel channel))
+  (make-instance 'channel-items :channel channel))
 
 (defmethod entry :around ((channel channel)
                           (index   t)
@@ -108,7 +111,8 @@
                     &key
                     if-does-not-exist transform)
     (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
-           (raw (rsbag.backend:get-entry-at-time backend id index)))
+           (timestamp (rsbag.backend:timestamp->uint64 index))
+           (raw       (rsbag.backend:get-entry-at-time backend id timestamp)))
       (return-entry channel index raw if-does-not-exist transform))))
 
 (defmethod (setf entry) :around ((new-value t)
@@ -137,10 +141,11 @@
                          &key if-exists transform)
   (declare (ignore if-exists))
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
-         (raw (if transform
-                  (rsbag.transform:encode transform new-value)
-                  new-value)))
-    (rsbag.backend:put-entry backend id index raw)
+         (timestamp (rsbag.backend:timestamp->uint64 index))
+         (raw       (if transform
+                        (rsbag.transform:encode transform new-value)
+                        new-value)))
+    (rsbag.backend:put-entry backend id timestamp raw)
     new-value))
 
 ;;; Time range protocol
@@ -174,16 +179,40 @@
 (defmethod sequence:elt ((sequence channel) (index integer))
   (entry sequence index))
 
+;;; `channel-timestamps' sequence class
+
+#+sbcl
+(defclass channel-timestamps (standard-object
+                              sequence)
+  ((timestamps :initarg  :timestamps
+               :accessor %timestamps
+               :documentation
+               "Stores the sequence of associated timestamps for the
+                entries of the channel."))
+  (:default-initargs
+   :timestamps (missing-required-initarg 'channel-timestamps :timestamps))
+  (:documentation
+   "A sequence of timestamps for the entries of a channel."))
+
+#+sbcl
+(defmethod sequence:length ((sequence channel-timestamps))
+  (length (%timestamps sequence)))
+
+#+sbcl
+(defmethod sequence:elt ((sequence channel-timestamps)
+                         (index    integer))
+  (rsbag.backend:uint64->timestamp (elt (%timestamps sequence) index)))
+
 ;;; `channel-items' sequence class
 
 #+sbcl
 (defclass channel-items (standard-object
                          sequence)
   ((channel    :initarg  :channel
-               :reader   channel-items-%channel
+               :reader   %channel
                :documentation
                "Stores the channel the items of which are used.")
-   (timestamps :accessor channel-items-%timestamps
+   (timestamps :accessor %timestamps
                :documentation
                "Stores the sequence of associated timestamps for the
                 entries of the channel."))
@@ -198,16 +227,15 @@
                                      (slot-names t)
                                      &key
                                      channel)
-  (setf (channel-items-%timestamps instance)
-        (channel-timestamps channel)))
+  (setf (%timestamps instance) (channel-timestamps/raw channel)))
 
 #+sbcl
 (defmethod sequence:length ((sequence channel-items))
-  (length (channel-items-%channel sequence)))
+  (length (%channel sequence)))
 
 #+sbcl
 (defmethod sequence:elt ((sequence channel-items) (index integer))
-  (let+ (((&structure-r/o
-           channel-items- (channel %channel) (timestamps %timestamps))
+  (let+ (((&accessors-r/o (channel %channel) (timestamps %timestamps))
           sequence))
-    (list (elt timestamps index) (elt channel index))))
+    (list (rsbag.backend:uint64->timestamp (elt timestamps index))
+          (elt channel index))))

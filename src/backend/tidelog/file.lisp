@@ -1,6 +1,6 @@
 ;;;; file.lisp --- The file class represents a TIDE log file.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -308,30 +308,29 @@
 
 (defmethod put-entry ((file      file)
                       (channel   integer)
-                      (timestamp local-time:timestamp)
+                      (timestamp integer)
                       (entry     simple-array))
   (let+ (((&accessors-r/o (buffer  backend-buffer)
                           (indices file-%indices))
           file)
-         (timestamp* (timestamp->uint64 timestamp))
-         (size       (length entry))
-         (index      (gethash channel indices)))
+         (size  (length entry))
+         (index (gethash channel indices)))
 
     ;; Update timestamps.
-    (minf (chnk-start buffer) timestamp*)
-    (maxf (chnk-end buffer) timestamp*)
+    (minf (chnk-start buffer) timestamp)
+    (maxf (chnk-end buffer) timestamp)
 
     ;; Make or reuse a `chunk-entry' instance in the entries vector of
     ;; BUFFER.
     (make-or-reuse-instance
      (chnk-entries buffer) chunk-entry
      :channel-id channel
-     :timestamp  timestamp*
+     :timestamp  timestamp
      :size       size
      :entry      entry)
 
     ;; Update index. Abuse chnk-count for tracking offsets
-    (put-entry index timestamp* (chnk-count buffer) (chnk-chunk-id buffer))
+    (put-entry index timestamp (chnk-count buffer) (chnk-chunk-id buffer))
     (incf (chnk-count buffer) (+ 16 size)))) ; TODO(jmoringe): constants
 
 ;;; Buffering

@@ -13,7 +13,7 @@
   repeated-timestamp
 
   (let+ ((channel-name "foo")
-         (timestamp    (local-time:now))
+         (timestamp    (rsbag.backend:timestamp->uint64 (local-time:now)))
          (entry-1      (nibbles:octet-vector 1 2 3 4))
          (entry-2      (nibbles:octet-vector 5 6 7 8))
          ((&flet write-bag ()

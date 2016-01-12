@@ -19,8 +19,8 @@
   (:default-initargs
    :entries (missing-required-initarg 'timestamps :entries))
   (:documentation
-   "Instances of this class are sequence of `local-time:timestamp'
-    instances that produced lazily."))
+   "Instances of this class are sequences of timestamps represented as
+    integers."))
 
 #+sbcl
 (defmethod sequence:length ((sequence timestamps))
@@ -29,8 +29,7 @@
 #+sbcl
 (defmethod sequence:elt ((sequence timestamps)
                          (index    integer))
-  (uint64->timestamp (index-vector-index->timestamp
-                      index (timestamps-entries sequence))))
+  (index-vector-index->timestamp index (timestamps-entries sequence)))
 
 ;;; Index creation
 
@@ -116,9 +115,9 @@
                                 (thing integer))
   (index-vector-index->offset thing (index-entries index)))
 
-(defmethod index-timestamp->offset ((index input-index)
-                                    (thing local-time:timestamp))
-  (index-vector-timestamp->offset thing (index-entries index)))
+(defmethod index-timestamp->offset ((index     input-index)
+                                    (timestamp integer))
+  (index-vector-timestamp->offset timestamp (index-entries index)))
 
 (defmethod index-add-indxs ((index  input-index)
                             (indxs  sequence)

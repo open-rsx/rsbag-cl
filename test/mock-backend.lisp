@@ -75,7 +75,7 @@
 
 (defmethod rsbag.backend:put-entry ((backend   mock-backend)
                                     (channel   integer)
-                                    (timestamp local-time:timestamp)
+                                    (timestamp integer)
                                     (entry     t))
   (let ((channel (nth channel (backend-%channels backend))))
     (appendf (first channel) (list timestamp))
@@ -106,9 +106,10 @@
             (if (member value errors) 'error value)))
          (now (local-time:now))
          ((&flet now+ (amount)
-            (local-time:adjust-timestamp now
-              (:offset :nsec amount)))))
-    `(((,now ,(now+ 50000000))
+            (rsbag.backend:timestamp->uint64
+             (local-time:adjust-timestamp now
+               (:offset :nsec amount))))))
+    `(((,(now+ 0) ,(now+ 50000000))
       ,(mapcar #'maybe-error '(1 2))
       0 "/foo"
       ())

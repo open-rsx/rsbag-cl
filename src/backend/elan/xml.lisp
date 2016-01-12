@@ -35,7 +35,7 @@
       (((:@ (id    "TIME_SLOT_ID"))                               ".")
        ((:@ (value "TIME_VALUE")   :type 'timestamp/milliseconds) "."))
       value
-    (cons id value)))
+    (cons id (milliseconds->nanoseconds value))))
 
 (defmethod xloc:->xml ((value cons)
                        (dest  stp:element)
@@ -48,7 +48,7 @@
        ((:@ (value* "TIME_VALUE")   :type 'timestamp/milliseconds) "."))
       dest
     (setf id     (car value)
-          value* (cdr value)))
+          value* (nanoseconds->milliseconds (cdr value))))
   value)
 
 ;;; annotation/list

@@ -75,7 +75,7 @@
          (tiers      '())
          (base-time  (local-time:now))
          ((&flet resolve (id)
-            (+ (timestamp->millisecs base-time)
+            (+ (timestamp->nanoseconds base-time)
                (cdr (assoc id time-slots :test #'string=))))))
 
     (cond
@@ -148,7 +148,7 @@
            (time-slots/cons (iter (for (timestamp id) in-hashtable time-slots)
                                   (collect (cons id (- timestamp base-time))))))
       (xloc:->xml
-       (list (or author "") (millisecs->timestamp base-time) '() time-slots/cons tiers) ; TODO(jmoringe, 2011-12-01): media stuff
+       (list (or author "") (nanoseconds->timestamp base-time) '() time-slots/cons tiers) ; TODO(jmoringe, 2011-12-01): media stuff
        (stp:document-element document) 'file/list)
       (file-position stream 0)
       (serialize/keep-open document stream)))
@@ -181,8 +181,7 @@
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))
-  (map 'list (compose #'millisecs->timestamp #'car)
-       (gethash channel (file-%data file))))
+  (map 'list #'first (gethash channel (file-%data file))))
 
 (defmethod get-entry-at-index ((file    file)
                                (channel integer)
@@ -197,9 +196,7 @@
 
 (defmethod put-entry ((file      file)
                       (channel   integer)
-                      (timestamp local-time:timestamp)
+                      (timestamp integer)
                       (entry     string))
-  (let+ (((&accessors-r/o (data  file-%data)) file)
-         (timestamp* (timestamp->millisecs timestamp)))
-    (push (list timestamp* timestamp* entry)
-          (gethash channel data))))
+  (let+ (((&accessors-r/o (data file-%data)) file))
+    (push (list timestamp timestamp entry) (gethash channel data))))

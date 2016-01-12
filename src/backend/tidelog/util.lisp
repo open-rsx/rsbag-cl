@@ -32,20 +32,6 @@
               read length (file-position stream))))
   buffer)
 
-;;; Time-related utility functions
-
-(defun uint64->timestamp (value)
-  (let+ (((&values secs nsecs) (truncate value 1000000000)))
-    (local-time:unix-to-timestamp secs :nsec nsecs)))
-
-(defun timestamp->uint64 (value)
-  (let+ (((&accessors-r/o (secs  local-time:timestamp-to-unix)
-                          (nsecs local-time:nsec-of))
-          value))
-    (declare (type non-negative-integer     secs)
-             (type (integer 0 (1000000000)) nsecs))
-    (+ (* (expt 10 9) secs) nsecs)))
-
 ;;; Buffering
 
 (defmacro make-or-reuse-instance (array class &rest initargs)

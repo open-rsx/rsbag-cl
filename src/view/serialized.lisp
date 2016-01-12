@@ -1,6 +1,6 @@
 ;;;; serialized.lisp --- Serialized view on data from multiple channels.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -78,7 +78,7 @@
 (defmethod make-serialized-view ((sequences bag)
                                  &key
                                  (selector #'identity)
-                                 (compare  #'local-time:timestamp<))
+                                 (compare  #'<))
   "Create a serialized view for the channels of a bag."
   (make-serialized-view (bag-channels sequences)
                         :selector selector
@@ -87,7 +87,7 @@
 (defmethod make-serialized-view ((sequences sequence)
                                  &key
                                  (selector #'identity)
-                                 (compare  #'local-time:timestamp<) )
+                                 (compare  #'<))
   (let* ((transformed (map 'list selector sequences))
          (key         (if transformed
                           (%make-key-function (first transformed))
@@ -110,18 +110,24 @@
    using the index of the iterator and looking up the corresponding
    timestamp in `channel-timestamps'."
   (lambda (sequence iterator)
-    (sequence:elt
-     (channel-timestamps sequence)
-     (sequence:iterator-index sequence iterator))))
+    (let ((timestamps (rsbag::channel-timestamps/raw sequence)))
+      (elt timestamps (sequence:iterator-index sequence iterator)))))
+
+(defmethod %make-key-function ((sequence rsbag::channel-timestamps))
+  "When SEQUENCE is a `channel-timestamps' instance, we can use
+   timestamps as keys by using the index of the iterator and looking
+   up the corresponding timestamp in `channel-timestamps'."
+  (lambda (sequence iterator)
+    (let ((timestamps (rsbag::%timestamps sequence)))
+      (elt timestamps (sequence:iterator-index sequence iterator)))))
 
 (defmethod %make-key-function ((sequence channel-items))
   "When SEQUENCE is of type `channel-items', we can use the index of
    the iterator and look up the corresponding timestamp in the
    timestamp sequence."
   (lambda (sequence iterator)
-    (sequence:elt
-     (rsbag::channel-items-%timestamps sequence)
-     (sequence:iterator-index sequence iterator))))
+    (let ((timestamps (rsbag::%timestamps sequence)))
+      (elt timestamps (sequence:iterator-index sequence iterator)))))
 
 ;;; `serialized' class
 
@@ -131,7 +137,7 @@
   ((compare :initarg  :compare
             :type     function
             :accessor view-compare
-            :initform #'local-time:timestamp<
+            :initform #'<
             :documentation
             "Stores a function that is used to compare keys extracted
              from iterator states in order to decide which iterator

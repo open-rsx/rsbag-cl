@@ -1,6 +1,6 @@
 ;;;; types.lisp --- Types used in the cl-rsbag Elan backend.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -10,14 +10,18 @@
   "Time since reference timestamp in milliseconds."
   '(unsigned-byte 64))
 
+(deftype timestamp/nanoseconds ()
+  "Time since reference timestamp in nanoseconds."
+  '(unsigned-byte 64))
+
 (deftype time-slot/cons ()
   "A list of the form
 
      (ID TIMESTAMP)
 
    to be interpreted as an Elan time slot consisting of a string id
-   and an associated `timestamp/milliseconds'."
-  '(cons string timestamp/milliseconds))
+   and an associated `timestamp/nanoseconds'."
+  '(cons string timestamp/nanoseconds))
 
 (deftype annotation/list ()
   "A list of the form

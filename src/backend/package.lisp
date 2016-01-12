@@ -95,7 +95,9 @@
 
   ;; Utilities
   (:export
-   #:print-offset)
+   #:print-offset
+
+   #:uint64->timestamp #:timestamp->uint64)
 
   (:documentation
    "This package contains protocol and implementation aids for file

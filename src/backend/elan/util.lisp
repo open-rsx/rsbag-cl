@@ -1,6 +1,6 @@
 ;;;; util.lisp --- Utilities used by the Elan backend.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -20,12 +20,20 @@
 
 ;;; Timestamp utilities
 
-(defun millisecs->timestamp (value)
-  (let+ (((&values secs msecs) (truncate value 1000)))
-    (local-time:unix-to-timestamp secs :nsec (* 1000000 msecs))))
+(declaim (inline milliseconds->nanoseconds nanoseconds->milliseconds))
 
-(defun timestamp->millisecs (value)
+(defun milliseconds->nanoseconds (value)
+  (* value 1000000))
+
+(defun nanoseconds->milliseconds (value)
+  (floor value 1000000))
+
+(defun nanoseconds->timestamp (value)
+  (let+ (((&values secs nsecs) (truncate value 1000000000)))
+    (local-time:unix-to-timestamp secs :nsec nsecs)))
+
+(defun timestamp->nanoseconds (value)
   (let+ (((&accessors-r/o (secs  local-time:timestamp-to-unix)
-                          (nsecs local-time:nsec-of)) value)
-         (msecs (truncate nsecs 1000000)))
-    (+ (* 1000 secs) msecs)))
+                          (nsecs local-time:nsec-of))
+          value))
+    (+ (* 1000000000 secs) nsecs)))
