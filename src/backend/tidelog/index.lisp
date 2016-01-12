@@ -23,8 +23,8 @@
   (vector-push offset    index))
 
 (defun index-vector-push-extend-entry (index timestamp offset)
-  (vector-push-extend timestamp index)
-  (vector-push-extend offset    index))
+  (vector-push-extend timestamp index (floor (length index) 8/2)) ; has to be even
+  (vector-push        offset    index))
 
 (defun index-vector-add-entries (index entries chunks)
   (declare (type index-vector index))
@@ -323,7 +323,7 @@
                       (timestamp integer)
                       (offset    integer)
                       (chunk-id  integer))
-  ;; Next methods updates current in-memory indx block.
+  ;; Next method updates current in-memory `indx' block.
   (call-next-method)
 
   ;; Add to entries.
