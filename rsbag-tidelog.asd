@@ -1,6 +1,6 @@
 ;;;; rsbag-tidelog.asd --- System definition for TIDELog backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -39,6 +39,7 @@
 
                               (:file       "index-vector")
                               (:file       "index")
+                              (:file       "channel")
                               (:file       "file")
 
                               (:file       "repair"))))
