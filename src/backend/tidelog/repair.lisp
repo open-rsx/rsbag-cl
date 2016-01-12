@@ -1,6 +1,6 @@
 ;;;; repair.lisp --- Recover from damage in log files.
 ;;;;
-;;;; Copyright (C) 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2014, 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -39,7 +39,7 @@
                   (flush-queue queue)))))
     ;; For each chunk, visit all its entries and add them to the
     ;; temporary index lists.
-    (function-calling-restart-bind
+    (rsbag:function-calling-restart-bind
         (((continue (&optional condition) skip bail)
           :report (lambda (stream1)
                     (format stream1
