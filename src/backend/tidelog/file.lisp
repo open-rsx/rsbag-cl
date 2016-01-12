@@ -13,7 +13,7 @@
                 last-write-time-mixin)
   ((channels        :type     hash-table
                     :accessor file-%channels
-                    :initform (make-hash-table)
+                    :initform (make-hash-table :test #'eql)
                     :documentation
                     "Stores information of the channels present in the
                      file. Entries are of the form
@@ -25,7 +25,7 @@
                      plist containing the well-known
                      entries :type, :format, :source-name,
                      :source-config and potentially others.")
-   (indices         :type     hash-table
+   #+no (indices         :type     hash-table
                     :reader   file-%indices
                     :initform (make-hash-table :test #'eq)
                     :documentation
@@ -74,35 +74,43 @@
                       (buffer          backend-buffer)
                       (flush-strategy  backend-flush-strategy)
                       (channels        file-%channels)
-                      (indices         file-%indices)
+                      #+no (indices         file-%indices)
                       (next-channel-id file-%next-channel-id)
                       (next-chunk-id   file-%next-chunk-id))
           instance)
+         (indices (make-hash-table :test #'eql))
          ((&values chans indxs chnks complete?)
           (when (member direction '(:input :io))
             (scan stream :tide)))
-         ((&flet check-channel (id)
-            (ensure-gethash
-             id channels
-             (restart-case
-                 (progn
-                   (setf complete? nil)
-                   (error "~@<No channel with id ~D.~@:>" id))
-               (continue (&optional condition)
-                 :report (lambda (stream)
-                           (format stream "~@<Reconstruct channel ~D.~@:>"
-                                   id))
-                 (declare (ignore condition))
-                 (log:info "~@<Reconstructing channel ~D~@:>" id)
-                 (let ((name (format nil "reconstructed~D" id)))
-                   (list id name '(:type :bytes))))
-               (use-value (name meta-data)
-                 :report (lambda (stream)
-                           (format stream "~@<Use the supplied ~
-                                           description for channel ~
-                                           ~D.~@:>"
-                                   id))
-                 (list id name meta-data))))))
+         ((&flet ensure-index-channel (index)
+            (let ((id (index-channel index)))
+              (ensure-gethash
+               id channels
+               (restart-case
+                   (progn
+                     (setf complete? nil)
+                     (error "~@<No channel with id ~D.~@:>" id))
+                 (continue (&optional condition)
+                   :report (lambda (stream)
+                             (format stream "~@<Reconstruct channel ~D.~@:>"
+                                     id))
+                   (declare (ignore condition))
+                   (log:info "~@<Reconstructing channel ~D~@:>" id)
+                   (let ((name (format nil "reconstructed~D" id)))
+                     (make-channel (list :id        id
+                                         :name      name
+                                         :meta-data '(:type :bytes)
+                                         :index     index))))
+                 (use-value (name meta-data)
+                   :report (lambda (stream)
+                             (format stream "~@<Use the supplied ~
+                                             description for channel ~
+                                             ~D.~@:>"
+                                     id))
+                   (make-channel (list :id        id
+                                       :name      name
+                                       :meta-data meta-data
+                                       :index     index))))))))
          ((&flet make-index (channel-id)
             (let ((lock (rsbag.backend::backend-lock instance)))
               (setf (gethash channel-id indices)
@@ -127,7 +135,11 @@
                     (make-index channel-id))))))
          ((&flet ensure-index (channel-id)
             (or (gethash channel-id indices)
-                (make-index channel-id)))))
+                (make-index channel-id))))
+         ((&flet ensure-channel-index (channel)
+            (unless (channel-index channel)
+              (setf (channel-index channel)
+                    (ensure-index (channel-id channel)))))))
 
     ;; Sort chunks for faster lookup during index building step.
     (setf chnks                  (sort (coerce chnks 'vector) #'<
@@ -140,8 +152,8 @@
                                              :key           #'chan-id))
           (chnk-chunk-id buffer) next-chunk-id)
     (map nil (lambda (chan)
-               (let ((channel (make-channel chan)))
-                 (setf (gethash (first channel) channels) channel)))
+               (let+ (((&values id channel) (make-channel chan)))
+                 (setf (gethash id channels) channel)))
          chans)
 
 
@@ -159,7 +171,7 @@
                 ;; If this signals an error, the CONTINUE restart can
                 ;; be used to regenerate indices.
                 (iter (for (channel-id . offset) in indxs)
-                      (let ((indx (unpack stream :block offset))
+                      (let ((indx  (unpack stream :block offset))
                             (index (ensure-index channel-id)))
                         (index-add-indxs index (list indx) chnks)))
 
@@ -170,8 +182,7 @@
                 ;;
                 ;; If this signals an error, the CONTINUE restart can
                 ;; be used to regenerate indices.
-                (mapc (compose #'check-channel #'index-channel)
-                      (hash-table-values indices))
+                (mapc #'ensure-index-channel (hash-table-values indices))
 
                 ;; Make sure that `index' instances exist for all
                 ;; channels in CHANNELS. This can problem can occur
@@ -183,7 +194,8 @@
                 #+no (mapc (compose #'check-index #'first) channels)
                 ;; INDX chunks may currently be omitted for empty
                 ;; channels.
-                (mapc #'ensure-index (hash-table-keys channels))
+                #+no (mapc #'ensure-index (hash-table-keys channels))
+                (mapc #'ensure-channel-index (hash-table-values channels))
 
                 ;; If nothing above signaled an error but we still
                 ;; know that the data is incomplete, signal an error
@@ -221,7 +233,7 @@
 
 (defmethod close ((file file) &key abort)
   (map nil (rcurry #'close :abort abort)
-       (hash-table-values (file-%indices file)))
+       (mapcar #'channel-index (hash-table-values (file-%channels file)))) ; TODO make a function
   (when (next-method-p)
     (call-next-method)))
 
@@ -231,7 +243,15 @@
     (incf (file-%next-channel-id file))))
 
 (defmethod get-channels ((file file))
-  (hash-table-values (file-%channels file)))
+  (let ((result '()))
+    (maphash (lambda (key channel)
+               (declare (ignore key))
+               (let+ (((&structure-r/o channel- id name meta-data data-length)
+                       channel))
+                 (push (list id name (list* :length data-length  meta-data))
+                       result)))
+             (file-%channels file))
+    result))
 
 (defmethod put-channel ((file      file)
                         (channel   integer)
@@ -242,53 +262,61 @@
                       (direction      backend-direction)
                       (flush-strategy backend-flush-strategy)
                       (channels       file-%channels)
-                      (indices        file-%indices))
-          file)
-         ((&plist-r/o (type          :type)
-                      (source-name   :source-name   "")
-                      (source-config :source-config "")
-                      (format        :format        "")) meta-data)
-         (channel1 (make-instance
-                   'chan
-                   :id            channel
-                   :name          name
-                   :type          (encode-type type)
-                   :source-name   source-name
-                   :source-config source-config
-                   :format        format)))
-    (setf (gethash channel channels) (list channel name meta-data))
-
-    ;; Add an index for the new channel
-    (setf (gethash channel indices)
-          (make-index channel stream lock direction
-                      :flush-strategy flush-strategy))
-
-    (bt:with-lock-held (lock)
-      (pack channel1 stream))))
+                      #+no (indices        file-%indices))
+          file))
+    ;; Create and store channel object.
+    (let* ((index    (make-index channel stream lock direction
+                                 :flush-strategy flush-strategy))
+           (channel1 (make-instance 'channel
+                                    :id          channel
+                                    :name        name
+                                    :meta-data   meta-data
+                                    :data-length 0
+                                    :index       index)))
+      (setf (gethash channel channels) channel1))
+    ;; Create an write CHAN block.
+    (let+ (((&plist-r/o (type          :type)
+                        (source-name   :source-name   "")
+                        (source-config :source-config "")
+                        (format        :format        ""))
+            meta-data)
+           (channel (make-instance 'chan
+                                   :id            channel
+                                   :name          name
+                                   :type          (encode-type type)
+                                   :source-name   source-name
+                                   :source-config source-config
+                                   :format        format)))
+      (bt:with-lock-held (lock)
+        (pack channel stream)))))
 
 (defmethod get-num-entries ((file    file)
                             (channel integer))
-  (index-num-entries (gethash channel (file-%indices file))))
+  (let ((index (channel-index (gethash channel (file-%channels file))))) ; TODO make a function?
+    (index-num-entries index)))
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))
-  #+sbcl
-  (make-instance 'timestamps
-                 :entries (index-entries
-                           (gethash channel (file-%indices file))))
-  #-sbcl
-  #.(error "Not implemented."))
+  (let ((index (channel-index (gethash channel (file-%channels file)))))
+    #+sbcl
+    (make-instance 'timestamps :entries (index-entries index))
+    #-sbcl
+    #.(error "Not implemented.")))
 
 (defmethod put-entry ((file      file)
                       (channel   integer)
                       (timestamp local-time:timestamp)
                       (entry     simple-array))
-  (let+ (((&accessors-r/o (buffer  backend-buffer)
-                          (indices file-%indices))
+  (let+ (((&accessors-r/o (buffer   backend-buffer)
+                          (channels file-%channels))
           file)
+         (channel1   (gethash channel channels))
+         (index      (channel-index channel1))
          (timestamp* (timestamp->uint64 timestamp))
-         (size       (length entry))
-         (index      (gethash channel indices)))
+         (length     (length entry)))
+
+    ;; Note increased amount of data in channel.
+    (incf (channel-data-length channel1) length)
 
     ;; Update timestamps.
     (minf (chnk-start buffer) timestamp*)
@@ -300,12 +328,12 @@
      (chnk-entries buffer) chunk-entry
      :channel-id channel
      :timestamp  timestamp*
-     :size       size
+     :size       length
      :entry      entry)
 
     ;; Update index. Abuse chnk-count for tracking offsets
     (put-entry index timestamp* (chnk-count buffer) (chnk-chunk-id buffer))
-    (incf (chnk-count buffer) (+ 16 size)))) ; TODO(jmoringe): constants
+    (incf (chnk-count buffer) (+ 16 length)))) ; TODO(jmoringe): constants
 
 (defmethod get-entry ((file    file)
                       (channel integer)
@@ -313,7 +341,7 @@
   (let+ (((&accessors (stream backend-stream)
                       (lock   rsbag.backend::backend-lock))
           file)
-         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
+         (index1 (channel-index (gethash channel (file-%channels file)))) ; TODO(jmoringe): make a method?
          (offset (index-offset index1 index)))
     (bt:with-lock-held (lock)
       (file-position stream (+ offset 12))
@@ -380,15 +408,6 @@
                          :num-channels  0
                          :num-chunks    0)
           stream)))
-
-(defun make-channel (chan)
-  (list (chan-id chan)
-        (chan-name chan)
-        (append (when-let ((type (decode-type (chan-type chan))))
-                  (list :type type))
-                (list :source-name   (chan-source-name   chan)
-                      :source-config (chan-source-config chan)
-                      :format        (chan-format        chan)))))
 
 (defun encode-type (type)
   "Encode the keyword or list TYPE as a channel type string."
