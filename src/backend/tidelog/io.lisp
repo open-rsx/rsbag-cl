@@ -46,7 +46,7 @@
                 +format-version-major+ +format-version-minor+))))
 
   ;; Scan through remaining blocks.
-  (function-calling-restart-bind
+  (rsbag:function-calling-restart-bind
       (((retry () retry)
         :report (lambda (stream)
                   (format stream "~@<Retry reading at the same ~

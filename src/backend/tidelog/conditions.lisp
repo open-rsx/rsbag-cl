@@ -6,7 +6,7 @@
 
 (cl:in-package #:rsbag.backend.tidelog)
 
-(define-condition tidelog-condition (rsbag-condition)
+(define-condition tidelog-condition (rsbag:rsbag-condition)
   ()
   (:documentation
    "This condition class serves as a superclass for TIDELOG-related
@@ -27,7 +27,7 @@
     while processing a TIDE log file."))
 
 (define-condition no-such-block-class-error (tidelog-condition
-                                             rsbag-error)
+                                             rsbag:rsbag-error)
   ((tag :initarg :tag
         :type    nibbles:octet-vector
         :reader  no-such-block-class-error-tag
