@@ -19,7 +19,6 @@
               :reader   channel-name
               :documentation
               "Stores the name of the channel.")
-   (meta-data :reader   channel-meta-data)
    (transform :initarg  :transform
               :reader   channel-transform
               :initform nil
@@ -54,6 +53,13 @@
     `((:name      ,name       "~S")
       (:length    ,length   " (~:D)"    ((:after :name)))
       (:transform ,transform "~@[ ~A~]" ((:after :length))))))
+
+(defmethod %meta-data ((channel channel))
+  (let+ (((&structure-r/o channel- %id %backend) channel))
+    (third (find %id (rsbag.backend:get-channels %backend) :key #'first))))
+
+(defmethod channel-meta-data ((channel channel))
+  (%meta-data channel))
 
 (defmethod channel-timestamps ((channel channel))
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))

@@ -18,6 +18,7 @@
    + `NAME-alist' :: Return items as alist."
   (let+ ((class-name (symbolicate "PLIST-" name "-MIXIN"))
          (initarg    (make-keyword slot-name))
+         (accessor   (symbolicate '#:% name))
          ((count-name keys-name values-name plist-name alist-name)
           (map 'list (curry #'symbolicate name)
                '("-COUNT" "-KEYS" "-VALUES" "-PLIST" "-ALIST"))))
@@ -25,9 +26,9 @@
        (defclass ,class-name ()
          ((,slot-name :initarg  ,initarg
                       :type     list
-                      :initform nil
+                      :accessor ,accessor
+                      :initform '()
                       :documentation
-
                       ,(format nil "Stores the ~(~A~) items associated ~
                                     to the instance."
                                name)))
@@ -38,14 +39,14 @@
 
        (defgeneric ,count-name (object)
          (:method ((object ,class-name))
-           (ash (length (slot-value object ',slot-name)) -1))
+           (ash (length (,accessor object)) -1))
          (:documentation
           ,(format nil "Return the number of ~(~A~) items stored in OBJECT."
                    name)))
 
        (defgeneric ,keys-name (object)
          (:method ((object ,class-name))
-           (iter (for (key) on (slot-value object ',slot-name)
+           (iter (for (key) on (,accessor object)
                       :by #'cddr)
                  (collect key)))
          (:documentation
@@ -56,7 +57,7 @@
 
        (defgeneric ,values-name (object)
          (:method ((object ,class-name))
-           (iter (for (key value) on (slot-value object ',slot-name)
+           (iter (for (key value) on (,accessor object)
                       :by #'cddr)
                  (collect value)))
          (:documentation
@@ -66,7 +67,7 @@
 
        (defgeneric ,plist-name (object)
          (:method ((object ,class-name))
-           (slot-value object ',slot-name))
+           (,accessor object))
          (:documentation
           ,(format nil "Return a plist of the ~(~A~) items stored in ~
                         OBJECT."
@@ -74,7 +75,7 @@
 
        (defgeneric ,alist-name (object)
          (:method ((object ,class-name))
-           (plist-alist (slot-value object ',slot-name)))
+           (plist-alist (,accessor object)))
          (:documentation
           ,(format nil "Return an alist of the ~(~A~) items stored ~
                         in OBJECT."
@@ -82,7 +83,7 @@
 
        (defgeneric ,name (object key)
          (:method ((object ,class-name) (key t))
-           (getf (slot-value object ',slot-name) key))
+           (getf (,accessor object) key))
          (:documentation
           ,(format nil "Return the ~(~A~) item of OBJECT identified ~
                         by KEY."
@@ -90,7 +91,7 @@
 
        (defgeneric (setf ,name) (new-value object key)
          (:method ((new-value t) (object ,class-name) (key t))
-           (setf (getf (slot-value object ',slot-name) key) new-value))
+           (setf (getf (,accessor object) key) new-value))
          (:documentation
 
           ,(format nil "Associate NEW-VALUE to OBJECT as the ~(~A~)
