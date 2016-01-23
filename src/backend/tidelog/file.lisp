@@ -152,7 +152,8 @@
                                              :key           #'chan-id))
           (chnk-chunk-id buffer) next-chunk-id)
     (map nil (lambda (chan)
-               (let+ (((&values id channel) (make-channel chan)))
+               (let* ((channel (make-channel chan :make-index #'ensure-index))
+                      (id      (channel-id channel)))
                  (setf (gethash id channels) channel)))
          chans)
 
