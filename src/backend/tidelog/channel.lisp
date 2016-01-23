@@ -28,16 +28,22 @@
    :name  (missing-required-initarg 'channel :name)
    :index (missing-required-initarg 'channel :index)))
 
-(defmethod make-channel ((data list))
+(defmethod make-channel ((data list) &rest initargs &key)
   (apply #'make-instance 'channel data))
 
-(defmethod make-channel ((data chan))
-  (let ((meta-data (append (when-let ((type (decode-type (chan-type data))))
-                             (list :type type))
-                           (list :source-name   (chan-source-name   data)
-                                 :source-config (chan-source-config data)
-                                 :format        (chan-format        data)))))
+(defmethod make-channel ((data chan)
+                         &rest initargs
+                         &key
+                         (make-index (missing-required-argument :make-index)))
+  (let+ (((&structure-r/o chan- id name) data)
+         (meta-data (append (when-let ((type (decode-type (chan-type data))))
+                              (list :type type))
+                            (list :source-name   (chan-source-name   data)
+                                  :source-config (chan-source-config data)
+                                  :format        (chan-format        data))))
+         (index     (funcall make-index id)))
     (make-instance 'channel
-                   :id        (chan-id data)
-                   :name      (chan-name data)
-                   :meta-data meta-data)))
+                   :id        id
+                   :name      name
+                   :meta-data meta-data
+                   :index     index)))
