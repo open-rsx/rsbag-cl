@@ -1,6 +1,6 @@
 # CMakeLists.txt --- CMake build description file.
 #
-# Copyright (C) 2012, 2013, 2014, 2015 Jan Moringen
+# Copyright (C) 2012, 2013, 2014, 2015, 2016 Jan Moringen
 #
 # Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -161,31 +161,35 @@ test(test-elan    rsbag-elan)
 test(test-builder rsbag-builder)
 
 # Installation
+set(VERSION_SUFFIX "${RSB_VERSION_MAJOR}.${RSB_VERSION_MINOR}")
+set(SOURCE_INSTALL_DIR "share/common-lisp/source/${CMAKE_PROJECT_NAME}${VERSION_SUFFIX}")
+
 file(GLOB ASD_FILES
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
      "*.asd")
 file(GLOB SEXP_FILES
      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
      "*.sexp")
+
 install(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/src"
-        DESTINATION    "share/common-lisp/source/${CMAKE_PROJECT_NAME}"
+        DESTINATION    "${SOURCE_INSTALL_DIR}"
         FILES_MATCHING PATTERN "*.lisp")
 install(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/test"
-        DESTINATION    "share/common-lisp/source/${CMAKE_PROJECT_NAME}"
+        DESTINATION    "${SOURCE_INSTALL_DIR}"
         FILES_MATCHING PATTERN "*.lisp")
 install(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/data"
-        DESTINATION    "share/common-lisp/source/${CMAKE_PROJECT_NAME}"
+        DESTINATION    "${SOURCE_INSTALL_DIR}"
         FILES_MATCHING
         PATTERN        "*.proto")
 install(DIRECTORY      "${CMAKE_CURRENT_SOURCE_DIR}/compat"
-        DESTINATION    "share/common-lisp/source/${CMAKE_PROJECT_NAME}"
+        DESTINATION    "${SOURCE_INSTALL_DIR}"
         FILES_MATCHING
         PATTERN        "*.proto"
         PATTERN        "*.lisp")
 install(DIRECTORY
-        DESTINATION "share/common-lisp/source/${CMAKE_PROJECT_NAME}")
+        DESTINATION "${SOURCE_INSTALL_DIR}")
 install(FILES       ${ASD_FILES} ${SEXP_FILES}
-        DESTINATION "share/common-lisp/source/${CMAKE_PROJECT_NAME}/")
+        DESTINATION "${SOURCE_INSTALL_DIR}")
 
 # Packaging
 set(PACKAGE_BASE_NAME           "${SYSTEM_NAME}")
