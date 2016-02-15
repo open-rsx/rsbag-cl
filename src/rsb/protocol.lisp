@@ -52,8 +52,8 @@
 
     BACKEND can be used to explicitly select a file-format backend for
     DEST. If supplied, it has to be a keyword designating a
-    file-format backend. Available backends can be inspected using
-    `rsbag.backend:backend-classes'.
+    file-format backend. Available backends can be inspected using the
+    service designated by `rsbag.backend:backend'.
 
     If supplied, BAG-CLASS selects the class of the bag created for
     DEST. Note that a bag class capable of handling concurrent
@@ -94,8 +94,8 @@
 
     BACKEND can be used to explicitly select a file-format backend for
     SOURCE. If supplied, it has to be a keyword designating a
-    file-format backend. Available backends can be inspected using
-    `rsbag.backend:backend-classes'. See `rsbag:open-bag'.
+    file-format backend. Available backends can be inspected using the
+    service designated by `rsbag.backend:backend'.
 
     If supplied, BAG-CLASS selects the class of the bag created for
     SOURCE. See `rsbag:open-bag'.

@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for backend module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -41,11 +41,9 @@
    #:get-entry
    #:put-entry)
 
-  ;; Backend findable class family
+  ;; Backend service and backend creation protocol
   (:export
-   #:no-such-backend-class
-   #:find-backend-class
-   #:backend-classes
+   #:backend
 
    #:make-backend)
 

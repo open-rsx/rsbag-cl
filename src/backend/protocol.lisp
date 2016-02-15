@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Backend protocol of the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011, 2012, 2013, 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -92,8 +92,9 @@
 
 ;;; Finding backend classes
 
-(dynamic-classes:define-findable-class-family backend
-    "This class family consists of file format backends.")
+(service-provider:define-service backend
+  (:documentation
+   "Providers implement support for file formats."))
 
 (defgeneric make-backend (spec &rest args)
   (:documentation
@@ -121,7 +122,7 @@
   (apply #'make-instance spec args))
 
 (defmethod make-backend ((spec symbol) &rest args)
-  (apply #'make-backend (find-backend-class spec) args))
+  (apply #'service-provider:make-provider 'backend spec args))
 
 (defmethod make-backend ((spec cons) &rest args)
   (apply #'make-backend (first spec) (append (rest spec) args)))

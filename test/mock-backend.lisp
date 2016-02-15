@@ -1,13 +1,10 @@
 ;;;; mock-backend.lisp --- Mock backend class for unit tests.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.test)
-
-(defmethod rsbag.backend:find-backend-class ((spec (eql :mock)))
-  (find-class 'mock-backend))
 
 (defclass mock-backend ()
   ((channels :initarg  :channels
@@ -31,6 +28,9 @@
 
               and META-DATA is a plist containing the meta-data for
               the channel.")))
+
+(service-provider:register-provider/class
+ 'rsbag.backend::backend :mock :class 'mock-backend)
 
 (defmethod shared-initialize :after ((instance   mock-backend)
                                      (slot-names t)

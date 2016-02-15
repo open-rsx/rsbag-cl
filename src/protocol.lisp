@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol used by the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -30,9 +30,9 @@
     SOURCE already exists. Valid values are :error and :overwrite. See
     `cl:open' for more information.
 
-    BACKEND has to be a keyword naming a backend class. A list of backend
-    classes can be obtained via the `rsbag.backend:backend-classes'
-    function.
+    BACKEND has to be a keyword naming a backend class. Available
+    backends can be inspected using the service designated by
+    `rsbag.backend:backend'.
 
     When supplied, BAG-CLASS specifies the class of which the returned bag
     object should be an instance.

@@ -1,13 +1,10 @@
 ;;;; file.lisp --- The file class represents a TIDE log file.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend.tidelog)
-
-(defmethod find-backend-class ((spec (eql :tide)))
-  (find-class 'file))
 
 (defclass file (stream-mixin
                 direction-mixin
@@ -52,6 +49,9 @@
   (:documentation
    "Instances of this class represent files using the TIDE log file
     format as specified at https://retf.info/svn/drafts/rd-0001.txt."))
+
+(service-provider:register-provider/class
+ 'backend :tide :class 'file)
 
 (defmethod shared-initialize :after ((instance   file)
                                      (slot-names t)

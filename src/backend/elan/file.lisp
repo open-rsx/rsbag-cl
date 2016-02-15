@@ -1,13 +1,10 @@
 ;;;; file.lisp --- Elan file format support.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend.elan)
-
-(defmethod find-backend-class ((spec (eql :eaf)))
-  (find-class 'file))
 
 (defclass file (stream-mixin
                 direction-mixin)
@@ -59,6 +56,9 @@
    "Instances of this class represent Elan eaf-files. All data is
     serialized and written or read and deserialized when the file is
     written or read respectively."))
+
+(service-provider:register-provider/class
+ 'backend :eaf :class 'file)
 
 (defmethod shared-initialize :after ((instance   file)
                                      (slot-names t)
