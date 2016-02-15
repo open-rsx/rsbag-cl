@@ -1,6 +1,6 @@
 ;;;; variables.lisp --- Variables used in the TIDE log file format backend.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -26,7 +26,7 @@
    classes.")
 
 (declaim (ftype (function (nibbles:simple-octet-vector &key (:if-does-not-exist t))
-                          (values class &optional nil))
+                          (values class &optional))
                 byte-pattern->block-class))
 
 (defun byte-pattern->block-class (pattern &key (if-does-not-exist #'error))
