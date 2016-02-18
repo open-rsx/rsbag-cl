@@ -20,7 +20,7 @@
       `(;; Invalid channel strategy => error
         ((:channel-strategy :no-such-strategy)
          nil
-         no-such-channel-strategy-class)
+         service-provider:missing-provider-error)
 
         ;; These are valid.
         ((:channel-strategy :scope-and-type)
@@ -52,8 +52,8 @@
                           events))
                   (map 'list #'rsb:event-data (first (bag-channels bag))))))))
      (case expected
-       (no-such-channel-strategy-class
-        (ensure-condition 'no-such-channel-strategy-class (do-it)))
+       (service-provider:missing-provider-error
+        (ensure-condition 'service-provider:missing-provider-error (do-it)))
        (t
         (ensure-same (do-it) expected :test #'equalp))))))
 

@@ -62,8 +62,8 @@
     If supplied, CHANNEL-STRATEGY selects a channel allocation
     strategy which is responsible for adding channels to DEST when
     events cannot be stored in any of the existing channels. Available
-    strategies can be inspected using
-    `rsbag.rsb:channel-strategy-classes'.
+    backends can be inspected using the service designated by
+    `rsbag.rsb:channel-strategy'.
 
     If supplied, START? controls whether the recording should start
     immediately. The default behavior is to start immediately."))
@@ -315,25 +315,38 @@
 
 ;;; Channel allocation strategy class family
 
-(dynamic-classes:define-findable-class-family channel-strategy
-    "This family consists of classes that implement channel selection
-     and allocation strategies.")
+(service-provider:define-service channel-strategy
+  (:documentation
+   "Providers implement channel selection and allocation
+    strategies."))
 
-(defgeneric make-channel-strategy (thing &rest args)
+(defgeneric make-channel-strategy (spec &rest args)
   (:documentation
    "Return (potentially creating it first) an instance of the channel
-    strategy designated by THING."))
+    strategy designated by SPEC."))
 
-(defmethod make-channel-strategy ((thing symbol) &rest args)
-  (apply #'make-channel-strategy
-         (if (keywordp thing)
-             (find-channel-strategy-class thing)
-             (find-class thing))
-         args))
+(defmethod make-channel-strategy ((spec standard-object) &rest args)
+  (if args
+      (apply #'reinitialize-instance spec args)
+      spec))
 
-(defmethod make-channel-strategy ((thing class) &rest args)
-  (apply #'make-instance thing args))
+(defmethod make-channel-strategy ((spec symbol) &rest args)
+  (if (keywordp spec)
+      (apply #'service-provider:make-provider 'channel-strategy spec
+             args)
+      (let ((provider (find spec (service-provider:service-providers 'channel-strategy)
+                            :key  (compose #'class-name
+                                           #'service-provider:provider-class)
+                            :test #'eq)))
+        (apply #'service-provider:make-provider 'channel-strategy provider
+               args))))
 
-(defmethod make-channel-strategy ((thing t) &rest args)
-  (declare (ignore args))
-  thing)
+(defmethod make-channel-strategy ((spec class) &rest args)
+  (let ((provider (find spec (service-provider:service-providers 'channel-strategy)
+                        :key  #'service-provider:provider-class
+                        :test #'eq)))
+    (apply #'service-provider:make-provider 'channel-strategy provider
+           args)))
+
+(defmethod make-channel-strategy ((spec cons) &rest args)
+  (apply #'make-channel-strategy (first spec) (append (rest spec) args)))

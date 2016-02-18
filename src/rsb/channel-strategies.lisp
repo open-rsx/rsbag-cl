@@ -1,6 +1,6 @@
 ;;;; channel-strategies.lisp --- Strategy classes for allocating channels.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -83,9 +83,6 @@
 
 ;;; `scope-and-type' channel allocation strategy class
 
-(defmethod find-channel-strategy-class ((spec (eql :scope-and-type)))
-  (find-class 'scope-and-type))
-
 (defclass scope-and-type (ensure-channel-mixin)
   ()
   (:documentation
@@ -100,6 +97,9 @@
     As an example, an event on scope /foo/bar/ with wire-schema
     \".rst.vision.Image\" would be stored in a channel called
     \"/foo/bar/:.rst.vision.Image\"."))
+
+(service-provider:register-provider/class
+ 'channel-strategy :scope-and-type :class 'scope-and-type)
 
 (defmethod channel-name-for ((connection channel-connection)
                              (event      event)
@@ -127,9 +127,6 @@
 
 ;;; `collapse-reserved'
 
-(defmethod find-channel-strategy-class ((spec (eql :collapse-reserved)))
-  (find-class 'collapse-reserved))
-
 (defclass collapse-reserved (ensure-channel-mixin
                              delegating-mixin)
   ()
@@ -141,6 +138,9 @@
     This, for example, prevents introspection scopes like
     /__rsb/introspection/participants/ID/…  from creating two
     channels (Hello and Bye) for each participant."))
+
+(service-provider:register-provider/class
+ 'channel-strategy :collapse-reserved :class 'collapse-reserved)
 
 (defmethod channel-name-for ((connection channel-connection)
                              (event      event)

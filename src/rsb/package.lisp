@@ -103,9 +103,7 @@
    #:make-channel-for
    #:ensure-channel-for
 
-   #:no-such-channel-strategy-class
-   #:find-channel-strategy-class
-   #:channel-strategy-classes
+   #:channel-strategy ; service
 
    #:make-channel-strategy)
 
