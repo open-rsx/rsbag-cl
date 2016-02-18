@@ -1,6 +1,6 @@
 ;;;; remote-controlled.lisp --- Strategy for RPC-controlled replay.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -13,9 +13,6 @@
    "Queue COMMAND for execution by STRATEGY."))
 
 ;;; `remote-controlled' replay strategy class
-
-(defmethod find-replay-strategy-class ((spec (eql :remote-controlled)))
-  (find-class 'remote-controlled))
 
 (defclass remote-controlled (error-policy-mixin
                              external-driver-mixin
@@ -85,6 +82,9 @@
     quit(): void
 
       Terminate the replay."))
+
+(service-provider:register-provider/class
+ 'replay-strategy :remote-controlled :class 'remote-controlled)
 
 (defmethod (setf strategy-%commands) :after ((new-value list)
                                              (strategy  remote-controlled))

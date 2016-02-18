@@ -1,15 +1,12 @@
 ;;;; recorded-timing.lisp ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.rsb.replay)
 
 ;;; `recorded-timing' replay strategy class
-
-(defmethod find-replay-strategy-class ((spec (eql :recorded-timing)))
-  (find-class 'recorded-timing))
 
 (defclass recorded-timing (error-policy-mixin
                            timed-replay-mixin
@@ -40,6 +37,9 @@
         when they originally occurred in quick succession but squash
         large \"gaps\" in the sequence of events into short pauses of
         DELAY seconds. "))
+
+(service-provider:register-provider/class
+ 'replay-strategy :recorded-timing :class 'recorded-timing)
 
 (defmethod schedule-event ((strategy recorded-timing)
                            (event    t)

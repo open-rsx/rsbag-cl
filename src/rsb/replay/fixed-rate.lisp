@@ -1,15 +1,12 @@
 ;;;; fixed-rate.lisp ---
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.rsb.replay)
 
 ;;; `fixed-rate' replay strategy class
-
-(defmethod find-replay-strategy-class ((spec (eql :fixed-rate)))
-  (find-class 'fixed-rate))
 
 (defclass fixed-rate (error-policy-mixin
                       timed-replay-mixin
@@ -25,6 +22,9 @@
   (:documentation
    "This strategy replays events in the order they were recorded and,
     as precisely as possible, with a specified fixed rate."))
+
+(service-provider:register-provider/class
+ 'replay-strategy :fixed-rate :class 'fixed-rate)
 
 (defmethod initialize-instance :before ((instance fixed-rate)
                                         &key

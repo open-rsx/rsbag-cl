@@ -1,13 +1,10 @@
 ;;;; interactive.lisp --- A strategy for interactive replay control.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.rsb.replay)
-
-(defmethod find-replay-strategy-class ((spec (eql :interactive)))
-  (find-class 'interactive))
 
 (defclass interactive (error-policy-mixin
                        external-driver-mixin
@@ -30,6 +27,9 @@
   (:documentation
    "This strategy allows controlling the replay process interactively
     by means of textual commands."))
+
+(service-provider:register-provider/class
+ 'replay-strategy :interactive :class 'interactive)
 
 (defmethod next-command ((strategy interactive))
   (let+ (((&accessors-r/o (commands strategy-commands)

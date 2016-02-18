@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Unit tests for the protocol of the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -70,7 +70,7 @@
   (ensure-cases (source args &optional expected)
       `(;; Invalid channel strategy => error
         (,(simple-bag)    (:replay-strategy :no-such-strategy)
-         no-such-replay-strategy-class)
+         service-provider:missing-provider-error)
 
         ;; Cannot supply and arguments which would have applied to
         ;; opening the bag => error
@@ -94,8 +94,8 @@
                   (replay connection (connection-strategy connection)))
                 (record)))))
       (case expected
-        (no-such-replay-strategy-class
-         (ensure-condition 'no-such-replay-strategy-class (do-it)))
+        (service-provider:missing-provider-error
+         (ensure-condition 'service-provider:missing-provider-error (do-it)))
         (incompatible-arguments
          (ensure-condition 'incompatible-arguments (do-it)))
         (t

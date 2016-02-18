@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol functions used in the rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -220,29 +220,43 @@
 
 ;;; Replay strategy class family
 
-(dynamic-classes:define-findable-class-family replay-strategy
-    "This family consists of classes that implement event replay
-     strategies. The main difference between strategies is the
-     handling of timing.")
+(service-provider:define-service replay-strategy
+  (:documentation
+   "Providers implement event replay strategies.
 
-(defgeneric make-replay-strategy (thing &rest args)
+    The main difference between strategies is the handling of
+    timing."))
+
+(defgeneric make-replay-strategy (spec &rest args)
   (:documentation
    "Return (potentially creating it first) an instance of the replay
-    strategy designated by THING."))
+    strategy designated by SPEC."))
 
-(defmethod make-replay-strategy ((thing symbol) &rest args)
-  (apply #'make-replay-strategy
-         (if (keywordp thing)
-             (find-replay-strategy-class thing)
-             (find-class thing))
-          args))
+(defmethod make-replay-strategy ((spec standard-object) &rest args)
+  (if args
+      (apply #'reinitialize-instance spec args)
+      spec))
 
-(defmethod make-replay-strategy ((thing class) &rest args)
-  (apply #'make-instance thing args))
+(defmethod make-replay-strategy ((spec symbol) &rest args)
+  (if (keywordp spec)
+      (apply #'service-provider:make-provider 'replay-strategy spec
+             args)
+      (let ((provider (find spec (service-provider:service-providers 'replay-strategy)
+                            :key  (compose #'class-name
+                                           #'service-provider:provider-class)
+                            :test #'eq)))
+        (apply #'service-provider:make-provider 'replay-strategy provider
+               args))))
 
-(defmethod make-replay-strategy ((thing t) &rest args)
-  (declare (ignore args))
-  thing)
+(defmethod make-replay-strategy ((spec class) &rest args)
+  (let ((provider (find spec (service-provider:service-providers 'replay-strategy)
+                        :key  #'service-provider:provider-class
+                        :test #'eq)))
+    (apply #'service-provider:make-provider 'replay-strategy provider
+           args)))
+
+(defmethod make-replay-strategy ((spec cons) &rest args)
+  (apply #'make-replay-strategy (first spec) (append (rest spec) args)))
 
 ;;; Channel allocation protocol
 

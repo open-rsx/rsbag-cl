@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for rsb module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -116,9 +116,7 @@
    #:process-event
    #:schedule-event
 
-   #:no-such-replay-strategy-class
-   #:find-replay-strategy-class
-   #:replay-strategy-classes
+   #:replay-strategy ; service
 
    #:make-replay-strategy)
 
