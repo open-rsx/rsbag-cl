@@ -136,26 +136,38 @@
 
 ;;; Flush strategy classes
 
-(dynamic-classes:define-findable-class-family flush-strategy
-    "This class family consist of flush strategy classes which
-     implement strategies for flushing backend buffers when writing
-     log files.")
+(service-provider:define-service flush-strategy
+  (:documentation
+   "Providers implement strategies for flushing backend buffers when
+    writing log files."))
 
 (defgeneric make-flush-strategy (thing &rest args)
   (:documentation
    "Return (potentially creating it first) an instance of the flushing
     strategy designated by THING."))
 
-(defmethod make-flush-strategy ((thing standard-object) &rest args)
-  (assert (not args))
-  thing)
+(defmethod make-flush-strategy ((spec standard-object) &rest args)
+  (if args
+      (apply #'reinitialize-instance spec args)
+      spec))
 
-(defmethod make-flush-strategy ((thing symbol) &rest args)
-  (apply #'make-flush-strategy
-         (if (keywordp thing)
-             (find-flush-strategy-class thing)
-             (find-class thing))
-         args))
+(defmethod make-flush-strategy ((spec symbol) &rest args)
+  (if (keywordp spec)
+      (apply #'service-provider:make-provider 'flush-strategy spec
+             args)
+      (let ((provider (find spec (service-provider:service-providers 'flush-strategy)
+                            :key  (compose #'class-name
+                                           #'service-provider:provider-class)
+                            :test #'eq)))
+        (apply #'service-provider:make-provider 'flush-strategy provider
+               args))))
 
-(defmethod make-flush-strategy ((thing class) &rest args)
-  (apply #'make-instance thing args))
+(defmethod make-flush-strategy ((spec class) &rest args)
+  (let ((provider (find spec (service-provider:service-providers 'flush-strategy)
+                        :key  #'service-provider:provider-class
+                        :test #'eq)))
+    (apply #'service-provider:make-provider 'flush-strategy provider
+           args)))
+
+(defmethod make-flush-strategy ((spec cons) &rest args)
+  (apply #'make-flush-strategy (first spec) (append (rest spec) args)))

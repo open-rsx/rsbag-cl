@@ -1,15 +1,12 @@
 ;;;; flush-strategies.lisp --- Flush strategy classes provided by backend module.
 ;;;;
-;;;; Copyright (C) 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2012, 2013, 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend)
 
 ;;; `property-limit' strategy class
-
-(defmethod find-flush-strategy-class ((spec (eql :property-limit)))
-  (find-class 'property-limit))
 
 (defclass property-limit ()
   ((property :initarg  :property
@@ -29,6 +26,9 @@
   (:documentation
    "This strategy causes a buffer to be flushed every time a specified
     property violates a given limit."))
+
+(service-provider:register-provider/class
+ 'flush-strategy :property-limit :class 'property-limit)
 
 (defmethod shared-initialize :before ((instance   property-limit)
                                       (slot-names t)
@@ -84,9 +84,6 @@
                                         (class-name (format-symbol "FLUSH-IF-~A" name))
                                         reducer)
        `(progn
-          (defmethod find-flush-strategy-class ((spec (eql ,spec)))
-            (find-class ',class-name))
-
           (defclass ,class-name (composite-flush-strategy-mixin)
             ()
             (:documentation
@@ -95,18 +92,23 @@
                            should be flushed."
                       reducer)))
 
+          (service-provider:register-provider/class
+           'flush-strategy ,spec :class ',class-name)
+
+          (defmethod service-provider:make-provider
+              ((service  t)
+               (provider (eql (service-provider:find-provider 'flush-strategy ,spec)))
+               &rest args)
+            (make-instance
+             (service-provider:provider-class provider)
+             :children (mapcar (curry #'apply #'make-flush-strategy)
+                               args)))
+
           (defmethod flush? ((strategy ,class-name)
                              (backend  t)
                              (buffer   t))
             (,reducer (rcurry #'flush? backend buffer)
-                      (flush-strategy-children strategy)))
-
-          (defmethod make-flush-strategy ((thing (eql (find-class ',class-name)))
-                                          &rest args)
-            (make-instance
-             thing
-             :children (mapcar (curry #'apply #'make-flush-strategy)
-                               args))))))
+                      (flush-strategy-children strategy))))))
 
   (define-simple-composite-strategy or
     :class-name flush-if-some

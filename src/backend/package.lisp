@@ -86,11 +86,9 @@
   (:export
    #:flush?)
 
-  ;; Flush strategy class family
+  ;; Flush strategy service
   (:export
-   #:no-such-flush-strategy-class
-   #:find-flush-strategy-class
-   #:flush-strategy-classes
+   #:flush-strategy ; service
 
    #:make-flush-strategy)
 
