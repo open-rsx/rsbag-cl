@@ -1,6 +1,6 @@
 ;;;; strategy-mixin.lisp --- Mixins classes for replay strategy classes.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -79,6 +79,11 @@
                                       &key
                                       (start-index nil start-index-supplied?)
                                       (end-index   nil end-index-supplied?))
+  (when start-index-supplied?
+    (check-type start-index (or null integer)))
+  (when end-index-supplied?
+    (check-type end-index (or null integer)))
+
   (when (and start-index-supplied? end-index-supplied?)
     (with-condition-translation
         (((error incompatible-initargs)
@@ -163,10 +168,15 @@
     (incompatible-initargs 'time-bounds-mixin
                            :start-index start-index
                            :start-time  start-time))
+  (when start-time-supplied?
+    (check-type start-time range-boundary/timestamp))
+
   (when (and end-index-supplied? end-time-supplied?)
     (incompatible-initargs 'time-bounds-mixin
                            :end-index end-index
                            :end-time  end-time))
+  (when end-time-supplied?
+    (check-type end-time range-boundary/timestamp))
 
   ;; This check may do nothing when both times are supplied but one is
   ;; a negative real and one is a non-negative real or when one is a
@@ -448,8 +458,7 @@
 ;;; `delay-limiting-mixin' mixin class
 
 (defclass delay-limiting-mixin ()
-  ((max-delay :initarg  :max-delay
-              :type     (or null non-negative-real)
+  ((max-delay :type     (or null non-negative-real)
               :accessor strategy-max-delay
               :initform nil
               :documentation
@@ -458,6 +467,17 @@
    "This mixin class adds to timed replay strategy classes the ability
     to limit the delays between adjacent events to a particular
     maximum."))
+
+(defmethod shared-initialize :after ((instance   delay-limiting-mixin)
+                                     (slot-names t)
+                                     &key
+                                     (max-delay nil max-deylay-supplied?))
+  (when max-deylay-supplied?
+    (setf (strategy-max-delay instance) max-delay)))
+
+(defmethod (setf strategy-max-delay) :before ((new-value t)
+                                              (strategy  delay-limiting-mixin))
+  (check-type new-value (or null non-negative-real)))
 
 (defmethod schedule-event :around ((strategy delay-limiting-mixin)
                                    (event    t)
@@ -470,8 +490,7 @@
 ;;; `speed-adjustment-mixin' mixin class
 
 (defclass speed-adjustment-mixin ()
-  ((speed :initarg  :speed
-          :type     positive-real
+  ((speed :type     positive-real
           :accessor strategy-speed
           :initform 1
           :documentation
@@ -480,6 +499,17 @@
   (:documentation
    "This mixin class adds to timed replay strategy classes the ability
     to speed up or slow down replay speed by a constant factor."))
+
+(defmethod shared-initialize :after ((instance   speed-adjustment-mixin)
+                                     (slot-names t)
+                                     &key
+                                     (speed nil max-deylay-supplied?))
+  (when max-deylay-supplied?
+    (setf (strategy-speed instance) speed)))
+
+(defmethod (setf strategy-speed) :before ((new-value t)
+                                              (strategy  speed-adjustment-mixin))
+  (check-type new-value positive-real))
 
 (defmethod schedule-event :around ((strategy speed-adjustment-mixin)
                                    (event    t)
