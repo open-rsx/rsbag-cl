@@ -26,11 +26,10 @@
    "This strategy replays events in the order they were recorded and,
     as precisely as possible, with a specified fixed rate."))
 
-(defmethod shared-initialize :before ((instance   fixed-rate)
-                                      (slot-names t)
-                                      &key
-                                      (delay nil delay-supplied?)
-                                      (rate  nil rate-supplied?))
+(defmethod initialize-instance :before ((instance fixed-rate)
+                                        &key
+                                        (delay nil delay-supplied?)
+                                        (rate  nil rate-supplied?))
   (cond
     ((and (not delay-supplied?) (not rate-supplied?))
      (missing-required-initarg 'fixed-rate :delay-xor-rate))
