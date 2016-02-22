@@ -37,8 +37,7 @@
                       ,designator/payload-conversion
                       ,designator)
                   :wire-schema wire-schema
-                  (when converter
-                    (list :converter converter)))))
+                  rest)))
 
        (service-provider:register-provider/class
         'transform ',designator :class ',class-name)
