@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the transform module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2013, 2014, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -44,11 +44,9 @@
    #:decode
    #:encode)
 
-  ;; Findable transform class family
+  ;; Transform service and creation protocol
   (:export
-   #:no-such-transform-class
-   #:find-transform-class
-   #:transform-classes
+   #:transform
 
    #:make-transform)
 

@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol functions of the transform module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -79,10 +79,10 @@
 
 ;;; Findable transform class family
 
-(dynamic-classes:define-findable-class-family transform
-    "This class family consists of transformations that are applied to
-     entries prior to serializing/after deserializing them to/from bag
-     channels.")
+(service-provider:define-service transform
+  (:documentation
+   "Providers are transformations that are applied to entries prior to
+    serializing/after deserializing them to/from bag channels."))
 
 (defgeneric make-transform (spec
                             &rest args)
@@ -90,14 +90,13 @@
    "Make and return an instance of the transform class designated by
     SPEC passing ARGS to the constructed instance."))
 
-(defmethod make-transform ((spec symbol)
-                           &rest args)
-  (apply #'make-instance (find-transform-class spec) args))
+(defmethod make-transform ((spec symbol) &rest args)
+  (apply #'service-provider:make-provider 'transform spec args))
 
 (defmethod make-transform ((spec (eql :utf-8-string))
                            &rest args)
-  "Return nil for SPEC :utf-8-string since no transform is necessary
-   in this case."
+  ;; Return nil for SPEC :utf-8-string since no transform is necessary
+  ;; in this case.
   (declare (ignore args))
 
   nil)

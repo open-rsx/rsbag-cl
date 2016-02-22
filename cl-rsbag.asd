@@ -102,7 +102,6 @@
                 :split-sequence
                 (:version :let-plus                      "0.2")
                 :iterate
-                :cl-dynamic-classes
                 (:version :architecture.service-provider "0.1")
                 :more-conditions
                 (:version :log4cl                        "1.1.1")

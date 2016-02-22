@@ -1,6 +1,6 @@
 ;;; protocol.lisp --- Protocol functions of the transform module.
 ;;
-;; Copyright (C) 2011, 2012 Jan Moringen
+;; Copyright (C) 2011-2016 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -102,22 +102,3 @@ value (unevaluated): ~@:>")
 		       (force-output *query-io*)
 		       (list (read *query-io*)))
 	value))))
-
-
-;;; Findable transform class family
-;;
-
-(dynamic-classes:define-findable-class-family transform
-    "This class family consists of transformations that are applied to
-entries prior to serializing/after deserializing them to/from bag
-channels.")
-
-(defgeneric make-transform (spec
-			    &rest args)
-  (:documentation
-   "Make and return an instance of the transform class designated by
-SPEC passing ARGS to the constructed instance."))
-
-(defmethod make-transform ((spec symbol)
-			   &rest args)
-  (apply #'make-instance (find-transform-class spec) args))

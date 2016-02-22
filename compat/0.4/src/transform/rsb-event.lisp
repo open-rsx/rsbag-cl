@@ -1,6 +1,6 @@
 ;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;
-;; Copyright (C) 2011, 2012, 2015 Jan Moringen
+;; Copyright (C) 2011-2016 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -23,17 +23,6 @@
 ;;     Bielefeld University
 
 (cl:in-package :rsbag.transform)
-
-(defmethod find-transform-class ((spec (eql :rsb-event)))
-  (find-class 'rsb-event))
-
-(defmethod make-transform ((spec (eql :rsb-event))
-			   &rest args)
-  "Handle ARGS appropriately."
-  (check-type args (cons keyword null) "a single wire-schema keyword")
-
-  (make-instance (find-transform-class spec)
-		 :wire-schema (first args)))
 
 (defclass rsb-event ()
   ((wire-schema :initarg  :wire-schema

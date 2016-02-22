@@ -1,54 +1,68 @@
 ;;;; multi-version.lisp --- Load multiple versions of packages.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.transform)
 
-(defmacro define-serialization-version (version &key versioned?)
+(defmacro define-serialization-version (version
+                                        &key
+                                        current?)
   "Define a serialization version VERSION."
   (let+ (((&flet versioned-symbol (name package)
-            (find-symbol name (find-package (make-versioned-name
-                                             package version)))))
-        (designator (make-versioned-name :rsb-event version)))
-   `(progn
-      (unless (member ,designator *serialization-versions*)
-        (appendf *serialization-versions* '(,designator)))
+            (let ((package (find-package
+                            (if current?
+                                '#:rsbag.transform
+                                (make-versioned-name package version)))))
+              (find-symbol (string name) package))))
+         ((designator designator/payload-conversion)
+          (mapcar (rcurry #'make-versioned-name version)
+                  #1='(#:rsb-event #:rsb-event/payload-conversion)))
+         ((class-name class/payload-conversion-name)
+          (mapcar (rcurry #'versioned-symbol :rsbag.transform) #1#)))
+    `(progn
+       (unless (member ,designator *serialization-versions*)
+         (appendf *serialization-versions* '(,designator)))
 
-      (defmethod make-transform ((spec (eql ,designator))
-                                 &rest args)
-        "Handle ARGS appropriately."
-        (make-instance (,(versioned-symbol
-                          "FIND-TRANSFORM-CLASS" :rsbag.transform)
-                         ,(if versioned?
-                              (format-symbol :keyword "RSB-EVENT-~A" version)
-                              :rsb-event))
-                       :wire-schema (first args))
+       (defmethod make-transform ((spec (eql ,designator)) &rest args)
+         ;; Handle ARGS appropriately.
+         (check-type args (cons keyword list)
+                     "a wire-schema keyword, optionally followed by keyword arguments")
 
-        (let+ (((wire-schema &rest rest) args)
-               ((&plist-r/o (converter :converter)) rest))
-          (apply #'make-instance
-                 (if converter
-                     ',(versioned-symbol
-                        "RSB-EVENT/PAYLOAD-CONVERSION" :rsbag.transform)
-                     ',(versioned-symbol
-                        "RSB-EVENT"                    :rsbag.transform))
-                 :wire-schema wire-schema
-                 (when converter
-                   (list :converter converter)))))
+         (let+ (((wire-schema &rest rest &key converter) args))
+           (apply #'service-provider:make-provider
+                  'transform
+                  (if converter
+                      ,designator/payload-conversion
+                      ,designator)
+                  :wire-schema wire-schema
+                  (when converter
+                    (list :converter converter)))))
 
-      (defmethod decode ((transform ,(versioned-symbol
-                                      "RSB-EVENT" :rsbag.transform))
-                         (data      t))
-        (,(versioned-symbol "DECODE" :rsbag.transform)
-          transform data))
+       (service-provider:register-provider/class
+        'transform ',designator :class ',class-name)
 
-      (defmethod encode ((transform     ,(versioned-symbol
-                                          "RSB-EVENT" :rsbag.transform))
-                         (domain-object t))
-        (,(versioned-symbol "ENCODE" :rsbag.transform)
-          transform domain-object)))))
+       (service-provider:register-provider/class
+        'transform ',designator/payload-conversion
+        :class ',class/payload-conversion-name)
+
+       ,@(unless current?
+           `((defmethod decode ((transform ,class-name)
+                                (data      t))
+               (,(versioned-symbol "DECODE" :rsbag.transform)
+                 transform data))
+
+             (defmethod encode ((transform     ,class-name)
+                                (domain-object t))
+               (,(versioned-symbol "ENCODE" :rsbag.transform)
+                 transform domain-object)))))))
+
+;;; Current Version
+
+(define-serialization-version
+  #.(format nil "~{~D~^.~}" (cl-rsbag-system:serialization-version/list))
+  :current? t)
 
 ;;; 0.8 Version
 
@@ -79,7 +93,7 @@
                (asdf:find-component
                 :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
-(define-serialization-version "0.8" :versioned? t)
+(define-serialization-version "0.8")
 
 ;;; 0.7 Version
 
@@ -110,7 +124,7 @@
                (asdf:find-component
                 :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
-(define-serialization-version "0.7" :versioned? t)
+(define-serialization-version "0.7")
 
 ;;; 0.6 Version
 
@@ -141,7 +155,7 @@
                (asdf:find-component
                 :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
-(define-serialization-version "0.6" :versioned? t)
+(define-serialization-version "0.6")
 
 ;;; 0.5 Version
 

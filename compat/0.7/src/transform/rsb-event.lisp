@@ -1,6 +1,6 @@
 ;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;
-;; Copyright (C) 2011, 2012, 2015 Jan Moringen
+;; Copyright (C) 2011-2016 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -26,23 +26,6 @@
 
 (defconstant +rsb-schema-name+
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}" '(0 7)))
-
-(defmethod make-transform ((spec (eql +rsb-schema-name+))
-			   &rest args)
-  "Handle ARGS appropriately."
-  (check-type args (cons keyword list)
-	      "a wire-schema keyword, optionally followed by keyword arguments")
-
-  (let+ (((wire-schema &rest rest) args)
-	 ((&plist-r/o (converter :converter)) rest))
-    (apply #'make-instance
-	   (if converter 'rsb-event/payload-conversion 'rsb-event)
-	   :wire-schema wire-schema
-	   (when converter
-	     `(:converter ,converter)))))
-
-(defmethod find-transform-class ((spec (eql +rsb-schema-name+)))
-  (find-class 'rsb-event))
 
 (defclass rsb-event ()
   ((wire-schema :initarg  :wire-schema
