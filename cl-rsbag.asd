@@ -116,64 +116,50 @@
                 (:version :rsb-introspection             #.(version/string :revision? nil)))
   :components  ((:module     "src/early"
                  :pathname   "src"
+                 :serial     t
                  :components ((:file       "package")
 
-                              (:file       "types"
-                               :depends-on ("package"))
-                              (:file       "conditions"
-                               :depends-on ("package"))
-                              (:file       "util"
-                               :depends-on ("package"))
-                              (:file       "versioned-packages"
-                               :depends-on ("package"))
-                              (:file       "threadpool"
-                               :depends-on ("package"))
-                              (:file       "reloading"
-                               :depends-on ("package" "threadpool"))))
+                              (:file       "types")
+                              (:file       "conditions")
+                              (:file       "util")
+                              (:file       "versioned-packages")
+                              (:file       "threadpool")
+                              (:file       "reloading")))
 
                 (:module     "backend"
                  :pathname   "src/backend"
                  :depends-on ("src/early")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "util"
-                               :depends-on ("package"))
-                              (:file       "conditions"
-                               :depends-on ("package"))
-                              (:file       "protocol"
-                               :depends-on ("package"))
+                              (:file       "util")
+                              (:file       "conditions")
+                              (:file       "protocol")
 
-                              (:file       "backend-mixins"
-                               :depends-on ("package" "protocol"))
+                              (:file       "backend-mixins")
 
-                              (:file       "flush-strategies"
-                               :depends-on ("package" "protocol"))))
+                              (:file       "flush-strategies")))
 
                 (:module     "transform"
                  :pathname   "src/transform"
                  :depends-on ("src/early")
+                 :serial     t
                  :components ((:file       "package")
 
-                              (:file       "conditions"
-                               :depends-on ("package"))
-                              (:file       "protocol"
-                               :depends-on ("package" "conditions"))))
+                              (:file       "conditions")
+                              (:file       "protocol")))
 
                 (:module     "src"
                  :depends-on ("src/early" "backend" "transform")
+                 :serial t
                  :components ((:file       "protocol")
 
-                              (:file       "channel"
-                               :depends-on ("protocol"))
-                              (:file       "bag"
-                               :depends-on ("protocol" "channel"))
+                              (:file       "channel")
+                              (:file       "bag")
 
-                              (:file       "synchronized-channel"
-                               :depends-on ("channel"))
-                              (:file       "synchronized-bag"
-                               :depends-on ("bag" "synchronized-channel"))
+                              (:file       "synchronized-channel")
+                              (:file       "synchronized-bag")
 
-                              (:file       "macros"
-                               :depends-on ("protocol"))))
+                              (:file       "macros")))
 
                 #+sbcl
                 (:module     "view"
@@ -188,6 +174,7 @@
                 (:module     "rsb-serialization"
                  :pathname   "."
                  :depends-on ("transform")
+                 :serial     t
                  :components ((:protocol-buffer-descriptor-directory "protocol"
                                :pathname   "data"
                                :components ((:file       "EventId"
@@ -200,44 +187,31 @@
                                              :depends-on ("EventId" "EventMetaData"))))
 
                               (:file       "rsb-event"
-                               :pathname   "src/transform/rsb-event"
-                               :depends-on ("protocol"))
+                               :pathname   "src/transform/rsb-event")
                               (:file       "rsb-event-payload-conversion"
-                               :pathname   "src/transform/rsb-event-payload-conversion"
-                               :depends-on ("protocol" "rsb-event"))
+                               :pathname   "src/transform/rsb-event-payload-conversion")
                               (:file       "rsb-event-version-detection"
-                               :pathname   "src/transform/rsb-event-version-detection"
-                               :depends-on ("rsb-event"))
+                               :pathname   "src/transform/rsb-event-version-detection")
                               (:file       "rsb-event-multi-version"
-                               :pathname   "src/transform/rsb-event-multi-version"
-                               :depends-on ("rsb-event-version-detection"))))
+                               :pathname   "src/transform/rsb-event-multi-version")))
 
                 #+sbcl
                 (:module     "rsb"
                  :pathname   "src/rsb"
                  :depends-on ("src" "transform" "view"
                               "rsb-serialization")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "conditions"
-                               :depends-on ("package"))
-                              (:file       "protocol"
-                               :depends-on ("package"))
-                              (:file       "macros"
-                               :depends-on ("package" "protocol"))
+                              (:file       "conditions")
+                              (:file       "protocol")
+                              (:file       "macros")
 
-                              (:file       "channel-connection"
-                               :depends-on ("package" "protocol"))
-                              (:file       "bag-connection"
-                               :depends-on ("package" "protocol"))
+                              (:file       "channel-connection")
+                              (:file       "bag-connection")
 
-                              (:file       "channel-strategies"
-                               :depends-on ("package" "protocol"
-                                            "channel-connection"))
+                              (:file       "channel-strategies")
 
-                              (:file       "construction"
-                               :depends-on ("package" "protocol"
-                                            "bag-connection"
-                                            "channel-connection"))))
+                              (:file       "construction")))
 
                 #+sbcl
                 (:module     "rsb/replay"
@@ -282,19 +256,18 @@
                 (:module     "backend"
                  :pathname   "test/backend"
                  :depends-on ("test")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "flush-strategies"
-                               :depends-on ("package"))
-                              (:file       "mixins"
-                               :depends-on ("package"))))
+                              (:file       "flush-strategies")
+                              (:file       "mixins")))
 
                 #+sbcl
                 (:module     "view"
                  :pathname   "test/view"
                  :depends-on ("test")
+                 :serial     t
                  :components ((:file       "package")
-                              (:file       "serialized"
-                               :depends-on ("package"))))
+                              (:file       "serialized")))
 
                 #+sbcl
                 (:module     "rsb"
