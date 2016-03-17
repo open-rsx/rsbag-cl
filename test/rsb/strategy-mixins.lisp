@@ -1,6 +1,6 @@
 ;;;; strategy-mixins.lisp --- Unit tests for replay strategy mixin classes.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -53,7 +53,22 @@
   '((:start-time 1 :end-index 5)                                t)
   `((:end-time ,(local-time:now) :start-index 5)                t))
 
-;;; `timestamp-adjustment-mixin'
+;;; `event-id-mixin'
+
+(deftestsuite event-id-mixin-root (rsb-root)
+  ()
+  (:documentation
+   "Test suite for the `event-id-mixin' replay strategy mixin
+    class."))
+
+(define-replay-strategy-construction-test (event-id-mixin)
+  ;; Invalid case
+  '((:event-id 5)        type-error)
+  ;; Valid cases
+  '((:event-id :keep)    t)
+  '((:event-id :replace) t))
+
+;;; `Timestamp-adjustment-mixin'
 
 (deftestsuite timestamp-adjustment-mixin-root (rsb-root)
   ()

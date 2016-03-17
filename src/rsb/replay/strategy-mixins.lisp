@@ -324,7 +324,8 @@
 (defclass sequential-mixin (replay-restart-mixin
                             time-bounds-mixin
                             repetitions-mixin
-                            view-creation-mixin)
+                            view-creation-mixin
+                            event-id-mixin)
   ()
   (:documentation
    "This class is intended to be mixed into replay strategy classes
@@ -370,7 +371,10 @@
                           (sink               t))
   "The default behavior consists in sending EVENT via SINK which is
    assumed to be an `rsb:informer'."
-  (send sink event :unchecked? t))
+  (let ((no-fill? (ecase (strategy-event-id strategy)
+                    (:keep    t)
+                    (:replace nil))))
+    (send sink event :unchecked? t :no-fill? no-fill?)))
 
 (defmethod process-event ((connection         replay-bag-connection)
                           (strategy           sequential-mixin)
@@ -508,7 +512,7 @@
     (setf (strategy-speed instance) speed)))
 
 (defmethod (setf strategy-speed) :before ((new-value t)
-                                              (strategy  speed-adjustment-mixin))
+                                          (strategy  speed-adjustment-mixin))
   (check-type new-value positive-real))
 
 (defmethod schedule-event :around ((strategy speed-adjustment-mixin)
@@ -516,6 +520,31 @@
                                    (previous local-time:timestamp)
                                    (next     local-time:timestamp))
   (/ (call-next-method) (strategy-speed strategy)))
+
+;;; `event-id-mixin' mixin class
+
+(defclass event-id-mixin ()
+  ((event-id :initarg  :event-id
+             :type     event-id-adjustment
+             :accessor strategy-event-id
+             :initform :replace
+             :documentation
+             "Stores the strategy for handling ids of replayed
+              events."))
+  (:documentation
+   "This mixin class adds a strategy for handling ids of replayed
+    events."))
+
+(defmethod shared-initialize :after ((instance   event-id-mixin)
+                                     (slot-names t)
+                                     &key
+                                     (event-id nil event-id-supplied?))
+  (when event-id-supplied?
+    (setf (strategy-event-id instance) event-id)))
+
+(defmethod (setf strategy-event-id) :before ((new-value t)
+                                             (strategy  event-id-mixin))
+  (check-type new-value event-id-adjustment))
 
 ;;; `timestamp-adjustment-mixin' mixin class
 

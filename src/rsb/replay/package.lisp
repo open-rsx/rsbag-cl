@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the rsb.replay module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -33,7 +33,9 @@
 
   ;; Types
   (:export
-   #:range-boundary/timestamp)
+   #:range-boundary/timestamp
+
+   #:event-id-adjustment)
 
   ;; `error-policy-mixin' mixin class
   (:export
@@ -95,6 +97,12 @@
 
    #:strategy-previous-delay
    #:strategy-previous-call)
+
+  ;; `event-id-mixin' mixin class
+  (:export
+   #:event-id-mixin
+
+   #:strategy-event-id)
 
   ;; `timestamp-adjustment-mixin' mixin class
   (:export
