@@ -161,7 +161,7 @@ test(test-elan    rsbag-elan)
 test(test-builder rsbag-builder)
 
 # Installation
-set(VERSION_SUFFIX "${RSB_VERSION_MAJOR}.${RSB_VERSION_MINOR}")
+set(VERSION_SUFFIX "${RSBAG_VERSION_MAJOR}.${RSBAG_VERSION_MINOR}")
 set(SOURCE_INSTALL_DIR "share/common-lisp/source/${CMAKE_PROJECT_NAME}${VERSION_SUFFIX}")
 
 file(GLOB ASD_FILES
