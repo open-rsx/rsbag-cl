@@ -1,6 +1,6 @@
 ;;;; builder.lisp --- (un-)build protocol for bags and channels.
 ;;;;
-;;;; Copyright (C) 2015 Jan Moringen
+;;;; Copyright (C) 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -34,7 +34,13 @@
                        :initform nil
                        :documentation
                        "Should the size in octets of the data
-                        contained in each channel be computed?"))
+                        contained in each channel be computed?")
+   (format?            :initarg  :format?
+                       :reader   unbuilder-format?
+                       :initform nil
+                       :documentation
+                       "Should the format information associated to
+                        channels be traversed?"))
   (:documentation
    "Specialized builder for providing information about `bag' and
     `channel' instances."))
@@ -80,13 +86,22 @@
 
 (defmethod node-relations ((builder unbuilder)
                            (node    channel))
-  (when (getf (channel-meta-data node) :type)
-    `((:type . 1))))
+  (let+ (((&structure-r/o unbuilder- format?) builder)
+         (meta-data (channel-meta-data node)))
+    `(,@(when (getf meta-data :type)
+          '((:type . 1)))
+      ,@(when (and format? (getf meta-data :format))
+          '((:format . 1))))))
 
 (defmethod node-relation ((builder  unbuilder)
                           (relation (eql :type))
                           (node     channel))
   (getf (channel-meta-data node) :type))
+
+(defmethod node-relation ((builder  unbuilder)
+                          (relation (eql :format))
+                          (node     channel))
+  (getf (channel-meta-data node) :format))
 
 ;;; Default methods
 

@@ -84,7 +84,9 @@
          (end     (local-time:adjust-timestamp start
                     (:offset :sec 1)))
          (type    '(:rsb-event-0.9 :foo))
-         (content `(((,start ,end) ("a" "b") 0 "foo" (:type ,type)))))
+         (format  "format")
+         (content `(((,start ,end) ("a" "b") 0 "foo"
+                     (:type ,type :format ,format)))))
     (with-mock-bag (bag :direction :input) content
       (let ((channel (first (bag-channels bag))))
         (check-un-build-calls
@@ -98,4 +100,21 @@
                                :end         ,end
                                :duration    1
                                :rate        2))
-                      (:peek  :type () ,type)))))))))
+                      (:peek  :type () ,type)))))
+
+        (check-un-build-calls
+         (make-instance 'rsbag.builder::unbuilder
+                        :format? t)
+         '(or string cons)
+         `((,channel ((:peek  nil     () ,channel)
+                      (:visit nil     () ,channel rsbag:channel
+                              ((:type   . 1)
+                               (:format . 1))
+                              (:name        "foo"
+                               :event-count 2
+                               :start       ,start
+                               :end         ,end
+                               :duration    1
+                               :rate        2))
+                      (:peek  :type   () ,type)
+                      (:peek  :format () ,format)))))))))
