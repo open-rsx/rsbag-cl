@@ -13,7 +13,8 @@
                            delay-correcting-mixin
                            delay-limiting-mixin
                            speed-adjustment-mixin
-                           timestamp-adjustment-mixin)
+                           timestamp-adjustment-mixin
+                           print-items:print-items-mixin)
   ()
   (:documentation
    "This strategy replays events in the order they were recorded and,

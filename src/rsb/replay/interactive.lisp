@@ -8,7 +8,8 @@
 
 (defclass interactive (error-policy-mixin
                        external-driver-mixin
-                       timestamp-adjustment-mixin)
+                       timestamp-adjustment-mixin
+                       print-items:print-items-mixin)
   ((stream           :initarg  :stream
                      :type     stream
                      :accessor strategy-stream

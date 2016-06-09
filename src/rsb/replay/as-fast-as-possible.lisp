@@ -10,7 +10,8 @@
 
 (defclass as-fast-as-possible (error-policy-mixin
                                sequential-mixin
-                               timestamp-adjustment-mixin)
+                               timestamp-adjustment-mixin
+                               print-items:print-items-mixin)
   ()
   (:documentation
    "Replays events in the recorded order, but as fast as possible.

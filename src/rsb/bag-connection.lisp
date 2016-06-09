@@ -1,6 +1,6 @@
 ;;;; bag-connection.lisp --- A class for bag <-> RSB connections.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -8,7 +8,8 @@
 
 ;;; `bag-connection' class
 
-(defclass bag-connection (rsb.ep:error-policy-mixin)
+(defclass bag-connection (rsb.ep:error-policy-mixin
+                          print-items:print-items-mixin)
   ((bag      :initarg  :bag
              :reader   connection-bag
              :documentation
@@ -55,9 +56,8 @@
 (defmethod stop ((connection bag-connection))
   (map nil #'stop (connection-channels connection)))
 
-(defmethod print-object ((object bag-connection) (stream t))
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "(~D)" (length (connection-channels object)))))
+(defmethod print-items:print-items append ((object bag-connection))
+  `((:channel-count ,(length (connection-channels object)) "(~D)")))
 
 ;;; `recording-bag-connection' class
 

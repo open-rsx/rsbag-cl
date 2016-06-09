@@ -72,7 +72,7 @@
                  final event."))
   (:documentation
    "Provides start-index and end-index slots, some consistency checks
-    on there values and a method on `print-object'."))
+    on there values and a method on `print-items'."))
 
 (defmethod shared-initialize :before ((instance   bounds-mixin)
                                       (slot-names t)
@@ -125,11 +125,9 @@
     (when (and start-index end-index)
       (check-ordered-indices start-index end-index))))
 
-(defmethod print-object ((object bounds-mixin) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "[~:D, ~:[*~;~:*~:D~]["
-            (strategy-start-index object)
-            (strategy-end-index   object))))
+(defmethod print-items:print-items append ((object bounds-mixin))
+  (let+ (((&structure-r/o strategy- start-index end-index) object))
+    `((:bounding-indices ,(list start-index end-index) "~{[~:D, ~:[*~;~:*~:D~][~}"))))
 
 ;;; `time-bounds-mixin' mixin class
 
@@ -521,6 +519,11 @@
                                    (next     local-time:timestamp))
   (/ (call-next-method) (strategy-speed strategy)))
 
+(defmethod print-items:print-items append ((object speed-adjustment-mixin))
+  (let+ (((&structure-r/o strategy- speed) object))
+    (unless (= speed 1)
+      `((:speed ,speed " ~Fx" ((:after :bounding-indices)))))))
+
 ;;; `event-id-mixin' mixin class
 
 (defclass event-id-mixin ()
@@ -607,10 +610,9 @@
                 (local-time:timestamp
                  value)))))
 
-(defmethod print-object ((object timestamp-adjustment-mixin) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~@[~A~]"
-            (mapcar #'first (strategy-adjustments object)))))
+(defmethod print-items:print-items append ((object timestamp-adjustment-mixin))
+  (when-let ((adjustments (strategy-adjustments object)))
+    `((:adjustments ,(mapcar #'first adjustments) " ~A"))))
 
 ;;; `external-driver-mixin' mixin class
 

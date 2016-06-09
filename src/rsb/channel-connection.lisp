@@ -1,6 +1,6 @@
 ;;;; channel-connection.lisp --- A class for bag channel <-> RSB connections.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -8,7 +8,8 @@
 
 ;;; `channel-connection' class
 
-(defclass channel-connection (rsb.ep:error-policy-mixin)
+(defclass channel-connection (rsb.ep:error-policy-mixin
+                              print-items:print-items-mixin)
   ((bag      :initarg  :bag
              :reader   connection-bag
              :documentation
@@ -37,6 +38,9 @@
 
 (defmethod close ((connection channel-connection) &key abort)
   (declare (ignore abort))) ; nothing to do
+
+(defmethod print-items:print-items append ((object channel-connection))
+  `((:channel-count ,(length (connection-channels object)) " (~D)")))
 
 ;;; `participant-channel-connection' class
 
@@ -106,3 +110,8 @@
 (defmethod stop ((connection recording-channel-connection))
   (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
     (removef (rsb.ep:handlers participant) connection)))
+
+(defmethod print-items:print-items append
+    ((object recording-channel-connection))
+  `((:timestamp ,(connection-timestamp object) "~A"
+                ((:before :channel-count)))))

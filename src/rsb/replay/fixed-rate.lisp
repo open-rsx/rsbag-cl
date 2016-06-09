@@ -12,7 +12,8 @@
                       timed-replay-mixin
                       delay-correcting-mixin
                       speed-adjustment-mixin
-                      timestamp-adjustment-mixin)
+                      timestamp-adjustment-mixin
+                      print-items:print-items-mixin)
   ((delay :type     positive-real
           :accessor strategy-delay
           :initform .1
@@ -63,6 +64,6 @@
                            (next     local-time:timestamp))
   (strategy-delay strategy))
 
-(defmethod print-object ((object fixed-rate) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~A Hz" (strategy-rate object))))
+(defmethod print-items:print-items append ((object fixed-rate))
+  `((:rate ,(strategy-rate object) " ~A Hz"
+           ((:after :bounding-indices)))))

@@ -17,7 +17,8 @@
 (defclass remote-controlled (error-policy-mixin
                              external-driver-mixin
                              timestamp-adjustment-mixin
-                             uri-mixin)
+                             uri-mixin
+                             print-items:print-items-mixin)
   ((rsb::uri :accessor strategy-control-uri)
    (server   :accessor strategy-%server
              :documentation
