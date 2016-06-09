@@ -1,6 +1,6 @@
 ;;;; rsbag-tidelog.asd --- System definition for TIDELog backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -59,7 +59,11 @@
                  :pathname   "test/backend/tidelog"
                  :serial     t
                  :components ((:file       "package")
+
                               (:file       "io")
+
+                              (:file       "file")
+
                               (:file       "repair")))))
 
 (defmethod perform ((op     test-op)
