@@ -373,7 +373,10 @@
 ;;; Utility functions
 
 (defun maybe-write-header (stream)
-  (when (zerop (file-length stream))
+  ;; Write a header when the file length is zero or STREAM is not
+  ;; associated with a file (in which case a `type-error' is
+  ;; signaled).
+  (when (handler-case (zerop (file-length stream)) (type-error () t))
     (pack (make-instance 'tide
                          :version-major +format-version-major+
                          :version-minor +format-version-minor+
