@@ -24,7 +24,7 @@
 
 ;;; Customizable unbuilder
 
-(defclass unbuilder ()
+(defclass unbuilder (print-items:print-items-mixin)
   ((initarg-if-missing :initarg :initarg-if-missing
                        :reader   unbuilder-initarg-if-missing
                        :initform :omit
@@ -47,6 +47,16 @@
   (:documentation
    "Specialized builder for providing information about `bag' and
     `channel' instances."))
+
+(defmethod print-items:print-items append ((object unbuilder))
+  (let+ (((&structure-r/o
+           unbuilder- initarg-if-missing compute-sizes? format?)
+          object))
+    `((:initarg-if-missing ,initarg-if-missing "~S")
+      (:compute-sizes?     ,compute-sizes?     "~@[ sizes~]"
+       ((:after :initarg-if-missing)))
+      (:format?            ,format?            "~@[ format ~S~]"
+       ((:after :compute-sizes?))))))
 
 ;;; Bag
 
