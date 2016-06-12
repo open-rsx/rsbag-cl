@@ -247,7 +247,8 @@
          ((&plist-r/o (type          :type)
                       (source-name   :source-name   "")
                       (source-config :source-config "")
-                      (format        :format        "")) meta-data)
+                      (format        :format        ""))
+          meta-data)
          (channel1 (make-instance
                    'chan
                    :id            channel

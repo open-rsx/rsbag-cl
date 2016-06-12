@@ -1,6 +1,6 @@
 ;;;; io.lisp --- Input and output of TIDE log structures.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -35,15 +35,15 @@
     (unless (typep block 'tide)
       (error "~@<Starts with a ~A block instead of a ~A block~@:>"
              (class-name (class-of block)) 'tide))
-    (let+ (((&accessors-r/o (major tide-version-major)
-                            (minor tide-version-minor)) block))
+    (let+ (((&structure-r/o tide- version-major version-minor) block))
       (log:info "~@<Read ~A block with version ~D.~D~@:>"
-                'tide major minor)
-      (unless (= +format-version-major+ major)
+                'tide version-major version-minor)
+      (unless (= +format-version-major+ version-major)
         (cerror "Try to process the file anyway."
                 "~@<Cannot process format version ~D.~D (major version ~
                  is different from ~D.~D)~@:>"
-                major minor +format-version-major+ +format-version-minor+))))
+                version-major          version-minor
+                +format-version-major+ +format-version-minor+))))
 
   ;; Scan through remaining blocks.
   (function-calling-restart-bind
@@ -85,7 +85,7 @@
           (let+ (((&values offset block) (scan source :block)))
             (typecase block
               (chan
-               (collect block               :into channels))
+               (collect block                     :into channels))
               ((cons (eql indx) integer) ; cdr is channel id
                (collect (cons (cdr block) offset) :into indices))
               ((cons (eql chnk) integer) ; cdr is CHNK id

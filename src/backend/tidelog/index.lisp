@@ -280,10 +280,8 @@
 
 (defmethod write-buffer ((index  output-index)
                          (buffer indx))
-  (let+ (((&accessors-r/o (stream    index-stream)
-                          (sorted-to index-%sorted-to))
-          index)
-         ((&accessors-r/o (entries indx-entries)) buffer))
+  (let+ (((&structure-r/o index- stream (sorted-to %sorted-to)) index)
+         ((&structure-r/o indx- entries) buffer))
     ;; If some timestamps have been inserted out of order, sort the
     ;; entire index block now.
     (unless sorted-to
