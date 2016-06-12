@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for unit tests of the tidelog backend.
 ;;;;
-;;;; Copyright (C) 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2013, 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -61,3 +61,30 @@
 
 (defparameter +invalid-chnk-block+
   `(:chnk (:ub64le ,(ash 1 63)) (:ub32le 0)))
+
+(defun call-with-writable-log (function &key (close t))
+  (let* ((stream  (flexi-streams:make-in-memory-output-stream))
+         (backend (rsbag.backend:make-backend :tide
+                                              :stream    stream
+                                              :direction :output)))
+    (multiple-value-call #'values
+      (funcall function backend)
+      (progn
+        (when close (close backend))
+        (flexi-streams:get-output-stream-sequence stream))
+      backend)))
+
+(defmacro with-writable-log ((backend-var &key (close nil close-supplied?))
+                             &body body)
+  `(call-with-writable-log (lambda (,backend-var) ,@body)
+                           ,@(when close-supplied? `(:close ,close))))
+
+(defun call-with-readable-log (function data)
+  (let* ((stream  (flexi-streams:make-in-memory-input-stream data))
+         (backend (rsbag.backend:make-backend :tide
+                                              :stream    stream
+                                              :direction :input)))
+    (multiple-value-call #'values (funcall function backend) backend)))
+
+(defmacro with-readable-log ((backend-var data) &body body)
+  `(call-with-readable-log (lambda (,backend-var) ,@body) ,data))
