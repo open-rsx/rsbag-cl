@@ -58,18 +58,26 @@
       (:format?            ,format?            "~@[ format ~S~]"
        ((:after :compute-sizes?))))))
 
+(defmethod wrap ((builder unbuilder) (thunk t))
+  (call-with-channel-data-size-cache (lambda () (call-next-method))))
+
 ;;; Bag
 
 (defmethod node-kind ((builder unbuilder) (node bag))
   'rsbag:bag)
 
 (defmethod node-initargs ((builder unbuilder) (node bag))
-  (let+ (((&structure-r/o unbuilder- initarg-if-missing) builder)
+  (let+ (((&structure-r/o unbuilder- initarg-if-missing compute-sizes?)
+          builder)
          ((&structure-r/o bag- location channels) node)
          (count (reduce #'+ channels :key #'length)))
     (list* :location location
-           (count-and-timing-initargs
-            node count :if-missing initarg-if-missing))))
+           (append
+            (when compute-sizes?
+              (list :data-size (reduce #'+ (bag-channels node)
+                                       :key #'channel-data-size)))
+            (count-and-timing-initargs
+             node count :if-missing initarg-if-missing)))))
 
 (defmethod node-relations ((builder unbuilder) (node bag))
   '((:channel . (:map . :name))))
@@ -93,7 +101,7 @@
     (list* :name (channel-name node)
            (append
             (when compute-sizes?
-              (list :data-size (reduce #'+ node :key #'length)))
+              (list :data-size (channel-data-size node)))
             (count-and-timing-initargs
              node (length node) :if-missing initarg-if-missing)))))
 
@@ -156,3 +164,13 @@
               (list :duration (or duration if-missing)))
             (when (or rate emit-missing?)
               (list :rate (or rate if-missing))))))
+
+(defvar *channel-data-size-cache* nil)
+
+(defun call-with-channel-data-size-cache (function)
+  (let ((*channel-data-size-cache* (make-hash-table :test #'eq)))
+    (funcall function)))
+
+(defun channel-data-size (channel)
+  (values (ensure-gethash channel *channel-data-size-cache*
+                          (reduce #'+ channel :key #'length))))

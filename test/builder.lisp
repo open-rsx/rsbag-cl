@@ -35,9 +35,11 @@
 (defun check-un-build-calls (builder atom-type cases)
   (mapc (lambda+ ((object expected-calls))
           (let+ (((&values &ign calls)
-                  (record-un-build-calls/peeking
-                   #'architecture.builder-protocol:walk-nodes
-                   builder atom-type object)))
+                  (architecture.builder-protocol:with-unbuilder
+                      (builder builder)
+                   (record-un-build-calls/peeking
+                    #'architecture.builder-protocol:walk-nodes
+                    builder atom-type object))))
             (ensure-same calls expected-calls :test #'equal)))
         cases))
 
@@ -73,6 +75,30 @@
                                :start       ,start
                                :end         ,end
                                :duration    1
+                               :rate        2))))))
+
+          (check-un-build-calls
+           (make-instance 'rsbag.builder:unbuilder :compute-sizes? t) 'string
+           `((,bag-1 ((:peek  nil () ,bag-1)
+                      (:visit nil () ,bag-1 rsbag:bag ((:channel . (:map . :name)))
+                              (:location nil :data-size 0 :event-count 0))))
+             (,bag-2 ((:peek  nil () ,bag-2)
+                      (:visit nil () ,bag-2 rsbag:bag ((:channel . (:map . :name)))
+                              (:location    nil
+                               :data-size   2
+                               :event-count 2
+                               :start       ,start
+                               :end         ,end
+                               :duration    1
+                               :rate        2))
+                      (:peek  :channel (:name "foo") ,channel)
+                      (:visit :channel (:name "foo") ,channel rsbag:channel ()
+                              (:name        "foo"
+                               :data-size   2
+                               :event-count 2
+                               :start       ,start
+                               :end         ,end
+                               :duration    1
                                :rate        2)))))))))))
 
 (addtest (rsbag-builder-root
@@ -87,7 +113,7 @@
          (format  "format")
          (content `(((,start ,end) ("a" "b") 0 "foo"
                      (:type ,type :format ,format)))))
-    (with-mock-bag (bag :direction :input) content
+    (with-mock-bag (bag :direction :input :transform '(nil)) content
       (let ((channel (first (bag-channels bag))))
         (check-un-build-calls
          t '(or string cons)
@@ -117,4 +143,20 @@
                                :duration    1
                                :rate        2))
                       (:peek  :type   () ,type)
-                      (:peek  :format () ,format)))))))))
+                      (:peek  :format () ,format)))))
+
+        (check-un-build-calls
+         (make-instance 'rsbag.builder::unbuilder
+                        :compute-sizes? t)
+         '(or string cons)
+         `((,channel ((:peek  nil     () ,channel)
+                      (:visit nil     () ,channel rsbag:channel
+                              ((:type   . 1))
+                              (:name        "foo"
+                               :data-size   2
+                               :event-count 2
+                               :start       ,start
+                               :end         ,end
+                               :duration    1
+                               :rate        2))
+                      (:peek  :type   () ,type)))))))))
