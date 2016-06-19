@@ -1,63 +1,81 @@
 ;;;; serialized.lisp --- Serialized view on data from multiple channels.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.view)
 
-;;; Utility functions
+;;; In-parallel steppable iterator states
+
+(defstruct (%iterator
+             (:constructor make-%iterator
+                           (key sequence iterator limit from-end))
+             (:predicate nil))
+  ;; The comparison key for the sequence element at which the iterator
+  ;; is currently positioned.
+  (key      nil)
+  ;; Iterator state parts: sequence through which the iterator
+  ;; iterates, iterator state, iteration limit and from-end flag.
+  (sequence nil :read-only t)
+  (iterator nil)
+  (limit    nil :read-only t)
+  (from-end nil :read-only t))
 
 (declaim (inline %iterator-step)
-         (ftype (function (list function boolean) list) %iterator-step))
-
-(defun+ %iterator-step ((&whole state &ign sequence iterator &ign from-end*)
-                        key from-end)
+         (ftype (function (%iterator function boolean)
+                          (values %iterator &optional))
+                %iterator-step))
+(defun %iterator-step (state key from-end)
   "Destructively perform a step with iterator STATE and update its
    sorting key using KEY. Return the modified STATE."
-  (declare (type function key))
   ;; Update the iterator and its sorting key.
-  (setf (third state) (sequence:iterator-step
-                       sequence iterator (xor from-end from-end*))
-        (first state) (apply key (rest state)))
+  (let+ (((&structure
+           %iterator- (key* key) sequence iterator limit (from-end* from-end))
+          state))
+    (setf iterator
+          (sequence:iterator-step sequence iterator (xor from-end from-end*))
+          key*
+          (funcall key sequence iterator limit from-end)))
   state)
 
 (declaim (inline %iterator-min)
-         (ftype (function (list list function) list) %iterator-min))
-
+         (ftype (function (%iterator %iterator function)
+                          (values %iterator &optional))
+                %iterator-min))
 (defun %iterator-min (left right compare)
   (cond
-    ((null (first left))
+    ((null (%iterator-key left))
      right)
-    ((null (first right))
+    ((null (%iterator-key right))
      left)
-    ((funcall compare (first left) (first right))
+    ((funcall compare (%iterator-key left) (%iterator-key right))
      left)
     (t
      right)))
 
 (declaim (inline %iterator-for-forward-step)
-         (ftype (function (list function) (or null list))
+         (ftype (function (list function)
+                          (values (or null %iterator) &optional))
                 %iterator-for-forward-step))
-
 (defun %iterator-for-forward-step (iterators compare)
   "Return the iterator in ITERATORS that should be used to retrieve
    the next element of the serialized sequence or nil."
   (when iterators
     (reduce (rcurry #'%iterator-min compare) iterators)))
 
-(declaim (ftype (function (list function function) (or null list))
+(declaim (ftype (function (list function function)
+                          (values (or null %iterator) &optional))
                 %iterator-for-backward-step))
-
 (defun %iterator-for-backward-step (iterators key compare)
   "Return the iterator in ITERATORS that should be used to retrieve
    the previous element of the serialized sequence of nil."
   (let+ (((&flet cannot-step-back? (iterator)
-            (when-let ((index (sequence:iterator-index
-                               (second iterator) (third iterator))))
-              (zerop index))))
+            (let+ (((&structure-r/o %iterator- sequence iterator) iterator))
+              (when-let ((index (sequence:iterator-index sequence iterator)))
+                (zerop index)))))
          ((&flet back (iterator)
-            (cons (%iterator-step (copy-list iterator) key t) iterator))))
+            (cons (%iterator-step (copy-%iterator iterator) key t) iterator))))
     (cdr (reduce
           (lambda (left right)
             (if (eq (%iterator-min (car left) (car right) compare) (car left))
@@ -158,9 +176,9 @@
          ((&flet make-iterator (sequence)
             (let+ (((&values iterator limit from-end)
                     (sequence:make-simple-sequence-iterator
-                     sequence :from-end from-end)))
-              (list (funcall key sequence iterator limit from-end)
-                    sequence iterator limit from-end))))
+                     sequence :from-end from-end))
+                   (key (funcall key sequence iterator limit from-end)))
+              (make-%iterator key sequence iterator limit from-end))))
          ;; Build the iterator, omitting empty sequences for
          ;; simplicity and efficiency.
          (iterator (make-instance
@@ -195,7 +213,8 @@
                                    (iterator serialized-iterator)
                                    (limit    t)
                                    (from-end t))
-  (or (null (first (iterator-%current iterator)))
+  (or (when-let ((current (iterator-%current iterator)))
+        (null (%iterator-key current)))
       (call-next-method)))
 
 (defmethod sequence:iterator-step ((sequence serialized)
@@ -216,7 +235,6 @@
 
 (defmethod sequence:iterator-element ((sequence serialized)
                                       (iterator serialized-iterator))
-  (let+ (((&accessors-r/o
-           ((&ign sequence* iterator* &rest &ign) iterator-%current))
-          iterator))
-    (sequence:iterator-element sequence* iterator*)))
+  (let+ (((&structure-r/o %iterator- sequence iterator)
+          (iterator-%current iterator)))
+    (sequence:iterator-element sequence iterator)))
