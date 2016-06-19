@@ -44,9 +44,9 @@
 (defmethod shared-initialize :after ((instance   bag)
                                      (slot-names t)
                                      &key)
-  (let+ (((&accessors-r/o (backend   bag-%backend)
-                          (transform bag-%transform)
-                          (channels  bag-%channels)) instance)
+  (let+ (((&structure-r/o
+           bag- (backend %backend) (transform %transform) (channels %channels))
+          instance)
          ((&flet make-transform (name meta-data id)
             (%make-channel-transform instance name meta-data
                                      :id   id
@@ -113,8 +113,7 @@
   ;; If NEW-VALUE does not have a type, but TRANSFORM is non-nil,
   ;; augment the meta-data with TRANSFORM's type. Make a channel
   ;; instance and store it.
-  (let+ (((&accessors-r/o (channels bag-%channels)
-                          (backend  bag-%backend)) bag)
+  (let+ (((&structure-r/o bag- (channels %channels) (backend %backend)) bag)
          (meta-data (if (and transform (not (getf new-value :type)))
                         (append (list :type (rsbag.transform:transform-name transform))
                                 new-value)
@@ -152,8 +151,7 @@
                           &rest args
                           &key
                           id)
-  (let+ (((&accessors-r/o (backend       bag-%backend)
-                          (channel-class bag-channel-class)) bag))
+  (let+ (((&structure-r/o bag- (backend %backend) channel-class) bag))
     (with-condition-translation
         (((error channel-open-error)
           :bag     bag

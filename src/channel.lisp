@@ -56,8 +56,7 @@
       (:transform ,transform "~@[ ~A~]" ((:after :length))))))
 
 (defmethod channel-timestamps ((channel channel))
-  (let+ (((&accessors-r/o (id      channel-%id)
-                          (backend channel-%backend)) channel))
+  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))
     (rsbag.backend:get-timestamps backend id)))
 
 #+sbcl
@@ -80,8 +79,7 @@
                   (transform        (channel-transform channel)))
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      channel-%id)
-                          (backend channel-%backend)) channel)
+  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
          (raw (or (rsbag.backend:get-entry backend id index)
                   (ecase if-does-not-exist
                     (:error (error 'no-such-entry
@@ -99,8 +97,7 @@
                   if-does-not-exist)
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&accessors-r/o (id      channel-%id)
-                          (backend channel-%backend)) channel))
+  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))
     (or (rsbag.backend:get-entry backend id timestamp)
         (ecase if-does-not-exist
           (:error (error 'no-such-entry
@@ -129,8 +126,7 @@
   (when (eq if-exists :supersede)
     (error "Superseding entries is not supported yet"))
 
-  (let+ (((&accessors-r/o (id      channel-%id)
-                          (backend channel-%backend)) channel)
+  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
          (raw (if transform
                   (rsbag.transform:encode transform new-value)
                   new-value)))
@@ -150,9 +146,8 @@
 ;;; Sequence protocol
 
 #+sbcl
-(defmethod sequence:length ((channel channel))
-  (let+ (((&accessors-r/o (id      channel-%id)
-                          (backend channel-%backend)) channel))
+(defmethod sequence:length ((sequence channel))
+  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) sequence))
     (rsbag.backend:get-num-entries backend id)))
 
 #+sbcl
@@ -166,9 +161,8 @@
   (apply #'make-array length args))
 
 #+sbcl
-(defmethod sequence:elt ((channel channel)
-                         (index   integer))
-  (entry channel index))
+(defmethod sequence:elt ((sequence channel) (index integer))
+  (entry sequence index))
 
 ;;; `channel-items' sequence class
 
@@ -198,12 +192,12 @@
         (channel-timestamps channel)))
 
 #+sbcl
-(defmethod sequence:length ((items channel-items))
-  (length (channel-items-%channel items)))
+(defmethod sequence:length ((sequence channel-items))
+  (length (channel-items-%channel sequence)))
 
 #+sbcl
-(defmethod sequence:elt ((items channel-items)
-                         (index integer))
-  (let+ (((&accessors-r/o (channel    channel-items-%channel)
-                          (timestamps channel-items-%timestamps)) items))
+(defmethod sequence:elt ((sequence channel-items) (index integer))
+  (let+ (((&structure-r/o
+           channel-items- (channel %channel) (timestamps %timestamps))
+          sequence))
     (list (elt timestamps index) (elt channel index))))
