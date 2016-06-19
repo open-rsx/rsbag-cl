@@ -27,9 +27,8 @@
                           (values %iterator &optional))
                 %iterator-step))
 (defun %iterator-step (state key from-end)
-  "Destructively perform a step with iterator STATE and update its
-   sorting key using KEY. Return the modified STATE."
-  ;; Update the iterator and its sorting key.
+  ;; Destructively perform a step with iterator STATE and update its
+  ;; sorting key using KEY. Return the modified STATE.
   (let+ (((&structure
            %iterator- (key* key) sequence iterator limit (from-end* from-end))
           state))
@@ -60,8 +59,8 @@
                           (values (or null %iterator) &optional))
                 %iterator-for-backward-step))
 (defun %iterator-for-backward-step (iterators key compare)
-  "Return the iterator in ITERATORS that should be used to retrieve
-   the previous element of the serialized sequence of nil."
+  ;; Return the iterator in ITERATORS that should be used to retrieve
+  ;; the previous element of the serialized sequence of nil.
   (let+ (((&flet cannot-step-back? (iterator)
             (let+ (((&structure-r/o %iterator- sequence iterator) iterator))
               (when-let ((index (sequence:iterator-index sequence iterator)))
@@ -79,7 +78,7 @@
                                  &key
                                  (selector #'identity)
                                  (compare  #'<))
-  "Create a serialized view for the channels of a bag."
+  ;; Create a serialized view for the channels of a bag.
   (make-serialized-view (bag-channels sequences)
                         :selector selector
                         :compare  compare))
@@ -100,31 +99,31 @@
 ;;; Key creation methods
 
 (defmethod %make-key-function ((sequence sequence))
-  "When SEQUENCE is just a `sequence', we assume it consists of
-   timestamps."
+  ;; When SEQUENCE is just a `sequence', we assume it consists of
+  ;; timestamps.
   (lambda (sequence iterator)
     (sequence:iterator-element sequence iterator)))
 
 (defmethod %make-key-function ((sequence channel))
-  "When SEQUENCE is a `channel', we can use timestamps as keys by
-   using the index of the iterator and looking up the corresponding
-   timestamp in `channel-timestamps'."
+  ;; When SEQUENCE is a `channel', we can use timestamps as keys by
+  ;; using the index of the iterator and looking up the corresponding
+  ;; timestamp in `channel-timestamps'.
   (lambda (sequence iterator)
     (let ((timestamps (rsbag::channel-timestamps/raw sequence)))
       (elt timestamps (sequence:iterator-index sequence iterator)))))
 
 (defmethod %make-key-function ((sequence rsbag::channel-timestamps))
-  "When SEQUENCE is a `channel-timestamps' instance, we can use
-   timestamps as keys by using the index of the iterator and looking
-   up the corresponding timestamp in `channel-timestamps'."
+  ;; When SEQUENCE is a `channel-timestamps' instance, we can use
+  ;; timestamps as keys by using the index of the iterator and looking
+  ;; up the corresponding timestamp in `channel-timestamps'.
   (lambda (sequence iterator)
     (let ((timestamps (rsbag::%timestamps sequence)))
       (elt timestamps (sequence:iterator-index sequence iterator)))))
 
 (defmethod %make-key-function ((sequence channel-items))
-  "When SEQUENCE is of type `channel-items', we can use the index of
-   the iterator and look up the corresponding timestamp in the
-   timestamp sequence."
+  ;; When SEQUENCE is of type `channel-items', we can use the index of
+  ;; the iterator and look up the corresponding timestamp in the
+  ;; timestamp sequence.
   (lambda (sequence iterator)
     (let ((timestamps (rsbag::%timestamps sequence)))
       (elt timestamps (sequence:iterator-index sequence iterator)))))
