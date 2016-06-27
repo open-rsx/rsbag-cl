@@ -1,6 +1,6 @@
 ;;;; conditions.lisp --- Conditions used in the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -119,7 +119,7 @@
   ()
   (:report
    (lambda (condition stream)
-     (format stream "~@<Could not open channel ~S in bag
+     (format stream "~@<Could not open channel ~S in bag ~
                      ~A~/more-conditions:maybe-print-cause/~@:>"
              (channel-condition-channel condition)
              (bag-condition-bag         condition)
