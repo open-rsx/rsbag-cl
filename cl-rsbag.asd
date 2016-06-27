@@ -107,6 +107,7 @@
                 :more-conditions
                 (:version :log4cl                        "1.1.1")
                 (:version :utilities.print-items         "0.1")
+                (:version :utilities.binary-dump         "0.1")
 
                 :bordeaux-threads
                 :lparallel

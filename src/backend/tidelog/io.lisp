@@ -140,7 +140,7 @@
     (handler-bind
         ((error (lambda (condition)
                   (error "~@<Could not decode header~:@_~
-                          ~<| ~/rsbag:print-hexdump/~:>~:@_~
+                          ~<| ~@;~,,,16/utilities.binary-dump:print-binary-dump/~:>~@:_~
                           ~A~:>"
                          (list header) condition))))
       (values (byte-pattern->block-class (subseq header 0 4))

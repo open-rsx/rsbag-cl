@@ -1,6 +1,6 @@
 ;;;; conditions.lisp --- Conditions used in the transform module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -55,10 +55,17 @@
      (let+ (((&accessors-r/o (encoded   transform-error-encoded)
                              (transform transform-condition-transform)) condition)
             (octet-sequence? (and (typep encoded 'sequence)
-                                  (every (of-type 'octet) encoded)))
-            (*print-length* (or *print-length* 16))) ; TODO remove
-       (format stream "~@<The encoded value ~:@_~
-                       ~<| ~@;~:[~S~;~:@/rsbag:print-hexdump/~]~:>~:@_~
+                                  (every (of-type 'octet) encoded))))
+       ;; colon -> print offset
+       ;; at    -> print header
+       (format stream "~@<The encoded value ~:@_~:@_~
+                       ~<| ~@;~
+                         ~:[~
+                           ~S~
+                         ~;~
+                           ~,,,16:@/utilities.binary-dump:print-binary-dump/~
+                         ~]~
+                       ~:>~:@_~:@_~
                        could not be decoded by the transform ~:_~
                        ~A.~/more-conditions:maybe-print-cause/~:>"
                (list octet-sequence? encoded) transform condition))))

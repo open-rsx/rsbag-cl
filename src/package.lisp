@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -137,9 +137,7 @@
   ;; Print utilities
   (:export
    #:print-direction
-   #:print-location
-
-   #:print-hexdump)
+   #:print-location)
 
   (:documentation
    "This package contains the Common Lisp implementation of RSBag.

@@ -1,6 +1,6 @@
 ;;;; conditions.lisp --- Conditions used in the TIDE log backend of cl-rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -38,7 +38,7 @@
   (:report
    (lambda (condition stream)
      (format stream "~@<Unknown block tag~:@_~
-                     ~<| ~@;~17/rsbag:print-hexdump/~:>~@:_~
+                     ~<| ~@;~17,,,16/utilities.binary-dump:print-binary-dump/~:>~@:_~
                      . Known block tags are: ~{~A~^, ~:_~}.~:>"
              (list (no-such-block-class-error-tag condition))
              (mapcar #'class-name (hash-table-values
