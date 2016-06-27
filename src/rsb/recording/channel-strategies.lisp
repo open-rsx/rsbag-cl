@@ -110,7 +110,8 @@
                                   (strategy   scope-and-type))
   (let ((wire-schema (make-keyword (rsb:meta-data
                                     event :rsb.transport.wire-schema))))
-    (make-transform +rsb-schema-name+ wire-schema)))
+    (rsbag.transform:make-transform
+     rsbag.transform:+rsb-schema-name+ wire-schema)))
 
 (defmethod channel-meta-data-for ((connection t)
                                   (transform  t)

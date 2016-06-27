@@ -66,7 +66,7 @@
                                (strategy   t))
   ;; Default behavior for non-nil TRANSFORM is to retrieve the channel
   ;; format from TRANSFORM.
-  (transform-format transform))
+  (rsbag.transform:transform-format transform))
 
 ;;; Channel allocation strategy class family
 

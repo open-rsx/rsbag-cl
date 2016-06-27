@@ -8,13 +8,10 @@
   (:use
    #:cl
    #:alexandria
-   #:split-sequence
    #:let-plus
-   #:iterate
    #:more-conditions
 
    #:rsbag
-   #:rsbag.transform
    #:rsbag.rsb)
 
   ;; Conditions
