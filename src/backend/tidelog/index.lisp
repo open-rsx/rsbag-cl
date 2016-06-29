@@ -6,74 +6,13 @@
 
 (cl:in-package #:rsbag.backend.tidelog)
 
-;;; Index vector
-
-(deftype index-vector ()
-  '(array (unsigned-byte 64) (*)))
-
-(defun make-index-vector ()
-  (make-array 0 :element-type '(unsigned-byte 64)
-                :adjustable   t
-                :fill-pointer 0))
-
-(declaim (inline index-vector-push-entry
-                 index-vector-push-extend-entry))
-(defun index-vector-push-entry (index timestamp offset)
-  (vector-push timestamp index)
-  (vector-push offset    index))
-
-(defun index-vector-push-extend-entry (index timestamp offset)
-  (vector-push-extend timestamp index (floor (length index) 8/2)) ; has to be even
-  (vector-push        offset    index))
-
-(defun index-vector-add-entries (index entries chunks)
-  (declare (type index-vector index))
-  (let+ ((num-entries (length entries))
-         ((&flet add-offset! (entry)
-            (let+ (((&structure-r/o index-entry- timestamp chunk-id offset)
-                    entry)
-                   (outer-offset  (%chunk-id->offset chunk-id chunks))
-                   (global-offset (+ outer-offset 12 25 offset))) ; TODO(jmoringe):  get rid of the constants
-              (index-vector-push-entry index timestamp global-offset)))))
-    (adjust-array index (+ (length index) (* 2 num-entries)))
-    (map nil #'add-offset! entries)
-    index))
-
-(defun index-vector-add-indxs (index indxs chunks)
-  (declare (type index-vector index))
-  (let ((num-entries (reduce #'+ indxs :key #'indx-count)))
-    (adjust-array index (+ (length index) (* 2 num-entries)))
-    (iter (for indx in-sequence indxs)
-          (index-vector-add-entries index (indx-entries indx) chunks))
-    index))
-
-(declaim (ftype (function ((unsigned-byte 64) index-vector
-                           &optional
-                           non-negative-fixnum
-                           non-negative-fixnum)
-                          (unsigned-byte 64))
-                %timestamp->index))
-
-(defun %timestamp->index (timestamp index
-                          &optional
-                          (start 0)
-                          (end   (length index)))
-  (let* ((pivot  (ash (+ start end) -1))
-         (pivot* (aref index (* 2 pivot))))
-    (cond
-      ((< pivot* timestamp)
-       (%timestamp->index timestamp index pivot end))
-      ((> pivot* timestamp)
-       (%timestamp->index timestamp index start pivot))
-      (t (aref index (1+ (* 2 pivot)))))))
-
 ;;; Lazy timestamp sequence
 
 #+sbcl
 (defclass timestamps (standard-object
                       sequence)
   ((entries :initarg  :entries
-            :type     vector
+            :type     index-vector
             :reader   timestamps-entries
             :documentation
             "Points to the list of entries of the associated index."))
@@ -85,13 +24,13 @@
 
 #+sbcl
 (defmethod sequence:length ((timestamps timestamps))
-  (ash (length (timestamps-entries timestamps)) -1))
+  (index-vector-length (timestamps-entries timestamps)))
 
 #+sbcl
 (defmethod sequence:elt ((timestamps timestamps)
                          (index      integer))
-  (uint64->timestamp
-   (aref (timestamps-entries timestamps) (* 2 index))))
+  (uint64->timestamp (index-vector-index->timestamp
+                      index (timestamps-entries timestamps))))
 
 ;;; Index creation
 
@@ -172,15 +111,15 @@
   (declare (ignore abort))) ; nothing to do
 
 (defmethod index-num-entries ((index input-index))
-  (/ (length (index-entries index)) 2))
+  (index-vector-length (index-entries index)))
 
 (defmethod index-offset ((index  input-index)
                          (index1 integer))
-  (aref (index-entries index) (1+ (* 2 index1))))
+  (index-vector-index->offset index1 (index-entries index)))
 
 (defmethod index-offset ((index     input-index)
                          (timestamp local-time:timestamp))
-  (%timestamp->index timestamp (index-entries index)))
+  (index-vector-timestamp->offset timestamp (index-entries index)))
 
 (defmethod index-add-indxs ((index  input-index)
                             (indxs  sequence)

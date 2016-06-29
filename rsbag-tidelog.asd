@@ -37,6 +37,7 @@
                               (:file       "spec")
                               (:file       "io")
 
+                              (:file       "index-vector")
                               (:file       "index")
                               (:file       "file")
 
