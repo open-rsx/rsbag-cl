@@ -35,6 +35,26 @@
 
 (addtest (bag-root
           :documentation
+          "Smoke test for the `bag-channel' method on `bag' class.")
+  bag-channel
+
+  ;; Error signaling and replacement return value.
+  (with-mock-bag (bag :direction :input) ()
+    (ensure-condition no-such-channel (bag-channel bag "no-such-channel"))
+    (ensure-same (bag-channel bag "no-such-channel" :if-does-not-exist nil) nil))
+
+  ;; Creating the channel.
+  (with-mock-bag (bag :direction :output) ()
+    (let ((channel (bag-channel
+                    bag "created"
+                    :if-does-not-exist (lambda (condition)
+                                         (declare (ignore condition))
+                                         (setf (bag-channel bag "created")
+                                               '())))))
+      (ensure-same channel (bag-channel bag "created") :test #'eq))))
+
+(addtest (bag-root
+          :documentation
           "Test printing a `bag' instance.")
   print
 

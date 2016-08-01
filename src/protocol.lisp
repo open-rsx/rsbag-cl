@@ -159,10 +159,11 @@
   (:documentation
    "Return the `channel' named NAME in BAG.
 
-    The value of IF-DOES-NOT-EXIST controls the behavior in case the
-    requested channel does not exist. Valid values are :error, which
-    causes an error to be signaled and nil, which causes nil to be
-    returned."))
+    IF-DOES-NOT-EXIST controls the behavior in case the requested
+    channel does not exist. If a function designator (like the default
+    'error) is supplied, the function is called with an instance of
+    the `no-such-channel' condition class. Values of other types are
+    returned instead of the missing channel."))
 
 (defgeneric (setf bag-channel) (spec bag name
                                 &key

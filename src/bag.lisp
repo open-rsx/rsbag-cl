@@ -77,13 +77,10 @@
 
 (defmethod bag-channel ((bag bag) (name string)
                         &key
-                        (if-does-not-exist :error))
+                        (if-does-not-exist #'error))
   (or (gethash name (bag-%channels bag))
-      (ecase if-does-not-exist
-        (:error (error 'no-such-channel
-                       :bag  bag
-                       :name name))
-        ((nil)  nil))))
+      (error-behavior-restart-case
+          (if-does-not-exist (no-such-channel :bag bag :name name)))))
 
 (defmethod (setf bag-channel) :before ((new-value t)
                                        (bag       t)
