@@ -1,6 +1,6 @@
 ;;;; synchronized-bag.lisp --- A bag that synchronizes accesses.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -39,7 +39,7 @@
        &key &allow-other-keys)))
 
 (defmethod bag-channel-class ((bag synchronized-bag))
-  (find-class 'synchronized-channel))
+  (load-time-value (find-class 'synchronized-channel) t))
 
 (defmethod %make-channel ((bag       synchronized-bag)
                           (name      string)
