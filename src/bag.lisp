@@ -75,12 +75,51 @@
 (defmethod bag-channels ((bag bag))
   (hash-table-values (bag-%channels bag)))
 
-(defmethod bag-channel ((bag bag) (name string)
-                        &key
-                        (if-does-not-exist #'error))
-  (or (gethash name (bag-%channels bag))
-      (error-behavior-restart-case
-          (if-does-not-exist (no-such-channel :bag bag :name name)))))
+
+(flet ((add-channel (bag name meta-data transform transform-supplied?)
+         ;; If META-DATA does not have a type, but TRANSFORM is
+         ;; non-nil, augment the meta-data with TRANSFORM's type. Make
+         ;; a channel instance and store it.
+         (let+ (((&structure-r/o bag- (channels %channels) (backend %backend))
+                 bag)
+                (transform (if transform-supplied?
+                               transform
+                               (%make-channel-transform
+                                bag name meta-data :spec (bag-transform bag))))
+                (meta-data (if (and transform (not (getf meta-data :type)))
+                               (let ((name (rsbag.transform:transform-name
+                                            transform)))
+                                 (list* :type name meta-data))
+                               meta-data))
+                (channel   (%make-channel bag name meta-data transform)))
+           (rsbag.backend:put-channel
+            backend (channel-%id channel) name meta-data)
+           (setf (gethash name channels) channel))))
+
+  (defmethod bag-channel ((bag bag) (name string)
+                          &key
+                          (if-does-not-exist #'error))
+    (or (gethash name (bag-%channels bag))
+        (error-behavior-restart-case
+            (if-does-not-exist (no-such-channel :bag bag :name name))
+          (create (meta-data &key (transform nil transform-supplied?))
+            (add-channel bag name meta-data transform transform-supplied?)))))
+
+  (defmethod (setf bag-channel) ((new-value list)
+                                 (bag       bag)
+                                 (name      string)
+                                 &key
+                                 (if-exists :error)
+                                 (transform nil    transform-supplied?))
+    ;; If a channel named NAME already exists, apply IF-EXISTS policy.
+    (when-let ((channel (gethash name (bag-%channels bag))))
+      (ecase if-exists
+        (:error     (error 'channel-exists
+                           :bag     bag
+                           :channel channel))
+        (:supersede (error "Superseding not implemented")))) ; TODO(jmoringe): implement
+
+    (add-channel bag name new-value transform transform-supplied?)))
 
 (defmethod (setf bag-channel) :before ((new-value t)
                                        (bag       t)
@@ -90,35 +129,6 @@
     (error 'direction-error
            :bag                bag
            :expected-direction '(member :output :io))))
-
-(defmethod (setf bag-channel) ((new-value list)
-                               (bag       bag)
-                               (name      string)
-                               &key
-                               (if-exists :error)
-                               (transform (%make-channel-transform
-                                           bag name new-value
-                                           :spec (bag-transform bag))))
-  ;; If a channel named NAME already exists, apply IF-EXISTS policy.
-  (when-let ((channel (gethash name (bag-%channels bag))))
-    (ecase if-exists
-      (:error     (error 'channel-exists
-                         :bag     bag
-                         :channel channel))
-      (:supersede (error "Superseding not implemented")))) ; TODO(jmoringe): implement
-
-  ;; If NEW-VALUE does not have a type, but TRANSFORM is non-nil,
-  ;; augment the meta-data with TRANSFORM's type. Make a channel
-  ;; instance and store it.
-  (let+ (((&structure-r/o bag- (channels %channels) (backend %backend)) bag)
-         (meta-data (if (and transform (not (getf new-value :type)))
-                        (append (list :type (rsbag.transform:transform-name transform))
-                                new-value)
-                        new-value))
-         (channel   (%make-channel bag name meta-data transform)))
-    (rsbag.backend:put-channel
-     backend (channel-%id channel) name meta-data)
-    (setf (gethash name channels) channel)))
 
 ;;; Time range protocol
 

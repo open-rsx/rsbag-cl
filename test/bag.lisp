@@ -49,8 +49,7 @@
                     bag "created"
                     :if-does-not-exist (lambda (condition)
                                          (declare (ignore condition))
-                                         (setf (bag-channel bag "created")
-                                               '())))))
+                                         (invoke-restart 'create '())))))
       (ensure-same channel (bag-channel bag "created") :test #'eq))))
 
 (addtest (bag-root

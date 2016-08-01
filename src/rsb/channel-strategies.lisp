@@ -13,27 +13,26 @@
   (:documentation
    "Adds basic {ensure,make}-channel-for behavior to strategy classes."))
 
-(defvar *name* nil)
-
 (defmethod ensure-channel-for ((connection channel-connection)
                                (event      event)
                                (strategy   ensure-channel-mixin))
-  (let* ((name    (channel-name-for connection event strategy))
-         (bag     (connection-bag connection))
-         (channel (bag-channel bag name :if-does-not-exist nil)))
-    (if channel
-        (values channel t)
-        (let ((*name* name))
-          (make-channel-for connection event strategy)))))
+  (let+ ((name   (channel-name-for connection event strategy))
+         (bag    (connection-bag connection))
+         (found? t)
+         ((&flet make-channel (condition)
+            (declare (ignore condition))
+            (setf found? nil)
+            (let+ (((&values meta-data transform)
+                    (make-channel-for connection event strategy)))
+              (invoke-restart 'create meta-data :transform transform)))))
+    (values (bag-channel bag name :if-does-not-exist #'make-channel) found?)))
 
 (defmethod make-channel-for ((connection participant-channel-connection)
                              (event      event)
                              (strategy   ensure-channel-mixin))
-  (let+ (((&structure-r/o connection- bag) connection)
-         (name (or *name* (channel-name-for connection event strategy)))
-         (transform (channel-transform-for connection event strategy))
+  (let* ((transform (channel-transform-for connection event strategy))
          (meta-data (channel-meta-data-for connection transform event strategy)))
-    (setf (bag-channel bag name :transform transform) meta-data)))
+    (values meta-data transform)))
 
 ;;; `delegating-mixin'
 

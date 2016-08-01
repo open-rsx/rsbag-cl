@@ -163,7 +163,13 @@
     channel does not exist. If a function designator (like the default
     'error) is supplied, the function is called with an instance of
     the `no-such-channel' condition class. Values of other types are
-    returned instead of the missing channel."))
+    returned instead of the missing channel. In case IF-DOES-NOT-EXIST
+    is a function designator, a `create' restart with lambda list
+
+      (meta-data &key transform)
+
+    is established for the duration of the call to
+    IF-DOES-NOT-EXIST."))
 
 (defgeneric (setf bag-channel) (spec bag name
                                 &key

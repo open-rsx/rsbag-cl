@@ -75,6 +75,8 @@
    #:bag-channels
    #:bag-channel
 
+   #:create ; restart
+
    #:open-bag)
 
   ;; `synchronized-channel' class

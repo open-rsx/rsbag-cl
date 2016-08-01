@@ -288,8 +288,9 @@
 
 (defgeneric make-channel-for (connection event strategy)
   (:documentation
-   "Make and return a channel in CONNECTION in which EVENT can be
-    stored according to STRATEGY."))
+   "Return two values describing a channel in CONNECTION in which
+    EVENT can be stored according to STRATEGY: 1) The meta-data plist
+    for the channel 2) the transform for the channel."))
 
 (defgeneric ensure-channel-for (connection event strategy)
   (:documentation
