@@ -1,6 +1,6 @@
 ;;;; rsbag-builder.asd --- Builder support for RSBag objects.
 ;;;;
-;;;; Copyright (C) 2015 Jan Moringen
+;;;; Copyright (C) 2015, 2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -31,9 +31,9 @@
                  :pathname   "src"
                  :components ((:file       "builder"))))
 
-  :in-order-to ((test-op (test-op :rsbag-builder-test))))
+  :in-order-to ((test-op (test-op :rsbag-builder/test))))
 
-(defsystem :rsbag-builder-test
+(defsystem :rsbag-builder/test
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
@@ -41,17 +41,17 @@
   :description "Unit tests for the rsbag-builder system."
   :depends-on  ((:version :lift                               "1.7.1")
 
-                (:version :architecture.builder-protocol-test "0.3")
+                (:version :architecture.builder-protocol/test "0.3")
 
                 (:version :rsbag-builder                      #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag-test                      #.(cl-rsbag-system:version/string)))
+                (:version :cl-rsbag/test                      #.(cl-rsbag-system:version/string)))
   :components  ((:module     "builder"
                  :pathname   "test"
                  :components ((:file       "builder")))))
 
-(defmethod perform ((op     test-op)
-                    (system (eql (find-system :rsbag-builder-test))))
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :rsbag-builder/test))))
   (funcall (find-symbol "RUN-TESTS" :lift)
            :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
                             "lift-builder.config")))

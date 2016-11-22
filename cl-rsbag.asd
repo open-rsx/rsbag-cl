@@ -234,9 +234,9 @@
                               (:file       "interactive")
                               (:file       "remote-controlled"))))
 
-  :in-order-to ((test-op (test-op :cl-rsbag-test))))
+  :in-order-to ((test-op (test-op :cl-rsbag/test))))
 
-(defsystem :cl-rsbag-test
+(defsystem :cl-rsbag/test
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(version/string)
@@ -287,6 +287,6 @@
                               (:file       "as-fast-as-possible")
                               (:file       "interactive")))))
 
-(defmethod perform ((op     test-op)
-                    (system (eql (find-system :cl-rsbag-test))))
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :cl-rsbag/test))))
   (funcall (find-symbol "RUN-TESTS" :lift) :config :generic))

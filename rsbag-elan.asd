@@ -1,6 +1,6 @@
 ;;;; rsbag-elan.asd --- System definition for ELAN backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2014, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2016 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -35,9 +35,9 @@
                               (:file       "xml")
                               (:file       "file"))))
 
-  :in-order-to ((test-op (test-op :rsbag-elan-test))))
+  :in-order-to ((test-op (test-op :rsbag-elan/test))))
 
-(defsystem :rsbag-elan-test
+(defsystem :rsbag-elan/test
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
@@ -47,14 +47,14 @@
 
                 (:version :rsbag-elan    #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string)))
+                (:version :cl-rsbag/test #.(cl-rsbag-system:version/string)))
   :components  ((:module     "elan"
                  :pathname   "test/backend/elan"
                              :serial     t
                              :components ((:file       "package")))))
 
-(defmethod perform ((op     test-op)
-                    (system (eql (find-system :rsbag-elan-test))))
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :rsbag-elan/test))))
   (funcall (find-symbol "RUN-TESTS" :lift)
            :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
                             "lift-elan.config")))

@@ -43,9 +43,9 @@
 
                               (:file       "repair"))))
 
-  :in-order-to ((test-op (test-op :rsbag-tidelog-test))))
+  :in-order-to ((test-op (test-op :rsbag-tidelog/test))))
 
-(defsystem :rsbag-tidelog-test
+(defsystem :rsbag-tidelog/test
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :version     #.(cl-rsbag-system:version/string)
@@ -55,7 +55,7 @@
 
                 (:version :rsbag-tidelog #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag-test #.(cl-rsbag-system:version/string)))
+                (:version :cl-rsbag/test #.(cl-rsbag-system:version/string)))
   :components  ((:module     "tidelog"
                  :pathname   "test/backend/tidelog"
                  :serial     t
@@ -67,8 +67,8 @@
 
                               (:file       "repair")))))
 
-(defmethod perform ((op     test-op)
-                    (system (eql (find-system :rsbag-tidelog-test))))
+(defmethod perform ((operation test-op)
+                    (component (eql (find-system :rsbag-tidelog/test))))
   (funcall (find-symbol "RUN-TESTS" :lift)
            :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
                             "lift-tidelog.config")))
