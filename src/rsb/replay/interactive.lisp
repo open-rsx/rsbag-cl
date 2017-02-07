@@ -1,12 +1,13 @@
 ;;;; interactive.lisp --- A strategy for interactive replay control.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.rsb.replay)
 
 (defclass interactive (error-policy-mixin
+                       filtering-mixin
                        external-driver-mixin
                        timestamp-adjustment-mixin
                        print-items:print-items-mixin)

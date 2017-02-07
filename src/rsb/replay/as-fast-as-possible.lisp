@@ -1,6 +1,6 @@
 ;;;; as-fast-as-possible.lisp ---
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -9,6 +9,7 @@
 ;;; `as-fast-as-possible' replay strategy class
 
 (defclass as-fast-as-possible (error-policy-mixin
+                               filtering-mixin
                                sequential-mixin
                                timestamp-adjustment-mixin
                                print-items:print-items-mixin)

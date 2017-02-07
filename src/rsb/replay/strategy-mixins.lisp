@@ -317,6 +317,37 @@
    (mappend #'connection-channels (connection-channels connection))
    :selector selector))
 
+;;; `filtering-mixin' mixin class
+
+(defclass filtering-mixin ()
+  ((filter :reader   strategy-filter
+           :writer   (setf strategy-%filter)
+           :initform nil
+           :documentation
+           "Stores a filter events have to satisfy in order to be
+            replayed."))
+  (:documentation
+   "Adds the ability to select events for replay using RSB filters."))
+
+(defmethod shared-initialize :after ((instance   filtering-mixin)
+                                     (slot-names t)
+                                     &key
+                                     (filters nil filters-supplied?))
+  (when filters-supplied?
+    (setf (strategy-%filter instance)
+          (rsb.filter:make-filter :and :children filters))))
+
+(defmethod process-event ((connection         replay-bag-connection)
+                          (strategy           filtering-mixin)
+                          (timestamp          t)
+                          (previous-timestamp t)
+                          (event              t)
+                          (sink               t))
+  (if-let ((filter (strategy-filter strategy)))
+    (when (rsb.filter:matches? filter event)
+      (call-next-method))
+    (call-next-method)))
+
 ;;; `sequential-mixin' mixin class
 
 (defclass sequential-mixin (replay-restart-mixin

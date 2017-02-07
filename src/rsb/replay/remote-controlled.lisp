@@ -1,6 +1,6 @@
 ;;;; remote-controlled.lisp --- Strategy for RPC-controlled replay.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -15,6 +15,7 @@
 ;;; `remote-controlled' replay strategy class
 
 (defclass remote-controlled (error-policy-mixin
+                             filtering-mixin
                              external-driver-mixin
                              timestamp-adjustment-mixin
                              uri-mixin

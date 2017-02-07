@@ -1,6 +1,6 @@
 ;;;; fixed-rate.lisp ---
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -9,6 +9,7 @@
 ;;; `fixed-rate' replay strategy class
 
 (defclass fixed-rate (error-policy-mixin
+                      filtering-mixin
                       timed-replay-mixin
                       delay-correcting-mixin
                       speed-adjustment-mixin

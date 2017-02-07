@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol functions used in the rsb module.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -80,6 +80,7 @@
                          end-time
                          end-index
                          channels
+                         filters
                          &allow-other-keys)
   (:documentation
    "Make and return a connection between the channel or bag SOURCE and
@@ -118,7 +119,10 @@
     of the recorded data when negative.
 
     If supplied, CHANNELS selects a subset of channels from which
-    events should be replayed."))
+    events should be replayed.
+
+    If supplied, FILTERS is a list of RSB filters that events have to
+    match in order to be replayed."))
 
 ;;; Connection protocol
 

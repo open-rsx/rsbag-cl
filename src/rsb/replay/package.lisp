@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the rsb.replay module.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -64,6 +64,12 @@
    #:make-view
 
    #:view-creation-mixin)
+
+  ;; filtering protocol and mixin class
+  (:export
+   #:strategy-filter
+
+   #:filtering-mixin)
 
   ;; sequential processing protocol and mixin class
   (:export
