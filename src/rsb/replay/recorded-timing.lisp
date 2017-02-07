@@ -1,4 +1,4 @@
-;;;; recorded-timing.lisp ---
+;;;; recorded-timing.lisp --- A strategy for replaying events with the recorded timing.
 ;;;;
 ;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;

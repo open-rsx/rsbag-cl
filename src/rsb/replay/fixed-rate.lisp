@@ -1,4 +1,4 @@
-;;;; fixed-rate.lisp ---
+;;;; fixed-rate.lisp --- A strategy for replaying events at a fixed rate.
 ;;;;
 ;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;

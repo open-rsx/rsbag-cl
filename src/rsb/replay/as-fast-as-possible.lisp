@@ -1,4 +1,4 @@
-;;;; as-fast-as-possible.lisp ---
+;;;; as-fast-as-possible.lisp --- A strategy for replaying events as fast as possible.
 ;;;;
 ;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
