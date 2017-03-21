@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for rsb module.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -38,14 +38,7 @@
 
    #:recording-error
 
-   #:entry-storage-error
-
-   #:replay-error
-   #:replay-error-strategy
-
-   #:entry-retrieval-error
-
-   #:entry-processing-error)
+   #:entry-storage-error)
 
   ;; connection construction protocol
   (:export
@@ -106,17 +99,6 @@
    #:channel-strategy ; service
 
    #:make-channel-strategy)
-
-  ;; replay strategy protocol
-  (:export
-   #:replay
-
-   #:process-event
-   #:schedule-event
-
-   #:replay-strategy ; service
-
-   #:make-replay-strategy)
 
   (:documentation
    "This package contains functions and classes that enable the

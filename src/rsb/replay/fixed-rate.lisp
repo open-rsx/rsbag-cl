@@ -25,7 +25,7 @@
     as precisely as possible, with a specified fixed rate."))
 
 (service-provider:register-provider/class
- 'replay-strategy :fixed-rate :class 'fixed-rate)
+ 'strategy :fixed-rate :class 'fixed-rate)
 
 (defmethod initialize-instance :before ((instance fixed-rate)
                                         &key

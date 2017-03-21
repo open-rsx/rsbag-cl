@@ -37,6 +37,33 @@
 
    #:event-id-adjustment)
 
+  ;; Conditions
+  (:export
+   #:replay-error
+   #:replay-error-strategy
+
+   #:entry-retrieval-error
+
+   #:entry-processing-error)
+
+  ;; Replay protocol
+  (:export
+   #:replay)
+
+  ;; Sequential processing protocol
+  (:export
+   #:process-event)
+
+  ;; Timed replay protocol
+  (:export
+   #:schedule-event)
+
+  ;; Service and strategy creation protocol
+  (:export
+   #:strategy                       ; service
+
+   #:make-strategy)
+
   ;; `error-policy-mixin' mixin class
   (:export
    #:error-policy-mixin)

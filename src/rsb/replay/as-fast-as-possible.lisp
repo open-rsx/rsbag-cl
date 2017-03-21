@@ -22,4 +22,4 @@
     timing."))
 
 (service-provider:register-provider/class
- 'replay-strategy :as-fast-as-possible :class 'as-fast-as-possible)
+ 'strategy :as-fast-as-possible :class 'as-fast-as-possible)

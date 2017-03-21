@@ -85,7 +85,7 @@
       ((eql entry-retrieval-error)
        (ensure-condition 'entry-retrieval-error (do-it)))
       ((eql entry-processing-error)
-       (ensure-condition 'rsbag.rsb::entry-processing-error (do-it)))
+       (ensure-condition 'entry-processing-error (do-it)))
       (function
        (funcall assessment-function (do-it))))))
 

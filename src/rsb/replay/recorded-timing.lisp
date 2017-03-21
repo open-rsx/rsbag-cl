@@ -41,7 +41,7 @@
         DELAY seconds. "))
 
 (service-provider:register-provider/class
- 'replay-strategy :recorded-timing :class 'recorded-timing)
+ 'strategy :recorded-timing :class 'recorded-timing)
 
 (defmethod schedule-event ((strategy recorded-timing)
                            (event    t)

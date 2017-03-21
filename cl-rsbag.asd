@@ -1,6 +1,6 @@
 ;;;; cl-rsbag.asd ---
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -223,6 +223,7 @@
                  :serial     t
                  :components ((:file       "package")
                               (:file       "types")
+                              (:file       "conditions")
                               (:file       "util")
                               (:file       "protocol")
 
@@ -232,7 +233,9 @@
                               (:file       "fixed-rate")
                               (:file       "as-fast-as-possible")
                               (:file       "interactive")
-                              (:file       "remote-controlled"))))
+                              (:file       "remote-controlled")
+
+                              (:file       "construction"))))
 
   :in-order-to ((test-op (test-op :cl-rsbag/test))))
 

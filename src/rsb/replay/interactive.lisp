@@ -31,7 +31,7 @@
     by means of textual commands."))
 
 (service-provider:register-provider/class
- 'replay-strategy :interactive :class 'interactive)
+ 'strategy :interactive :class 'interactive)
 
 (defmethod next-command ((strategy interactive))
   (let+ (((&structure-r/o strategy- commands stream) strategy)

@@ -87,7 +87,7 @@
       Terminate the replay."))
 
 (service-provider:register-provider/class
- 'replay-strategy :remote-controlled :class 'remote-controlled)
+ 'strategy :remote-controlled :class 'remote-controlled)
 
 (defmethod (setf strategy-%commands) :after ((new-value list)
                                              (strategy  remote-controlled))
