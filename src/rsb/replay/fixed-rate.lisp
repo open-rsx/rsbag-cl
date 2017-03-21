@@ -17,7 +17,6 @@
                       print-items:print-items-mixin)
   ((delay :type     positive-real
           :accessor strategy-delay
-          :initform .1
           :documentation
           "Stores the fixed delay in seconds between publishing
            subsequent events."))

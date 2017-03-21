@@ -1,6 +1,6 @@
 ;;;; bag-connection.lisp --- A class for bag <-> RSB connections.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -18,11 +18,11 @@
    (channels :initarg  :channels
              :type     list
              :reader   connection-channels
-             :initform nil
+             :initform '()
              :documentation
-             "Stores a list of channel connections for channels of the
-              bag that are connected to RSB participants as data
-              sources or sinks."))
+             "Stores a list of `channel-connection's for channels of
+              the bag that are connected to endpoints as data sources
+              or sinks."))
   (:default-initargs
    :bag (missing-required-initarg 'bag-connection :bag))
   (:documentation
@@ -114,7 +114,7 @@
   (:default-initargs
    :strategy (missing-required-initarg 'replay-bag-connection :strategy))
   (:documentation
-   "Instances of this class associated an event replay strategy, a
+   "Instances of this class associate an event replay strategy, a
     source bag and `rsb:informer' instances to collaboratively replay
     the events from the bag."))
 
