@@ -34,8 +34,7 @@
  'replay-strategy :interactive :class 'interactive)
 
 (defmethod next-command ((strategy interactive))
-  (let+ (((&accessors-r/o (commands strategy-commands)
-                          (stream   strategy-stream)) strategy)
+  (let+ (((&structure-r/o strategy- commands stream) strategy)
          ((&accessors (previous strategy-previous-command)) strategy))
 
     ;; Read commands an existing one is specified.

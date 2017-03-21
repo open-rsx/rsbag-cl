@@ -33,9 +33,10 @@
   (:default-initargs
    :uri (missing-required-initarg 'remote-controlled :uri))
   (:documentation
-   "This strategy exposes replay control commands via an RPC
-    server. Clients invoke the methods to control the replay. At least
-    the following commands are available:
+   "Exposes replay control commands via an RPC server.
+
+    Clients invoke the methods to control the replay. At least the
+    following commands are available:
 
     length(): uint64
 
@@ -90,7 +91,7 @@
 
 (defmethod (setf strategy-%commands) :after ((new-value list)
                                              (strategy  remote-controlled))
-  "Create methods in the RPC server for the elements of NEW-VALUE."
+  ;; Create methods in the RPC server for the elements of NEW-VALUE.
   (let+ (((&accessors-r/o (server strategy-%server)) strategy)
          ((&flet make-command (function request future)
             (lambda ()

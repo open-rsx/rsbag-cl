@@ -1,6 +1,6 @@
-;;;; util.lisp ---
+;;;; util.lisp --- Utilities used in the rsb.replay module.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -38,9 +38,9 @@
 
 ;;; Utility functions
 
+;;; Return a function of two parameters that calls CALLBACK in the
+;;; appropriate way if CALLBACK is non-nil.
 (defun %make-progress-reporter (sequence callback)
-  "Return a function of two parameters that calls CALLBACK in the
-   appropriate way if CALLBACK is non-nil."
   (when callback
     (let ((start 0)
           (end   (max 0 (1- (length sequence)))))
