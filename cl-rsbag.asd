@@ -278,7 +278,14 @@
                  :depends-on ("test")
                  :serial     t
                  :components ((:file       "package")
-                              (:file       "protocol")
+                              (:file       "protocol")))
+
+                #+sbcl
+                (:module     "rsb/replay"
+                 :pathname   "test/rsb/replay"
+                 :depends-on ("rsb")
+                 :serial     t
+                 :components ((:file       "package")
 
                               (:file       "strategy-mixins")
 

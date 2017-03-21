@@ -1,12 +1,12 @@
 ;;;; interactive.lisp --- Unit tests for the interactive strategy class.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package #:rsbag.rsb.test)
+(cl:in-package #:rsbag.rsb.replay.test)
 
-(deftestsuite interactive-root (rsb-root)
+(deftestsuite interactive-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `interactive' replay strategy class."))
@@ -44,7 +44,7 @@
   ;; to be signaled.
   (`(:stream       ,(%make-emit-and-next-stream (length expected))
      :error-policy nil)
-   :bag      (simple-bag :errors '(2))
+   :bag      (rsbag.test:simple-bag :errors '(2))
    :expected 'entry-retrieval-error)
   (`(:stream       ,(%make-emit-and-next-stream (length expected))
      :error-policy nil)
@@ -55,7 +55,7 @@
   ;; output gets stuck at the failing event.
   (`(:stream       ,(%make-emit-and-next-stream (length expected))
      :error-policy ,#'continue)
-   :bag      (simple-bag :errors '(4))
+   :bag      (rsbag.test:simple-bag :errors '(4))
    :expected (let ((end-index (position 4 expected)))
                (subseq expected 0 end-index)))
   (`(:stream       ,(%make-emit-and-next-stream (length expected))

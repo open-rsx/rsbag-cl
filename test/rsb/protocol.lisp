@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Unit tests for the protocol of the rsb module.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -40,7 +40,7 @@
           ,(octet-vector 3 0 0 0))))
 
     (let+ (((&flet do-it ()
-              (with-mock-bag (bag :direction :output) ()
+              (rsbag.test:with-mock-bag (bag :direction :output) ()
                 (with-open-connection
                     (connection (apply #'events->bag '("inprocess:") bag args))
                   (rsb:with-participant (informer :informer "inprocess:")
@@ -69,22 +69,22 @@
 
   (ensure-cases (source args &optional expected)
       `(;; Invalid channel strategy => error
-        (,(simple-bag)    (:replay-strategy :no-such-strategy)
+        (,(rsbag.test:simple-bag)    (:replay-strategy :no-such-strategy)
          service-provider:missing-provider-error)
 
         ;; Cannot supply and arguments which would have applied to
         ;; opening the bag => error
-        (,(simple-bag)    (:backend   :does-not-matter)
+        (,(rsbag.test:simple-bag)    (:backend   :does-not-matter)
          incompatible-arguments)
-        (,(simple-bag)    (:transform :does-not-matter)
+        (,(rsbag.test:simple-bag)    (:transform :does-not-matter)
          incompatible-arguments)
-        (,(simple-bag)    (:bag-class :does-not-matter)
+        (,(rsbag.test:simple-bag)    (:bag-class :does-not-matter)
          incompatible-arguments)
 
         ;; These are valid.
-        (,(simple-bag)    (:replay-strategy :as-fast-as-possible))
-        ((,(simple-bag))  (:replay-strategy :as-fast-as-possible))
-        (#(,(simple-bag)) (:replay-strategy :as-fast-as-possible)))
+        (,(rsbag.test:simple-bag)    (:replay-strategy :as-fast-as-possible))
+        ((,(rsbag.test:simple-bag))  (:replay-strategy :as-fast-as-possible))
+        (#(,(rsbag.test:simple-bag)) (:replay-strategy :as-fast-as-possible)))
 
     (let+ (((&flet do-it ()
               (collecting-events (record)
@@ -101,7 +101,8 @@
         (t
          (ensure-same
           (length (do-it))
-          (reduce #'+ (bag-channels (simple-bag)) :key #'length)))))))
+          (reduce #'+ (bag-channels (rsbag.test:simple-bag))
+                  :key #'length)))))))
 
 (addtest (bag->events-root
           :documentation
@@ -116,11 +117,12 @@
       ;; Send the events stored in the mock bag.
       (with-open-connection
           (connection (bag->events
-                       (simple-bag) (format nil "inprocess:~A" prefix)
+                       (rsbag.test:simple-bag) (format nil "inprocess:~A" prefix)
                        :replay-strategy :as-fast-as-possible))
         (replay connection (connection-strategy connection)))
       ;; Receive the events.
-      (iter (repeat (reduce #'+ (bag-channels (simple-bag)) :key #'length))
+      (iter (repeat (reduce #'+ (bag-channels (rsbag.test:simple-bag))
+                            :key #'length))
             (let ((scope (rsb:event-scope (rsb:receive reader))))
               (ensure (not (rsb:scope= scope prefix)))
               (ensure (rsb:sub-scope? scope prefix)))))))

@@ -1,12 +1,12 @@
 ;;;; recorded-timing.lisp --- Unit tests for the recorded-timing strategy class.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package #:rsbag.rsb.test)
+(cl:in-package #:rsbag.rsb.replay.test)
 
-(deftestsuite recorded-timing-root (rsb-root)
+(deftestsuite recorded-timing-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `recorded-timing' replay strategy class."))
@@ -39,7 +39,7 @@
   ;; Without an error policy, the first failing event causes an error
   ;; to be signaled.
   ('(:error-policy nil)
-   :bag      (simple-bag :errors '(2))
+   :bag      (rsbag.test:simple-bag :errors '(2))
    :expected 'entry-retrieval-error)
   ('(:error-policy nil)
    :processing-errors '(2)
@@ -48,7 +48,7 @@
   ;; The `continue' restart skips to the next entry. Therefore, the
   ;; observed output continues after the failing entry.
   (`(:error-policy ,#'continue)
-   :bag      (simple-bag :errors '(4))
+   :bag      (rsbag.test:simple-bag :errors '(4))
    :expected (remove 4 expected))
   (`(:error-policy ,#'continue)
    :processing-errors '(4)

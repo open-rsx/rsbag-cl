@@ -4,11 +4,11 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package #:rsbag.rsb.test)
+(cl:in-package #:rsbag.rsb.replay.test)
 
 ;;; `bounds-mixin'
 
-(deftestsuite bounds-mixin-root (rsb-root)
+(deftestsuite bounds-mixin-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `bounds-mixin' replay strategy mixin class."))
@@ -29,7 +29,7 @@
 
 ;;; `time-bounds-mixin'
 
-(deftestsuite time-bounds-mixin-root (rsb-root)
+(deftestsuite time-bounds-mixin-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `time-bounds-mixin' replay strategy mixin
@@ -55,7 +55,7 @@
 
 ;;; `filtering-mixin'
 
-(deftestsuite filtering-mixin-root (rsb-root)
+(deftestsuite filtering-mixin-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `filtering-mixin' replay strategy mixin
@@ -68,7 +68,7 @@
 
 ;;; `event-id-mixin'
 
-(deftestsuite event-id-mixin-root (rsb-root)
+(deftestsuite event-id-mixin-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `event-id-mixin' replay strategy mixin
@@ -83,7 +83,7 @@
 
 ;;; `Timestamp-adjustment-mixin'
 
-(deftestsuite timestamp-adjustment-mixin-root (rsb-root)
+(deftestsuite timestamp-adjustment-mixin-root (rsb-replay-root)
   ()
   (:documentation
    "Test suite for the `timestamp-adjustment-mixin' replay strategy
