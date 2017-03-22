@@ -16,8 +16,7 @@
                  :bag       dest
                  :endpoint  source
                  :timestamp timestamp
-                 :strategy  (apply #'make-strategy
-                                   (ensure-list channel-strategy))))
+                 :strategy  (make-strategy channel-strategy)))
 
 (defmethod events->bag ((source puri:uri)
                         (dest   bag)

@@ -30,8 +30,7 @@
          ((&flet do-channel (channel)
             (apply #'bag->events channel dest other-args)))
          (connections (map 'list #'do-channel channels))
-         ((class &rest args) (ensure-list replay-strategy))
-         (strategy (apply #'make-strategy class (append other-args args))))
+         (strategy (apply #'make-strategy replay-strategy other-args)))
     (apply #'make-instance 'replay-bag-connection
            :bag      source
            :channels connections
