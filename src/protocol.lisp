@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol used by the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -19,10 +19,11 @@
                       transform
                       &allow-other-keys)
   (:documentation
-   "Open the data source SOURCE and return a bag object using the
-    backend designated by BACKEND and passing ARGS (except the keyword
-    arguments :backend, :bag-class and :transform) to the
-    backend.
+   "Open the data source SOURCE and return a bag object.
+
+    BACKEND designates the backend that should be used and
+    ARGS (except the keyword arguments :backend, :bag-class and
+    :transform) are passed to the backend.
 
     DIRECTION can be any of :input, :output and :io.
 
@@ -135,23 +136,27 @@
 
 (defgeneric bag-location (bag)
   (:documentation
-   "Return an object representing the location in which BAG is
-    stored. Possible values include (but are not limited to) NIL and
+   "Return an object representing the location of BAG.
+
+    Possible values include (but are not limited to) NIL and
     `cl:pathname' objects."))
 
 (defgeneric bag-direction (bag)
   (:documentation
-   "Return the direction of BAG. One of :input, :output, :io."))
+   "Return the direction of BAG.
+
+    One of :input, :output, :io."))
 
 (defgeneric bag-transform (bag)
   (:documentation
-   "Return the transform specification associated to BAG. The
-    specification is used to make concrete transformations for all
-    channels of the bag."))
+   "Return the transform specification associated to BAG.
+
+    The specification is used to make concrete transformations for all
+    channels of BAG."))
 
 (defgeneric bag-channels (bag)
   (:documentation
-   "Return a list of the `channel's stored in bag."))
+   "Return a list of the `channel's stored in BAG."))
 
 (defgeneric bag-channel (bag name
                          &key
@@ -176,9 +181,10 @@
                                 if-exists
                                 transform)
   (:documentation
-   "Add or update and return the channel named NAME in BAG. SPEC is a
-    plist which specifies properties of the created or updated
-    channel.
+   "Add or update and return the channel named NAME in BAG.
+
+    SPEC is a plist which specifies properties of the created or
+    updated channel.
 
     IF-EXISTS controls the behavior in case a channel named NAME
     already exists in BAG. Valid values are :error, which causes an
@@ -203,8 +209,9 @@
                            &allow-other-keys)
   (:documentation
    "Create and return a new channel named NAME with id ID and
-    associated meta-data META-DATA and TRANSFORM for BAG. The returned
-    object implements the channel protocol.
+    associated meta-data META-DATA and TRANSFORM for BAG.
+
+    The returned object implements the channel protocol.
 
     TRANSFORM can be nil in which case raw data from the underlying
     source is used.
@@ -217,7 +224,7 @@
                                      spec)
   (:documentation
    "Make and return a suitable transformation for the channel in BAG
-    described by NAME, META-DATA, ID and SPEC
+    described by NAME, META-DATA, ID and SPEC.
 
     SPEC can be used to specify additional parameters for the
     constructed transformation or to specify an entirely different
@@ -260,10 +267,11 @@
                    &key
                    if-does-not-exist)
   (:documentation
-   "Return the entry at position or time INDEX in CHANNEL. If INDEX is
-    an integer, the INDEX-th entry is returned. If INDEX is a
-    `local-time:timestamp' instances, the entry stored for the point
-    in time represented by INDEX is returned.
+   "Return the entry at position or time INDEX in CHANNEL.
+
+    If INDEX is an integer, the INDEX-th entry is returned. If INDEX
+    is a `local-time:timestamp' instances, the entry stored for the
+    point in time represented by INDEX is returned.
 
     IF-DOES-NOT-EXIST controls the behavior in case there is no entry
     for INDEX. Valid values are nil, which causes nil to be returned
@@ -274,10 +282,11 @@
                           if-exists)
   (:documentation
    "Store NEW-VALUE as the value of the entry at position or time
-    INDEX in CHANNEL. If INDEX is an integer, the INDEX-th entry is
-    returned. If INDEX is a `local-time:timestamp' instances, the
-    entry stored for the point in time represented by INDEX is
-    returned.
+    INDEX in CHANNEL.
+
+    If INDEX is an integer, NEW-VALUE is stored as the INDEX-th
+    entry. If INDEX is a `local-time:timestamp' instances, the
+    NEW-VALUE is stored for the point in time represented by INDEX.
 
     IF-EXISTS controls the behavior in case an entry is already stored
     at INDEX. Valid values are :error, which causes an error to be
