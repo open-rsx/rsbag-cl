@@ -1,10 +1,10 @@
 ;;;; channel-strategies.lisp --- Strategy classes for allocating channels.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package #:rsbag.rsb)
+(cl:in-package #:rsbag.rsb.recording)
 
 ;;; `ensure-channel-mixin'
 
@@ -14,7 +14,7 @@
    "Adds basic {ensure,make}-channel-for behavior to strategy classes."))
 
 (defmethod ensure-channel-for ((connection channel-connection)
-                               (event      event)
+                               (event      rsb:event)
                                (strategy   ensure-channel-mixin))
   (let+ ((name   (channel-name-for connection event strategy))
          (bag    (connection-bag connection))
@@ -28,7 +28,7 @@
     (values (bag-channel bag name :if-does-not-exist #'make-channel) found?)))
 
 (defmethod make-channel-for ((connection participant-channel-connection)
-                             (event      event)
+                             (event      rsb:event)
                              (strategy   ensure-channel-mixin))
   (let* ((transform (channel-transform-for connection event strategy))
          (meta-data (channel-meta-data-for connection transform event strategy)))
@@ -56,7 +56,7 @@
                                      &key
                                      (next nil next-supplied?))
   (when next-supplied?
-    (setf (strategy-%next instance) (make-channel-strategy next))))
+    (setf (strategy-%next instance) (make-strategy next))))
 
 (defmethod channel-name-for ((connection t)
                              (event      t)
@@ -85,28 +85,28 @@
 (defclass scope-and-type (ensure-channel-mixin)
   ()
   (:documentation
-   "This strategy allocates a separate channel for each combination of
-    RSB scope and wire-schema. The channel allocation for a given
-    combination is performed when the first event exhibiting that
-    combination is processed. Channel names are of the form SCOPE:TYPE
-    where SCOPE is the scope string of the received event (including
-    the final \"/\") and TYPE is the wire-schema string of the payload
-    of the event.
+   "Allocates a channel for each combination of scope and wire-schema.
+
+    The channel allocation for a given combination is performed when
+    the first event exhibiting that combination is processed. Channel
+    names are of the form SCOPE:TYPE where SCOPE is the scope string
+    of the received event (including the final \"/\") and TYPE is the
+    wire-schema string of the payload of the event.
 
     As an example, an event on scope /foo/bar/ with wire-schema
     \".rst.vision.Image\" would be stored in a channel called
     \"/foo/bar/:.rst.vision.Image\"."))
 
 (service-provider:register-provider/class
- 'channel-strategy :scope-and-type :class 'scope-and-type)
+ 'strategy :scope-and-type :class 'scope-and-type)
 
 (defmethod channel-name-for ((connection channel-connection)
-                             (event      event)
+                             (event      rsb:event)
                              (strategy   scope-and-type))
   (scope+wire-schema->channel-name event))
 
 (defmethod channel-transform-for ((connection participant-channel-connection)
-                                  (event      event)
+                                  (event      rsb:event)
                                   (strategy   scope-and-type))
   (let ((wire-schema (make-keyword (rsb:meta-data
                                     event :rsb.transport.wire-schema))))
@@ -114,14 +114,14 @@
 
 (defmethod channel-meta-data-for ((connection participant-channel-connection)
                                   (transform  t)
-                                  (event      event)
+                                  (event      rsb:event)
                                   (strategy   scope-and-type))
   (let+ (((&structure-r/o connection- bag (participant endpoint)) connection)
-         ((&structure-r/o participant- id) participant)
+         ((&accessors-r/o (id rsb:participant-id)) participant)
          (format (channel-format-for bag transform event strategy)))
     (append (list :source-name   (princ-to-string id)
                   :source-config (princ-to-string
-                                  (abstract-uri participant)))
+                                  (rsb:abstract-uri participant)))
             (when format (list :format format)))))
 
 ;;; `collapse-reserved'
@@ -132,23 +132,23 @@
   (:default-initargs
    :next (missing-required-initarg 'collapse-reserved :next))
   (:documentation
-   "Collapsed scopes reserved by RSB into their first three components.
+   "Collapses scopes reserved by RSB into their first three components.
 
     This, for example, prevents introspection scopes like
     /__rsb/introspection/participants/ID/…  from creating two
     channels (Hello and Bye) for each participant."))
 
 (service-provider:register-provider/class
- 'channel-strategy :collapse-reserved :class 'collapse-reserved)
+ 'strategy :collapse-reserved :class 'collapse-reserved)
 
 (defmethod channel-name-for ((connection channel-connection)
-                             (event      event)
+                             (event      rsb:event)
                              (strategy   collapse-reserved))
-  (let ((scope (event-scope event)))
-    (if (sub-scope?/no-coerce scope *reserved-scope*)
+  (let ((scope (rsb:event-scope event)))
+    (if (rsb:sub-scope?/no-coerce scope rsb:*reserved-scope*)
         ;; Collapse reserved scopes to three components.
         (scope+wire-schema->channel-name
-         event (make-scope (subseq (scope-components scope) 0 3)))
+         event (rsb:make-scope (subseq (rsb:scope-components scope) 0 3)))
         ;; All other events go into the usual channels.
         (channel-name-for connection event (strategy-next strategy)))))
 
@@ -156,8 +156,8 @@
 
 (defun scope+wire-schema->channel-name (event
                                         &optional
-                                        (scope (event-scope event)))
+                                        (scope (rsb:event-scope event)))
   (if-let ((wire-schema (rsb:meta-data event :rsb.transport.wire-schema)))
-    (format nil "~A:~A" (scope-string scope) wire-schema)
+    (format nil "~A:~A" (rsb:scope-string scope) wire-schema)
     (error "~@<Event ~A does not have a ~A meta-data item.~@:>"
            event :rsb.transport.wire-schema)))

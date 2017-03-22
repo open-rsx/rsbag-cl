@@ -212,8 +212,6 @@
                               (:file       "channel-connection")
                               (:file       "bag-connection")
 
-                              (:file       "channel-strategies")
-
                               (:file       "construction")))
 
                 #+sbcl
@@ -234,6 +232,19 @@
                               (:file       "as-fast-as-possible")
                               (:file       "interactive")
                               (:file       "remote-controlled")
+
+                              (:file       "construction")))
+
+                #+sbcl
+                (:module     "rsb/recording"
+                 :pathname   "src/rsb/recording"
+                 :depends-on ("rsb")
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "protocol")
+
+                              (:file       "channel-connections")
+                              (:file       "channel-strategies")
 
                               (:file       "construction"))))
 

@@ -8,64 +8,10 @@
 
 ;;; RSB events -> bag
 
-(defmethod events->bag ((source listener)
-                        (dest   bag)
-                        &key
-                        (timestamp        :send)
-                        (channel-strategy :scope-and-type)
-                        &allow-other-keys)
-  (make-instance 'recording-channel-connection
-                 :bag       dest
-                 :endpoint  source
-                 :timestamp timestamp
-                 :strategy  (apply #'make-channel-strategy
-                                   (ensure-list channel-strategy))))
-
-(defmethod events->bag ((source puri:uri)
-                        (dest   bag)
-                        &rest args
-                        &key
-                        (transports '((t :expose (:rsb.transport.wire-schema)
-                                         &inherit)))
-                        (filters    nil filters-supplied?))
-  (let ((listener (apply #'make-participant :listener source
-                         :transports transports
-                         :converters '((t . :fundamental-null))
-                         (when filters-supplied?
-                           (list :filters filters)))))
-    (apply #'events->bag listener dest
-           (remove-from-plist args :transports :filters))))
-
 (defmethod events->bag ((source string)
                         (dest   bag)
                         &rest args &key)
   (apply #'events->bag (puri:parse-uri source) dest args))
-
-(defmethod events->bag
-    ((source sequence)
-     (dest   bag)
-     &rest args &key
-     (error-policy          nil error-policy-supplied?)
-     (introspection-survey? t   introspection-survey?-supplied?)
-     (start?                t))
-  (let* ((args/channel (remove-from-plist
-                        args :error-policy :introspection-survey? :start?))
-         (connection   (apply #'make-instance 'recording-bag-connection
-                              :bag      dest
-                              :channels (map 'list
-                                             (lambda (source)
-                                               (apply #'events->bag source dest
-                                                      args/channel))
-                                             source)
-                              (append
-                               (when introspection-survey?-supplied?
-                                 (list :introspection-survey?
-                                       introspection-survey?))
-                               (when error-policy-supplied?
-                                 (list :error-policy error-policy))))))
-    (when start?
-      (start connection))
-    connection))
 
 (defun %events->bag/streamish (source dest
                                &rest args

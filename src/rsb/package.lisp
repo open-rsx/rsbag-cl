@@ -34,11 +34,7 @@
    #:connection-condition-connection
 
    #:entry-condition
-   #:entry-condition-entry
-
-   #:recording-error
-
-   #:entry-storage-error)
+   #:entry-condition-entry)
 
   ;; connection construction protocol
   (:export
@@ -85,20 +81,6 @@
   ;; `participant-channel-connection' subclass
   (:export
    #:participant-channel-connection)
-
-  ;; channel allocation strategy protocol
-  (:export
-   #:channel-name-for
-   #:channel-transform-for
-   #:channel-format-for
-   #:channel-meta-data-for
-
-   #:make-channel-for
-   #:ensure-channel-for
-
-   #:channel-strategy ; service
-
-   #:make-channel-strategy)
 
   (:documentation
    "This package contains functions and classes that enable the
