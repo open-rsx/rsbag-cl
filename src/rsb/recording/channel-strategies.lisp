@@ -14,7 +14,7 @@
    "Adds basic {ensure,make}-channel-for behavior to strategy classes."))
 
 (defmethod ensure-channel-for ((connection channel-connection)
-                               (event      rsb:event)
+                               (event      t)
                                (strategy   ensure-channel-mixin))
   (let+ ((name   (channel-name-for connection event strategy))
          (bag    (connection-bag connection))
@@ -27,8 +27,8 @@
               (invoke-restart 'create meta-data :transform transform)))))
     (values (bag-channel bag name :if-does-not-exist #'make-channel) found?)))
 
-(defmethod make-channel-for ((connection participant-channel-connection)
-                             (event      rsb:event)
+(defmethod make-channel-for ((connection t)
+                             (event      t)
                              (strategy   ensure-channel-mixin))
   (let* ((transform (channel-transform-for connection event strategy))
          (meta-data (channel-meta-data-for connection transform event strategy)))
@@ -100,17 +100,23 @@
 (service-provider:register-provider/class
  'strategy :scope-and-type :class 'scope-and-type)
 
-(defmethod channel-name-for ((connection channel-connection)
+(defmethod channel-name-for ((connection t)
                              (event      rsb:event)
                              (strategy   scope-and-type))
   (scope+wire-schema->channel-name event))
 
-(defmethod channel-transform-for ((connection participant-channel-connection)
+(defmethod channel-transform-for ((connection t)
                                   (event      rsb:event)
                                   (strategy   scope-and-type))
   (let ((wire-schema (make-keyword (rsb:meta-data
                                     event :rsb.transport.wire-schema))))
     (make-transform +rsb-schema-name+ wire-schema)))
+
+(defmethod channel-meta-data-for ((connection t)
+                                  (transform  t)
+                                  (event      rsb:event)
+                                  (strategy   scope-and-type))
+  '())
 
 (defmethod channel-meta-data-for ((connection participant-channel-connection)
                                   (transform  t)
@@ -141,7 +147,7 @@
 (service-provider:register-provider/class
  'strategy :collapse-reserved :class 'collapse-reserved)
 
-(defmethod channel-name-for ((connection channel-connection)
+(defmethod channel-name-for ((connection t)
                              (event      rsb:event)
                              (strategy   collapse-reserved))
   (let ((scope (rsb:event-scope event)))
