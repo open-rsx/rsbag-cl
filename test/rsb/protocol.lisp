@@ -90,7 +90,11 @@
               (collecting-events (record)
                 (with-open-connection
                     (connection
-                     (apply #'bag->events source #'record args))
+                     (apply #'bag->events source
+                            (lambda (timestamp event)
+                              (declare (ignore timestamp))
+                              (record event))
+                            args))
                   (rsbag.rsb.replay:replay connection (connection-strategy connection)))
                 (record)))))
       (case expected

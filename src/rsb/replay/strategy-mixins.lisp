@@ -413,7 +413,7 @@
                           (sink               function))
   ;; The default behavior for a function SINK consists in calling SINK
   ;; with EVENT.
-  (funcall sink event))
+  (funcall sink timestamp event))
 
 ;;; `timed-replay-mixin' mixin class
 

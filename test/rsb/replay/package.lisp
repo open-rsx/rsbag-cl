@@ -73,7 +73,10 @@
             (rsbag.rsb.test:collecting-events
                 (collect :errors processing-errors)
               (with-open-connection
-                  (connection (apply #'bag->events bag #'collect
+                  (connection (apply #'bag->events bag
+                                     (lambda (timestamp event)
+                                       (declare (ignore timestamp))
+                                       (collect event))
                                      :replay-strategy strategy-class strategy-initargs))
                 (funcall replay-function connection (connection-strategy connection)))
               (collect)))))
