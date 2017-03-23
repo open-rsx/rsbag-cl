@@ -1,6 +1,6 @@
 ;;;; strategy-mixin.lisp --- Mixins classes for replay strategy classes.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -398,8 +398,8 @@
                           (previous-timestamp t)
                           (event              t)
                           (sink               t))
-  "The default behavior consists in sending EVENT via SINK which is
-   assumed to be an `rsb:informer'."
+  ;; The default behavior consists in sending EVENT via SINK which is
+  ;; assumed to be an `rsb:informer'.
   (let ((no-fill? (ecase (strategy-event-id strategy)
                     (:keep    t)
                     (:replace nil))))
@@ -411,8 +411,8 @@
                           (previous-timestamp t)
                           (event              t)
                           (sink               function))
-  "The default behavior for a function SINK consists in calling SINK
-   with EVENT."
+  ;; The default behavior for a function SINK consists in calling SINK
+  ;; with EVENT.
   (funcall sink event))
 
 ;;; `timed-replay-mixin' mixin class
