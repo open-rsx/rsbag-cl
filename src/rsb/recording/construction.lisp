@@ -12,7 +12,7 @@
                         (timestamp        :send)
                         (channel-strategy :scope-and-type)
                         &allow-other-keys)
-  (make-instance 'recording-channel-connection
+  (make-instance 'recording-participant-channel-connection
                  :bag       dest
                  :endpoint  source
                  :timestamp timestamp

@@ -8,7 +8,7 @@
 
 ;;; `recording-channel-connection' class
 
-(defclass recording-channel-connection (participant-channel-connection)
+(defclass recording-channel-connection (channel-connection)
   ((timestamp :initarg  :timestamp
               :type     keyword
               :reader   connection-timestamp
@@ -43,17 +43,23 @@
 
     (setf (entry channel (rsb:timestamp event timestamp)) event)))
 
-(defmethod start ((connection recording-channel-connection))
-  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
-    (push connection (rsb.ep:handlers participant))))
-
-(defmethod stop ((connection recording-channel-connection))
-  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
-    (removef (rsb.ep:handlers participant) connection)))
-
 (defmethod print-items:print-items append
     ((object recording-channel-connection))
   `((:timestamp ,(connection-timestamp object) "~A"
                 ((:before :channel-count)))))
 
+;;; `recording-participant-channel-connection' class
 
+(defclass recording-participant-channel-connection (participant-channel-connection
+                                                    recording-channel-connection)
+  ()
+  (:documentation
+   "Recording channel connection whose endpoint is a participant."))
+
+(defmethod start ((connection recording-participant-channel-connection))
+  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
+    (push connection (rsb.ep:handlers participant))))
+
+(defmethod stop ((connection recording-participant-channel-connection))
+  (let+ (((&accessors-r/o (participant connection-endpoint)) connection))
+    (removef (rsb.ep:handlers participant) connection)))
