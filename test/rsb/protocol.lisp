@@ -63,25 +63,48 @@
           "Test the `events->bag' function without a source.")
   no-source
 
-  (ensure-cases (args expected)
+  (ensure-cases (args timestamps-and-events expected)
       `(;; Invalid channel strategy => error
         ((:channel-strategy :no-such-strategy)
+         ()
          service-provider:missing-provider-error)
 
         ;; These are valid.
-        (()                                   t)
-        ((:timestamp :receive)                t)
-        ((:channel-stratetgy :scope-and-type) t))
+        (()
+         ((,(local-time:now)
+           ("/foo" #1=,(octet-vector 1 2 3 4) "int32")))
+         (#1#))
+        ((:timestamp :receive)
+         ((,(local-time:now)
+           ("/foo" #2=,(octet-vector 1 2 3 4) "int32")))
+         (#2#))
+        ((:channel-stratetgy :scope-and-type)
+         ((,(local-time:now)
+           ("/foo" #3=,(octet-vector 1 2 3 4) "int32")))
+         (#3#)))
 
-    (let+ (((&flet do-it ()
+    (let+ (((&flet make-event (scope payload wire-schema)
+              (let ((event (rsb:make-event
+                            scope payload
+                            :rsb.transport.wire-schema wire-schema)))
+                (setf (rsb:event-origin event)          (uuid:make-null-uuid)
+                      (rsb:event-sequence-number event) 0)
+                event)))
+           ((&flet do-it ()
               (rsbag.test:with-mock-bag (bag :direction :output) ()
                 (with-open-connection
-                    (connection (apply #'events->bag nil bag args)))))))
-      (ecase expected
+                    (connection (apply #'events->bag nil bag args))
+                  (mapc (lambda+ ((timestamp (scope payload wire-schema)))
+                          (let ((event (make-event scope payload wire-schema)))
+                            (rsbag.rsb.recording:process-event
+                             connection timestamp event)))
+                        timestamps-and-events))
+                (map 'list #'rsb:event-data (first (bag-channels bag)))))))
+      (case expected
         (service-provider:missing-provider-error
          (ensure-condition 'service-provider:missing-provider-error (do-it)))
         (t
-         (do-it))))))
+         (ensure-same (do-it) expected :test #'equalp))))))
 
 (deftestsuite bag->events-root (rsb-root)
   ()

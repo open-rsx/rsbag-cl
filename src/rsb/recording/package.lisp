@@ -23,6 +23,10 @@
 
    #:entry-storage-error)
 
+  ;; Processing protocol
+  (:export
+   #:process-event)
+
   ;; Channel allocation strategy protocol
   (:export
    #:channel-name-for

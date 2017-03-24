@@ -6,6 +6,12 @@
 
 (cl:in-package #:rsbag.rsb.recording)
 
+;;; Processing protocol
+
+(defgeneric process-event (connection timestamp event)
+  (:documentation
+   "Record EVENT at TIMESTAMP in the destination of CONNECTION."))
+
 ;;; Channel allocation protocol
 
 (defgeneric channel-name-for (connection event strategy)
