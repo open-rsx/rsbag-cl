@@ -13,8 +13,9 @@
 
 (addtest (events->bag-root
           :documentation
-          "Smoke test for the `events->bag' function.")
-  smoke
+          "Test the `events->bag' function with a participant
+           source.")
+  participant-source
 
   (ensure-cases (args events expected)
       `(;; Invalid channel strategy => error
@@ -56,6 +57,31 @@
         (ensure-condition 'service-provider:missing-provider-error (do-it)))
        (t
         (ensure-same (do-it) expected :test #'equalp))))))
+
+(addtest (events->bag-root
+          :documentation
+          "Test the `events->bag' function without a source.")
+  no-source
+
+  (ensure-cases (args expected)
+      `(;; Invalid channel strategy => error
+        ((:channel-strategy :no-such-strategy)
+         service-provider:missing-provider-error)
+
+        ;; These are valid.
+        (()                                   t)
+        ((:timestamp :receive)                t)
+        ((:channel-stratetgy :scope-and-type) t))
+
+    (let+ (((&flet do-it ()
+              (rsbag.test:with-mock-bag (bag :direction :output) ()
+                (with-open-connection
+                    (connection (apply #'events->bag nil bag args)))))))
+      (ecase expected
+        (service-provider:missing-provider-error
+         (ensure-condition 'service-provider:missing-provider-error (do-it)))
+        (t
+         (do-it))))))
 
 (deftestsuite bag->events-root (rsb-root)
   ()

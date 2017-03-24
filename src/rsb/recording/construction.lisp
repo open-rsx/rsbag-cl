@@ -6,6 +6,8 @@
 
 (cl:in-package #:rsbag.rsb.recording)
 
+;;; Recording with RSB listener source
+
 (defmethod events->bag ((source rsb:listener)
                         (dest   bag)
                         &key
@@ -58,3 +60,21 @@
     (when start?
       (start connection))
     connection))
+
+;;; Recording without source
+
+(defmethod events->bag ((source null)
+                        (dest   bag)
+                        &key
+                        (error-policy     nil error-policy-supplied?)
+                        (timestamp        :send)
+                        (channel-strategy :scope-and-type)
+                        &allow-other-keys)
+  (apply #'make-instance 'recording-bag-connection
+         :bag      dest
+         :channels (list (make-instance 'recording-channel-connection
+                                        :bag       dest
+                                        :timestamp timestamp
+                                        :strategy  (make-strategy channel-strategy)))
+         (when error-policy-supplied?
+           (list :error-policy error-policy))))
