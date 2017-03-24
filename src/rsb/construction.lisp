@@ -92,7 +92,7 @@
 (defmethod bag->events ((source channel)
                         (dest   function)
                         &key)
-  (make-instance 'channel-connection
+  (make-instance 'endpoint-channel-connection
                  :bag      (channel-bag source)
                  :channels (list source)
                  :endpoint dest))

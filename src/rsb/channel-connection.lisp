@@ -1,6 +1,6 @@
 ;;;; channel-connection.lisp --- A class for bag channel <-> RSB connections.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -21,20 +21,11 @@
              :initform '()
              :documentation
              "Stores the bag channels that are connected to event
-              sources or sinks by the connection.")
-   (endpoint :initarg  :endpoint
-             :reader   connection-endpoint
-             :documentation
-             "Stores the endpoint that is connected to a bag
-              channel."))
+              sources or sinks by the connection."))
   (:default-initargs
-   :bag      (missing-required-initarg 'channel-connection :bag)
-   :endpoint (missing-required-initarg 'channel-connection :endpoint))
+   :bag (missing-required-initarg 'channel-connection :bag))
   (:documentation
-   "Instances of this class represent the connections being
-    established when individual channels of bags are used as data
-    sources or sinks and connected to event sources or sinks such as
-    functions or RSB participants."))
+   "Connection between bag channels and an event source or sink."))
 
 (defmethod close ((connection channel-connection) &key abort)
   (declare (ignore abort))) ; nothing to do
@@ -42,13 +33,28 @@
 (defmethod print-items:print-items append ((object channel-connection))
   `((:channel-count ,(length (connection-channels object)) " (~D)")))
 
+;;; `endpoint-channel-connection' class
+
+(defclass endpoint-channel-connection (channel-connection)
+  ((endpoint :initarg  :endpoint
+             :reader   connection-endpoint
+             :documentation
+             "Stores the endpoint that is connected to a bag
+              channel."))
+  (:default-initargs
+   :endpoint (missing-required-initarg 'endpoint-channel-connection :endpoint))
+  (:documentation
+   "Instances of this class represent the connections being
+    established when individual channels of bags are used as data
+    sources or sinks and connected to event sources or sinks such as
+    functions or RSB participants."))
+
 ;;; `participant-channel-connection' class
 
-(defclass participant-channel-connection (channel-connection)
+(defclass participant-channel-connection (endpoint-channel-connection)
   ()
   (:documentation
-   "A `channel-connection' subclass in which the sink is a RSB
-    participant."))
+   "A `channel-connection' with an RSB participant endpoint."))
 
 (defmethod shared-initialize :after ((instance   participant-channel-connection)
                                      (slot-names t)

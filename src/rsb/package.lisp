@@ -74,7 +74,11 @@
 
   ;; `channel-connection' class and protocol
   (:export
-   #:channel-connection
+   #:channel-connection)
+
+  ;; `endpoint-channel-connection' class and protocol
+  (:export
+   #:endpoint-channel-connection
 
    #:connection-endpoint)
 
