@@ -18,6 +18,7 @@
                                &key
                                (if-exists      :error if-exists-supplied?)
                                backend
+                               transform
                                (flush-strategy nil)
                                (bag-class      'synchronized-bag)
                                &allow-other-keys)
@@ -28,6 +29,8 @@
                               (list :if-exists if-exists))
                             (when backend
                               (list :backend backend))
+                            (when transform
+                              (list :transform transform))
                             (when flush-strategy
                               (list :flush-strategy flush-strategy))))))
     (apply #'events->bag source bag
