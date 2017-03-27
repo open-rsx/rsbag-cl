@@ -125,18 +125,16 @@
   (let+ (((&structure-r/o connection- bag (participant endpoint)) connection)
          ((&accessors-r/o (id rsb:participant-id)) participant)
          (format (channel-format-for bag transform event strategy)))
-    (append (list :source-name   (princ-to-string id)
-                  :source-config (princ-to-string
-                                  (rsb:abstract-uri participant)))
-            (when format (list :format format)))))
+    (list* :source-name   (princ-to-string id)
+           :source-config (princ-to-string
+                           (rsb:abstract-uri participant))
+           (when format (list :format format)))))
 
 ;;; `collapse-reserved'
 
 (defclass collapse-reserved (ensure-channel-mixin
                              delegating-mixin)
   ()
-  (:default-initargs
-   :next (missing-required-initarg 'collapse-reserved :next))
   (:documentation
    "Collapses scopes reserved by RSB into their first three components.
 
