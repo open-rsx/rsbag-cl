@@ -15,7 +15,7 @@
     the next `replay' methods to be called with error handling based
     on the installed error policy."))
 
-(defmethod replay :around ((connection replay-bag-connection)
+(defmethod replay :around ((connection t)
                            (strategy   error-policy-mixin)
                            &key &allow-other-keys)
   (rsb.ep:with-error-policy (strategy)
@@ -31,7 +31,7 @@
 
 (defvar *skip* nil)
 
-(defmethod replay :around ((connection replay-bag-connection)
+(defmethod replay :around ((connection t)
                            (strategy   replay-restart-mixin)
                            &key &allow-other-keys)
   (function-calling-restart-bind
@@ -95,7 +95,7 @@
 (defmethod strategy-start-index ((strategy bounds-mixin))
   (or (strategy-%start-index strategy) 0))
 
-(defmethod replay :before ((connection replay-bag-connection)
+(defmethod replay :before ((connection t)
                            (strategy   bounds-mixin)
                            &key &allow-other-keys)
   (let+ (((&structure strategy- (start-index %start-index) end-index) strategy)
@@ -188,11 +188,10 @@
           :values     (list start-time  end-time)))
       (check-ordered-times start-time end-time))))
 
-(defmethod replay :before ((connection replay-bag-connection)
+(defmethod replay :before ((connection t)
                            (strategy   time-bounds-mixin)
                            &key &allow-other-keys)
-  (let+ (((&structure-r/o connection- bag) connection)
-         ((&structure strategy-
+  (let+ (((&structure strategy-
                       (start-time %start-time) start-index
                       (end-time   %end-time)   end-index)
           strategy)
@@ -243,8 +242,9 @@
                       index)
                   timestamp)
                  (error "~@<Could not find requested timestamp ~A in ~
-                         bag ~A (with temporal range [~A, ~A]).~@:>"
-                        timestamp bag
+                         ~/rsbag.rsb.replay::format-source/ (with ~
+                         temporal range [~A, ~A]).~@:>"
+                        timestamp connection
                         (sequence-start-time) (sequence-end-time)))))))
          ((&flet check-index (index timestamp name)
             (let+ (((&values difference effective)
@@ -255,7 +255,12 @@
               (when (> difference 1)
                 (warn "~@<Mapped ~A ~A is rather far (~F second~:P) from ~
                        requested ~A ~A~@:>"
-                      name effective difference name timestamp))))))
+                      name effective difference name timestamp)))))
+         ((&flet warn-missing-times (name time)
+            (warn "~@<No start and end times in ~
+                   ~/rsbag.rsb.replay::format-source/; ~
+                   ignoring requested ~A ~A~@:>"
+                  connection name time))))
     (cond
       ((not start-time))
       ((and (sequence-start-time) (sequence-end-time))
@@ -263,9 +268,7 @@
          (timestamp->index start-time "start time"))
        (check-index start-index start-time "start time"))
       (t
-       (warn "~@<Bag ~A does not have start and end times; ignoring ~
-              requested start time ~A~@:>"
-             bag start-time)))
+       (warn-missing-times start-time "start time")))
     (cond
       ((not end-time))
       ((and (sequence-start-time) (sequence-end-time))
@@ -273,9 +276,7 @@
          (timestamp->index end-time "end time"))
        (check-index end-index end-time "end time"))
       (t
-       (warn "~@<Bag ~A does not have start and end times; ignoring ~
-              requested end time ~A~@:>"
-             bag end-time)))))
+       (warn-missing-times end-time "end time")))))
 
 ;;; `repetitions-mixin' mixin class
 
@@ -363,7 +364,7 @@
     `make-view' and processes all elements of the sequence by
     sequential calls to `process-event'."))
 
-(defmethod replay ((connection replay-bag-connection)
+(defmethod replay ((connection t)
                    (strategy   sequential-mixin)
                    &key
                    progress)
@@ -392,7 +393,7 @@
                   (do-entries)))))
       (call-repeatedly num-repetitions #'do-sequence))))
 
-(defmethod process-event ((connection         replay-bag-connection)
+(defmethod process-event ((connection         t)
                           (strategy           sequential-mixin)
                           (timestamp          t)
                           (previous-timestamp t)
@@ -405,7 +406,7 @@
                     (:replace nil))))
     (send sink event :unchecked? t :no-fill? no-fill?)))
 
-(defmethod process-event ((connection         replay-bag-connection)
+(defmethod process-event ((connection         t)
                           (strategy           sequential-mixin)
                           (timestamp          t)
                           (previous-timestamp t)
@@ -423,7 +424,7 @@
    "This class is intended to be mixed into replay strategy classes
     which perform time-based scheduling of replayed events."))
 
-(defmethod process-event :before ((connection         replay-bag-connection)
+(defmethod process-event :before ((connection         t)
                                   (strategy           timed-replay-mixin)
                                   (timestamp          local-time:timestamp)
                                   (previous-timestamp local-time:timestamp)
@@ -612,7 +613,7 @@
   (iter (for spec in new-value)
         (check-type spec timestamp-adjustment-spec)))
 
-(defmethod process-event :before ((connection         replay-bag-connection)
+(defmethod process-event :before ((connection         t)
                                   (strategy           timestamp-adjustment-mixin)
                                   (timestamp          t)
                                   (previous-timestamp t)
@@ -730,7 +731,7 @@
                             (command  function))
   (funcall command))
 
-(defmethod replay ((connection replay-bag-connection)
+(defmethod replay ((connection t)
                    (strategy   external-driver-mixin)
                    &key
                    progress)

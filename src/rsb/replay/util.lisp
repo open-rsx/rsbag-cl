@@ -50,3 +50,11 @@
                      (/ (1+ (- index start)) (- (1+ end) start))
                      index start end timestamp)
             (funcall callback nil nil nil nil nil))))))
+
+;;; Printing
+
+(defun format-source (stream source &optional colon at)
+  (declare (ignore colon at))
+  (etypecase source
+    (bag-connection
+     (format stream "bag ~A" (connection-bag source)))))
