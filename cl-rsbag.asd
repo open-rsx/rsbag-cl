@@ -241,6 +241,7 @@
                  :depends-on ("rsb")
                  :serial     t
                  :components ((:file       "package")
+                              (:file       "conditions")
                               (:file       "protocol")
 
                               (:file       "channel-connections")
