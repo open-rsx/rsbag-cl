@@ -1,6 +1,6 @@
 ;;;; index-vector.lisp --- Data structure for index entries.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -36,20 +36,24 @@
 (defun index-vector-add-entries (vector entries chunks)
   (declare (type index-vector vector))
   (let+ ((num-entries (length entries))
+         (new-length  (+ (length vector) (* 2 num-entries)))
          ((&flet add-offset! (entry)
             (let+ (((&structure-r/o index-entry- timestamp chunk-id offset)
                     entry)
                    (outer-offset  (%chunk-id->offset chunk-id chunks))
                    (global-offset (+ outer-offset 12 25 offset))) ; TODO(jmoringe):  get rid of the constants
               (index-vector-push-entry vector timestamp global-offset)))))
-    (adjust-array vector (+ (length vector) (* 2 num-entries)))
+    (when (< (array-total-size vector) new-length)
+      (adjust-array vector new-length))
     (map nil #'add-offset! entries)
     vector))
 
 (defun index-vector-add-indxs (vector indxs chunks)
   (declare (type index-vector vector))
-  (let ((num-entries (reduce #'+ indxs :key #'indx-count)))
-    (adjust-array vector (+ (length vector) (* 2 num-entries)))
+  (let* ((num-entries (reduce #'+ indxs :key #'indx-count))
+         (new-length  (+ (length vector) (* 2 num-entries))))
+    (when (< (array-total-size vector) new-length)
+      (adjust-array vector new-length))
     (iter (for indx in-sequence indxs)
           (index-vector-add-entries vector (indx-entries indx) chunks))
     vector))
