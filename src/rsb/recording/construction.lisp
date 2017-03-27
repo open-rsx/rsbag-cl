@@ -45,12 +45,12 @@
   (let* ((args/channel (remove-from-plist
                         args :error-policy :introspection-survey? :start?))
          (connection   (apply #'make-instance 'recording-bag-connection
-                              :bag      dest
-                              :channels (map 'list
-                                             (lambda (source)
-                                               (apply #'events->bag source dest
-                                                      args/channel))
-                                             source)
+                              :bag         dest
+                              :connections (map 'list
+                                                (lambda (source)
+                                                  (apply #'events->bag source dest
+                                                         args/channel))
+                                                source)
                               (append
                                (when introspection-survey?-supplied?
                                  (list :introspection-survey?
@@ -71,10 +71,10 @@
                         (channel-strategy :scope-and-type)
                         &allow-other-keys)
   (apply #'make-instance 'recording-bag-connection
-         :bag      dest
-         :channels (list (make-instance 'recording-channel-connection
-                                        :bag       dest
-                                        :timestamp timestamp
-                                        :strategy  (make-strategy channel-strategy)))
+         :bag         dest
+         :connections (list (make-instance 'recording-channel-connection
+                                           :bag       dest
+                                           :timestamp timestamp
+                                           :strategy  (make-strategy channel-strategy)))
          (when error-policy-supplied?
            (list :error-policy error-policy))))

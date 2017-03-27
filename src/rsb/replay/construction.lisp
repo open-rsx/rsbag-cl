@@ -32,9 +32,9 @@
          (connections (map 'list #'do-channel channels))
          (strategy (apply #'make-strategy replay-strategy other-args)))
     (apply #'make-instance 'replay-bag-connection
-           :bag      source
-           :channels connections
-           :strategy strategy
+           :bag         source
+           :connections connections
+           :strategy    strategy
            (when error-policy-supplied?
              (list :error-policy error-policy)))))
 

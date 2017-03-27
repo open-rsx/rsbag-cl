@@ -6,58 +6,66 @@
 
 (cl:in-package #:rsbag.rsb)
 
-;;; `bag-connection' class
+;;; `composite-connection-mixin' class
 
-(defclass bag-connection (rsb.ep:error-policy-mixin
-                          print-items:print-items-mixin)
-  ((bag      :initarg  :bag
-             :reader   connection-bag
-             :documentation
-             "Stores the bag object that is connected to RSB
-              participants as a data source or sink.")
-   (channels :initarg  :channels
-             :type     list
-             :reader   connection-channels
-             :initform '()
-             :documentation
-             "Stores a list of `channel-connection's for channels of
-              the bag that are connected to endpoints as data sources
-              or sinks."))
-  (:default-initargs
-   :bag (missing-required-initarg 'bag-connection :bag))
+(defclass composite-connection-mixin ()
+  ((connections :initarg :connections
+                :type     list #|of connections|#
+                :reader   connection-direct-connections
+                :initform '()
+                :documentation
+                "Stores a list of child connections."))
   (:documentation
-   "Instances of this class represent the connections being
-    established when channels of bags are used as data sources or
-    sinks of RSB participants. "))
+   "Intended to be mixed into connection classes with child connections."))
 
-(defmethod shared-initialize :after ((instance   bag-connection)
+(defmethod shared-initialize :after ((instance   composite-connection-mixin)
                                      (slot-names t)
                                      &key)
   (setf (rsb.ep:processor-error-policy instance)
         (rsb.ep:processor-error-policy instance)))
 
-(defmethod (setf rsb.ep:processor-error-policy) :before ((new-value t)
-                                                         (object    bag-connection))
-  (iter (for channel in (connection-channels object))
-        (setf (rsb.ep:processor-error-policy channel) new-value)))
+(defmethod (setf rsb.ep:processor-error-policy) :before
+    ((new-value t)
+     (object    composite-connection-mixin))
+  (iter (for connection in (connection-direct-connections object))
+        (setf (rsb.ep:processor-error-policy connection) new-value)))
+
+(defmethod close ((connection composite-connection-mixin) &key abort)
+  ;; Close all direct child connections.
+  (map nil (rcurry #'close :abort abort)
+       (connection-direct-connections connection)))
+
+(defmethod wait ((connection composite-connection-mixin))
+  (map nil #'wait (connection-direct-connections connection)))
+
+(defmethod start ((connection composite-connection-mixin))
+  (map nil #'start (connection-direct-connections connection)))
+
+(defmethod stop ((connection composite-connection-mixin))
+  (map nil #'stop (connection-direct-connections connection)))
+
+(defmethod print-items:print-items append ((object composite-connection-mixin))
+  `((:direct-connection-count ,(length (connection-direct-connections object))
+                              "(~D)")))
+
+;;; `bag-connection' class
+
+(defclass bag-connection (composite-connection-mixin
+                          rsb.ep:error-policy-mixin
+                          print-items:print-items-mixin)
+  ((bag :initarg  :bag
+        :reader   connection-bag
+        :documentation
+        "Stores the bag object that is connected to the data source(s)
+         or sink(s)."))
+  (:default-initargs
+   :bag (missing-required-initarg 'bag-connection :bag))
+  (:documentation
+   "Connections between channels of bags and data sources or sinks."))
 
 (defmethod close ((connection bag-connection) &key abort)
-  ;; Close all channel connections, then close the bag.
-  (map nil (rcurry #'close :abort abort) (connection-channels connection))
+  (call-next-method)
   (close (connection-bag connection) :abort abort))
-
-(defmethod wait ((connection bag-connection))
-  "Wait for all channel connections."
-  (map nil #'wait (connection-channels connection)))
-
-(defmethod start ((connection bag-connection))
-  (map nil #'start (connection-channels connection)))
-
-(defmethod stop ((connection bag-connection))
-  (map nil #'stop (connection-channels connection)))
-
-(defmethod print-items:print-items append ((object bag-connection))
-  `((:channel-count ,(length (connection-channels object)) "(~D)")))
 
 ;;; `recording-bag-connection' class
 
@@ -87,7 +95,8 @@
                (urls (mapcar #'normalize-url
                              (mappend (compose #'rsb:transport-specific-urls
                                                #'connection-endpoint)
-                                      (connection-channels connection))))
+                                      (connection-connections
+                                       connection :include-inner? nil))))
                (urls (remove-duplicates urls :test #'puri:uri=)))
           (rsb:with-participant
               (introspection :remote-introspection

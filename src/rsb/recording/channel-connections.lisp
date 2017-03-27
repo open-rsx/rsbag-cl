@@ -9,8 +9,9 @@
 (defmethod process-event ((connection recording-bag-connection)
                           (timestamp  local-time:timestamp)
                           (event      t))
-  (assert (length= 1 (connection-channels connection)))
-  (process-event (first (connection-channels connection)) timestamp event))
+  (let ((connections (connection-connections connection :include-inner? nil)))
+    (assert (length= 1 connections))
+    (process-event (first connections) timestamp event)))
 
 ;;; `recording-channel-connection' class
 
@@ -58,7 +59,7 @@
 (defmethod print-items:print-items append
     ((object recording-channel-connection))
   `((:timestamp ,(connection-timestamp object) "~A"
-                ((:before :channel-count)))))
+                ((:before :direct-connection-count)))))
 
 ;;; `recording-participant-channel-connection' class
 

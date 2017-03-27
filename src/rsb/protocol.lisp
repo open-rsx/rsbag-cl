@@ -154,3 +154,46 @@
     continue using the `start' function."))
 
 ;; connections also implement a method on cl:close
+
+;;; Composite connection protocol
+
+(defgeneric connection-direct-connections (connection)
+  (:documentation
+   "Return the direct child connections of CONNECTION."))
+
+(defgeneric connection-connections (connection
+                                    &key
+                                    include-inner?
+                                    include-self?
+                                    leaf-test)
+  (:documentation
+   "Return a list of certain ancestor connections of CONNECTION.
+
+    INCLUDE-INNER? controls whether inner nodes or only leafs of the
+    connection tree are returned.
+
+    INCLUDE-SELF? controls whether CONNECTION is returned.
+
+    LEAF-TEST is a predicate that is called to determine whether a
+    given connection should be considered a leaf or an inner node."))
+
+;; Default behavior
+
+(defmethod connection-direct-connections ((connection t))
+  '())
+
+(defmethod connection-connections ((connection t)
+                                   &key
+                                   (include-inner? t)
+                                   (include-self?  include-inner?)
+                                   (leaf-test      (of-type 'channel-connection)))
+  (let ((connections (mappend (rcurry #'connection-connections
+                                      :include-inner? include-inner?)
+                              (connection-direct-connections connection))))
+    (cond
+      (include-self?
+       (list* connection connections))
+      ((funcall leaf-test connection)
+       (list connection))
+      (t
+       connections))))

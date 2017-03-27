@@ -32,7 +32,8 @@
   (make-instance 'informer-injector
                  :channel  channel
                  :informer (connection-endpoint
-                            (find channel (connection-channels connection)
+                            (find channel (connection-connections
+                                           connection :include-inner? nil)
                                   :test #'member
                                   :key  #'connection-channels))))
 

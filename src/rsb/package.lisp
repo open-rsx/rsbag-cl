@@ -55,6 +55,13 @@
    #:with-events->bag
    #:with-bag->events)
 
+  ;; Composite connection protocol and `composite-connection-mixin' class
+  (:export
+   #:connection-direct-connections
+   #:connection-connections
+
+   #:composite-connection-mixin)
+
   ;; `bag-connection' class and protocol
   (:export
    #:bag-connection
