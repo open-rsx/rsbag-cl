@@ -422,12 +422,17 @@
     (t
      (make-keyword type))))
 
+(declaim (ftype (function ((unsigned-byte 32)
+                           (simple-array (cons (unsigned-byte 32) (unsigned-byte 64)) (*))
+                           &optional
+                           (unsigned-byte 32)
+                           (unsigned-byte 32))
+                          (values (unsigned-byte 64) &optional))
+                %chunk-id->offset))
 (defun %chunk-id->offset (id chunks
                           &optional
                           (start 0)
                           (end   (length chunks)))
-  (declare (type (unsigned-byte 32) id start end)
-           (type (simple-array (cons (unsigned-byte 32) (unsigned-byte 64)) (*)) chunks))
   (labels ((rec (start end)
              (declare (type (unsigned-byte 32) start end))
              (when (= start end)
