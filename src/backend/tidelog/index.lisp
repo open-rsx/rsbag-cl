@@ -1,6 +1,6 @@
 ;;;; index.lisp --- Representation of TIDELog indices.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -110,16 +110,16 @@
 (defmethod close ((stream input-index) &key abort)
   (declare (ignore abort))) ; nothing to do
 
-(defmethod index-num-entries ((index input-index))
+(defmethod index-count ((index input-index))
   (index-vector-length (index-entries index)))
 
-(defmethod index-offset ((index  input-index)
-                         (index1 integer))
-  (index-vector-index->offset index1 (index-entries index)))
+(defmethod index-offset ((index input-index)
+                         (thing integer))
+  (index-vector-index->offset thing (index-entries index)))
 
-(defmethod index-offset ((index     input-index)
-                         (timestamp local-time:timestamp))
-  (index-vector-timestamp->offset timestamp (index-entries index)))
+(defmethod index-offset ((index input-index)
+                         (thing local-time:timestamp))
+  (index-vector-timestamp->offset thing (index-entries index)))
 
 (defmethod index-add-indxs ((index  input-index)
                             (indxs  sequence)
@@ -178,7 +178,7 @@
          (mapcar (compose #'list (curry #'index-derive-flush-strategy index))
                  (rsbag.backend::flush-strategy-children flush-strategy))))
 
-(defmethod index-num-entries ((index output-index))
+(defmethod index-count ((index output-index))
   (indx-count (backend-buffer index)))  ; TODO wrong after flushing
 
 (defmethod put-entry ((index     output-index)

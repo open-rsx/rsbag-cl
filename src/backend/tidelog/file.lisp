@@ -269,7 +269,7 @@
 
 (defmethod get-num-entries ((file    file)
                             (channel integer))
-  (index-num-entries (gethash channel (file-%indices file))))
+  (index-count (gethash channel (file-%indices file))))
 
 (defmethod get-timestamps ((file    file)
                            (channel integer))

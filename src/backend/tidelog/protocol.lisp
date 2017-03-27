@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol functions of the backend.tidelog module.
 ;;;;
-;;;; Copyright (C) 2013 Jan Moringen
+;;;; Copyright (C) 2013, 2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -86,4 +86,31 @@
 
 ;;; Index protocol
 ;;;
-;;; TODO
+;;; Generic functions for translating entry indices and entry
+;;; timestamps to file offsets.
+
+(defgeneric index-count (index)
+  (:documentation
+   "Return the number of entries stored in INDEX."))
+
+(defgeneric index-offset (index thing)
+  (:documentation
+   "Return the offset of the entry designated by THING in INDEX.
+
+    THING can be either an entry index or a timestamp."))
+
+(defgeneric index-add-indxs (index indxs chunks)
+  (:documentation
+   "Add INDXS to INDEX, using CHUNKS to compute file offsets."))
+
+(defgeneric index-add-entries (index entries chunks)
+  (:documentation
+   "Add ENTRIES to INDEX, using CHUNKS to compute file offsets."))
+
+;;; Output index protocol
+;;;
+;;; Flush management of output indices.
+
+(defgeneric index-derive-flush-strategy (index flush-strategy)
+  (:documentation
+   "Return a flush-strategy for INDEX based on FLUSH-STRATEGY."))
