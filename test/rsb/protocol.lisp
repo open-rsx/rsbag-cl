@@ -144,7 +144,9 @@
                               (declare (ignore timestamp))
                               (record event))
                             args))
-                  (rsbag.rsb.replay:replay connection (connection-strategy connection)))
+                  (rsbag.rsb.replay:replay
+                   connection
+                   (rsbag.rsb.replay:connection-strategy connection)))
                 (record)))))
       (case expected
         (service-provider:missing-provider-error
@@ -172,7 +174,9 @@
           (connection (bag->events
                        (rsbag.test:simple-bag) (format nil "inprocess:~A" prefix)
                        :replay-strategy :as-fast-as-possible))
-        (rsbag.rsb.replay:replay connection (connection-strategy connection)))
+        (rsbag.rsb.replay:replay
+         connection
+         (rsbag.rsb.replay:connection-strategy connection)))
       ;; Receive the events.
       (iter (repeat (reduce #'+ (bag-channels (rsbag.test:simple-bag))
                             :key #'length))

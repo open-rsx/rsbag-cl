@@ -73,12 +73,6 @@
   (:export
    #:recording-bag-connection)
 
-  ;; `replay-bag-connection' subclass and protocol
-  (:export
-   #:replay-bag-connection
-
-   #:connection-strategy)
-
   ;; `channel-connection' class and protocol
   (:export
    #:channel-connection)

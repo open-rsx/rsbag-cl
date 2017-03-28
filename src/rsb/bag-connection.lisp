@@ -111,24 +111,3 @@
                                   without an introspection ~
                                   survey.~@:>"
                           connection))))))
-
-;;; `replay-bag-connection' class
-
-(defclass replay-bag-connection (bag-connection)
-  ((strategy :initarg  :strategy
-             :reader    connection-strategy
-             :documentation
-             "Stores the strategy that is used for replaying events
-              from the associated bag of the connection."))
-  (:default-initargs
-   :strategy (missing-required-initarg 'replay-bag-connection :strategy))
-  (:documentation
-   "Instances of this class associate an event replay strategy, a
-    source bag and `rsb:informer' instances to collaboratively replay
-    the events from the bag."))
-
-(defmethod (setf rsb.ep:processor-error-policy) :before
-    ((new-value t)
-     (object    replay-bag-connection))
-  (let+ (((&structure-r/o connection- strategy) object))
-    (setf (rsb.ep:processor-error-policy strategy) new-value)))

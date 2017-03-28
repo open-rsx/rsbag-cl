@@ -225,6 +225,8 @@
                               (:file       "util")
                               (:file       "protocol")
 
+                              (:file       "bag-connections")
+
                               (:file       "strategy-mixins")
 
                               (:file       "recorded-timing")

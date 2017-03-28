@@ -58,6 +58,12 @@
   (:export
    #:schedule-event)
 
+  ;; Replay bag connection protocol
+  (:export
+   #:connection-strategy
+
+   #:replay-bag-connection)
+
   ;; Service and strategy creation protocol
   (:export
    #:strategy                       ; service
