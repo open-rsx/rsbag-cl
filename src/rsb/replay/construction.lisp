@@ -82,7 +82,7 @@
                                           (second type)
                                           :bytes)))
          (participant
-          (apply #'make-participant :informer uri
+          (apply #'rsb:make-participant :informer uri
                  :converters `((t . ,converter))
                  (when-let ((transform
                              (%make-scope-transform prefix-scope type)))
@@ -139,6 +139,6 @@
              (typep type '(cons keyword))
              (starts-with-subseq "RSB-EVENT" (symbol-name (first type))))
     (lambda (event)
-      (setf (event-scope event)
-            (rsb:merge-scopes (event-scope event) scope))
+      (setf (rsb:event-scope event)
+            (rsb:merge-scopes (rsb:event-scope event) scope))
       event)))

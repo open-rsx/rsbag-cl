@@ -1,6 +1,6 @@
 ;;;; types.lisp --- types used in the rsb.replay module.
 ;;;;
-;;;; Copyright (C) 2012, 2013, 2016 Jan Moringen
+;;;; Copyright (C) 2012-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -51,7 +51,7 @@
    indicates that the timestamp designated by TIMESTAMP-DESIGNATOR
    should be extracted from the current event and used to replace the
    stored timestamp."
-  '(cons (eql :copy) (cons timestamp-designator null)))
+  '(cons (eql :copy) (cons rsb:timestamp-designator null)))
 
 (deftype timestamp-adjustment-value/delta ()
   `(cons (eql :delta) (cons real null)))
@@ -71,4 +71,4 @@
    specifying that the timestamp designated by TIMESTAMP-DESIGNATOR
    should be replaced with the timestamp value specified by
    TIMESTAMP-ADJUSTMENT-VALUE"
-  '(cons timestamp-designator (cons timestamp-adjustment-value null)))
+  '(cons rsb:timestamp-designator (cons timestamp-adjustment-value null)))

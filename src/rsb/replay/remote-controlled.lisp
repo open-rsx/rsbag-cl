@@ -18,7 +18,7 @@
                              filtering-mixin
                              external-driver-mixin
                              timestamp-adjustment-mixin
-                             uri-mixin
+                             rsb:uri-mixin
                              print-items:print-items-mixin)
   ((rsb::uri :accessor strategy-control-uri)
    (server   :accessor strategy-%server
@@ -98,15 +98,18 @@
               (handler-case
                   (let ((result (multiple-value-list
                                  (apply function request))))
-                    (setf (future-result future)
+                    (setf (rsb.patterns.request-reply:future-result future)
                           (if result
                               (first result)
                               rsb.converter:+no-value+))) ; TODO(jmoringe): ugly
                 (error (condition)
-                  (setf (future-error future) condition)))))))
+                  (setf (rsb.patterns.request-reply:future-error future)
+                        condition)))))))
     ;; Remove registered methods from the server.
-    (iter (for method in (server-methods server))
-          (setf (server-method server (method-name method)) nil))
+    (iter (for method in (rsb.patterns.request-reply:server-methods server))
+          (setf (rsb.patterns.request-reply:server-method
+                 server (rsb.patterns.request-reply:method-name method))
+                nil))
 
     ;; Create wrapper functions for commands and register
     ;; corresponding server methods.
@@ -116,11 +119,11 @@
           ;; iteration.
           (let+ (((name . lambda) name-and-lambda)
                  (name (string-downcase name)))
-            (setf (server-method server name)
+            (setf (rsb.patterns.request-reply:server-method server name)
                   (lambda (&rest request)
                     (let ((future (make-instance 'rsb.patterns.request-reply:future)))
                       (enqueue strategy (make-command lambda request future))
-                      (let ((result (future-result future))) ; TODO(jmoringe): cumbersome
+                      (let ((result (rsb.patterns.request-reply:future-result future))) ; TODO(jmoringe): cumbersome
                         (if (eq result rsb.converter:+no-value+)
                             (values)
                             result)))))))))
@@ -137,6 +140,6 @@
                    &key &allow-other-keys)
   (let+ (((&structure strategy- control-uri (server %server) num-repetitions)
           strategy))
-    (with-participant (server* :local-server control-uri)
+    (rsb:with-participant (server* :local-server control-uri)
       (setf server server*)
       (call-repeatedly num-repetitions (lambda () (call-next-method))))))

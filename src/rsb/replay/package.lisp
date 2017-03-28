@@ -16,20 +16,7 @@
    #:rsbag
    #:rsbag.transform
    #:rsbag.view
-   #:rsbag.rsb
-
-   #:rsb
-   #:rsb.patterns.request-reply)
-
-  (:shadowing-import-from #:rsbag
-   #:direction
-
-   #:meta-data
-   #:meta-data-count
-   #:meta-data-keys
-   #:meta-data-values
-   #:meta-data-plist
-   #:meta-data-alist)
+   #:rsbag.rsb)
 
   ;; Types
   (:export

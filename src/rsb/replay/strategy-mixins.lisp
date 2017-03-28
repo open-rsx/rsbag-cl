@@ -404,7 +404,7 @@
   (let ((no-fill? (ecase (strategy-event-id strategy)
                     (:keep    t)
                     (:replace nil))))
-    (send sink event :unchecked? t :no-fill? no-fill?)))
+    (rsb:send sink event :unchecked? t :no-fill? no-fill?)))
 
 (defmethod process-event ((connection         t)
                           (strategy           sequential-mixin)
@@ -617,25 +617,25 @@
                                   (strategy           timestamp-adjustment-mixin)
                                   (timestamp          t)
                                   (previous-timestamp t)
-                                  (event              event)
+                                  (event              rsb:event)
                                   (sink               t))
   "The default behavior consists in sending EVENT via INFORMER."
   (iter (for (key value) in (strategy-adjustments strategy))
-        (setf (timestamp event key)
+        (setf (rsb:timestamp event key)
               (etypecase value
                 (timestamp-adjustment-value/now
                  (local-time:now))
 
                 (timestamp-adjustment-value/copy
                  (let ((key (second value)))
-                   (or (timestamp event key)
+                   (or (rsb:timestamp event key)
                        (error "~@<Event ~A does not have a ~A ~
                                timestamp.~:@>"
                               event key))))
 
                 (timestamp-adjustment-value/delta
                  (let+ (((&values sec nsec) (floor (second value))))
-                   (local-time:adjust-timestamp (timestamp event key)
+                   (local-time:adjust-timestamp (rsb:timestamp event key)
                      (:offset :sec  sec)
                      (:offset :nsec (floor (* 1000000000 nsec))))))
 
@@ -720,7 +720,7 @@
                           (funcall index)))
 
     (:get            . ,(lambda ()
-                          (event-data (second (funcall element)))))
+                          (rsb:event-data (second (funcall element)))))
 
     ;; Session
     (:quit           . ,(lambda ()
