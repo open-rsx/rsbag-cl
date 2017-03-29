@@ -58,6 +58,11 @@
   (when next-supplied?
     (setf (strategy-%next instance) (make-strategy next))))
 
+(defmethod rsb.ep:access? ((processor delegating-mixin)
+                           (part      t)
+                           (access    t))
+  (rsb.ep:access? (strategy-next processor) part access))
+
 (defmethod channel-name-for ((connection t)
                              (event      t)
                              (strategy   delegating-mixin))
@@ -99,6 +104,14 @@
 
 (service-provider:register-provider/class
  'strategy :scope-and-type :class 'scope-and-type)
+
+(macrolet ((needs (part)
+             `(defmethod rsb.ep:access? ((processor scope-and-type)
+                                         (part      (eql ,part))
+                                         (access    (eql :read)))
+                t)))
+  (needs :scope)
+  (needs :meta-data))
 
 (defmethod channel-name-for ((connection t)
                              (event      rsb:event)
@@ -145,6 +158,11 @@
 
 (service-provider:register-provider/class
  'strategy :collapse-reserved :class 'collapse-reserved)
+
+(defmethod rsb.ep:access? ((processor collapse-reserved)
+                           (part      (eql :scope))
+                           (access    (eql :read)))
+  t)
 
 (defmethod channel-name-for ((connection t)
                              (event      rsb:event)
