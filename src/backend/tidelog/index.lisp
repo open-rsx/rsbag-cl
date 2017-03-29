@@ -15,7 +15,7 @@
             :type     index-vector
             :reader   timestamps-entries
             :documentation
-            "Points to the list of entries of the associated index."))
+            "The vector of entries of the associated index."))
   (:default-initargs
    :entries (missing-required-initarg 'timestamps :entries))
   (:documentation
@@ -23,19 +23,18 @@
     instances that produced lazily."))
 
 #+sbcl
-(defmethod sequence:length ((timestamps timestamps))
-  (index-vector-length (timestamps-entries timestamps)))
+(defmethod sequence:length ((sequence timestamps))
+  (index-vector-length (timestamps-entries sequence)))
 
 #+sbcl
-(defmethod sequence:elt ((timestamps timestamps)
-                         (index      integer))
+(defmethod sequence:elt ((sequence timestamps)
+                         (index    integer))
   (uint64->timestamp (index-vector-index->timestamp
-                      index (timestamps-entries timestamps))))
+                      index (timestamps-entries sequence))))
 
 ;;; Index creation
 
-(defun make-index (channel-id stream lock direction
-                   &key flush-strategy)
+(defun make-index (channel-id stream lock direction &key flush-strategy)
   (let+ (((&flet make-it (class &rest initargs)
             (apply #'make-instance class
                    :stream    stream
