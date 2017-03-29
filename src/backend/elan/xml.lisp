@@ -1,6 +1,6 @@
 ;;;; xml.lisp --- To- and from-XML conversion for Elan types.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -162,7 +162,7 @@
        ((:@   (version    "VERSION")   :type 'version/cons)         ".")
        ((:@   (author     "AUTHOR"))                                ".")
        ((:@   (date       "DATE")      :type 'local-time:timestamp) ".")
-       ((:@   (time-units "TIME_UNITS"))                            "HEADER")
+       ;; ((:@   (time-units "TIME_UNITS"))                            "HEADER")
        ((:@   (urls       "MEDIA_URL"))                             "HEADER/MEDIA_DESCRIPTOR"
         :if-multiple-matches :all)
        ((:val time-slots               :type 'time-slot/cons)       "TIME_ORDER/TIME_SLOT"
