@@ -81,21 +81,36 @@
         ((:channel-stratetgy :scope-and-type)
          ((,(local-time:now)
            ("/foo" #3=,(octet-vector 1 2 3 4) "int32")))
-         (#3#)))
+         (#3#))
 
-    (let+ (((&flet make-event (scope payload wire-schema)
+        (()
+         ((nil
+           ("/foo" #4=,(octet-vector 1 2 3 4) "int32"
+            :send ,(local-time:now))))
+         (#4#))
+        ((:timestamp :receive)
+         ((nil
+           ("/foo" #5=,(octet-vector 1 2 3 4) "int32"
+            :receive ,(local-time:now))))
+         (#5#)))
+
+    (let+ (((&flet make-event (scope payload wire-schema &rest timestamps)
               (let ((event (rsb:make-event
                             scope payload
                             :rsb.transport.wire-schema wire-schema)))
                 (setf (rsb:event-origin event)          (uuid:make-null-uuid)
-                      (rsb:event-sequence-number event) 0)
+                      (rsb:event-sequence-number event) 0
+                      (rsb:event-timestamps event)      timestamps)
                 event)))
            ((&flet do-it ()
               (rsbag.test:with-mock-bag (bag :direction :output) ()
                 (with-open-connection
                     (connection (apply #'events->bag nil bag args))
-                  (mapc (lambda+ ((timestamp (scope payload wire-schema)))
-                          (let ((event (make-event scope payload wire-schema)))
+                  (mapc (lambda+ ((timestamp (scope payload wire-schema
+                                              &rest timestamps)))
+                          (let ((event (apply #'make-event
+                                              scope payload wire-schema
+                                              timestamps)))
                             (rsbag.rsb.recording:process-event
                              connection timestamp event)))
                         timestamps-and-events))

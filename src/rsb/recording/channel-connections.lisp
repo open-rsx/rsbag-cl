@@ -7,7 +7,7 @@
 (cl:in-package #:rsbag.rsb.recording)
 
 (defmethod process-event ((connection recording-bag-connection)
-                          (timestamp  local-time:timestamp)
+                          (timestamp  t)
                           (event      t))
   (let ((connections (connection-connections connection :include-inner? nil)))
     (assert (length= 1 connections))
@@ -45,6 +45,12 @@
       (push channel (connection-channels connection)))
 
     (setf (entry channel timestamp) event)))
+
+(defmethod process-event ((connection recording-channel-connection)
+                          (timestamp  null)
+                          (event      rsb:event))
+  (let+ (((&structure-r/o connection- timestamp) connection))
+    (process-event connection (rsb:timestamp event timestamp) event)))
 
 (defmethod rsb.ep:handle ((sink  recording-channel-connection)
                           (event rsb:event))
