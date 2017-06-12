@@ -84,8 +84,7 @@
    "Providers are transformations that are applied to entries prior to
     serializing/after deserializing them to/from bag channels."))
 
-(defgeneric make-transform (spec
-                            &rest args)
+(defgeneric make-transform (spec &rest args)
   (:documentation
    "Make and return an instance of the transform class designated by
     SPEC passing ARGS to the constructed instance."))
@@ -93,8 +92,7 @@
 (defmethod make-transform ((spec symbol) &rest args)
   (apply #'service-provider:make-provider 'transform spec args))
 
-(defmethod make-transform ((spec (eql :utf-8-string))
-                           &rest args)
+(defmethod make-transform ((spec (eql :utf-8-string)) &rest args)
   ;; Return nil for SPEC :utf-8-string since no transform is necessary
   ;; in this case.
   (declare (ignore args))
