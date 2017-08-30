@@ -111,15 +111,23 @@
                      (location  source)
                      (direction :io)
                      (if-exists :error)
-                     (backend   (make-keyword
-                                 (string-upcase (pathname-type source)))))
-  (let ((stream (open source
-                      :element-type      '(unsigned-byte 8)
-                      :direction         direction
-                      :if-exists         if-exists
-                      :if-does-not-exist (case direction
-                                           (:input        :error)
-                                           ((:output :io) :create)))))
+                     (backend   nil     backend-supplied?))
+  (let* ((backend (cond
+                    (backend-supplied?
+                     backend)
+                    ((not (stringp (pathname-type source)))
+                     (error "~@<Cannot guess file format because ~A is ~
+                             missing a type component.~@:>"
+                            source))
+                    (t
+                     (make-keyword (string-upcase (pathname-type source))))))
+         (stream  (open source
+                        :element-type      '(unsigned-byte 8)
+                        :direction         direction
+                        :if-exists         if-exists
+                        :if-does-not-exist (case direction
+                                             (:input        :error)
+                                             ((:output :io) :create)))))
     (apply #'open-bag stream
            :location  location
            :direction direction

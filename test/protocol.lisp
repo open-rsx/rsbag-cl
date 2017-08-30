@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Unit tests for the client-facing protocol.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -55,6 +55,7 @@
         (,(pathname/existing)   :direction :invalid :backend :mock)
         (,(stream)              :direction :invalid :backend :mock)
         ;; invalid backend
+        (,#P"name-but-no-type"  :direction :input)
         (,(namestring/existing) :direction :input :backend :no-such-backend)
         (,(pathname/existing)   :direction :input :backend :no-such-backend)
         (,(stream)              :direction :input :backend :no-such-backend)
