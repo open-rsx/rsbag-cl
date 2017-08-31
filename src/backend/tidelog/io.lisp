@@ -96,7 +96,7 @@
                  &optional start)
   (declare (ignore start))
 
-  (let+ ((offset (file-position source))
+  (let+ ((offset (file-position-or-lose source))
          ((&values class length) (unpack source :block-header))
          (class-name (class-name class)))
     (values
@@ -108,9 +108,9 @@
        ((indx chnk)
         (prog1
             (cons class-name (nibbles:read-ub32/le source)) ; CHNK id / INDX channel id
-          (file-position source (+ (file-position source) (- length 4)))))
+          (file-position source (+ (file-position-or-lose source) (- length 4)))))
        (t
-        (file-position source (+ (file-position source) length)))))))
+        (file-position source (+ (file-position-or-lose source) length)))))))
 
 ;;; Unpacking
 
@@ -151,15 +151,16 @@
   (declare (ignore start))
 
   (let+ (((&values class length) (unpack source :block-header))
-         (file-length (ignore-errors (file-length source)))) ; TODO cache this when we have the stream abstraction
+         (file-length (ignore-errors (file-length source))) ; TODO cache this when we have the stream abstraction
+         (file-position (file-position-or-lose source)))
     (when (and file-length
-               (> (+ (file-position source) length) file-length))
+               (> (+ file-position length) file-length))
       (cerror "Try to read the block anyway"
               "~@<Bounds [~/rsbag.backend:print-offset/, ~
                ~/rsbag.backend:print-offset/[ of ~A block would be ~
                outside bounds [~/rsbag.backend:print-offset/, ~
                ~/rsbag.backend:print-offset/[ of ~A.~@:>"
-              (file-position source) (+ (file-position source) length)
+              file-position (+ file-position length)
               (class-name class)
               0 (file-length source) source))
     (unpack (read-chunk-of-length (if (eq (class-name class) 'tide) 10 length) source) ; TODO(jmoringe): hack

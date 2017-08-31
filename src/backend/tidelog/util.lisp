@@ -1,12 +1,21 @@
 ;;;; util.lisp --- Utility functions for the TIDELog backend.
 ;;;;
-;;;; Copyright (C) 2012, 2013, 2016 Jan Moringen
+;;;; Copyright (C) 2012-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:rsbag.backend.tidelog)
 
 ;;; IO-related utility functions
+
+(defun file-position-error (stream)
+  (error "~@<Failed to determine position in stream ~A.~@:>"
+         stream))
+
+(declaim (inline file-position-or-lose))
+(defun file-position-or-lose (stream)
+  (or (file-position stream)
+      (file-position-error stream)))
 
 (defun read-chunk-of-length (length stream
                              &optional
