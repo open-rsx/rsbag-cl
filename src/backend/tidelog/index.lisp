@@ -103,7 +103,7 @@
    "Instances of this class index events of individual channels for
     files opened with :input direction.
 
-    These indices only store event timestamps and corresponding
+    These indices only store entry timestamps and corresponding
     offsets, are immutable and never write back any data."))
 
 (defmethod close ((stream input-index) &key abort)
@@ -152,8 +152,8 @@
    "Instances of this class store partial index information for
     individual channels until it is written to the output stream.
 
-    These indices do not generally store information for all events in
-    one channel and cannot be queried."))
+    These indices do not generally store information for all entries
+    in one channel and cannot be queried."))
 
 (defmethod index-derive-flush-strategy ((index          output-index)
                                         (flush-strategy t))
@@ -250,11 +250,11 @@
                     output-index)
   ()
   (:documentation
-   "Instances of these class manage mutable and queryable index
+   "Instances of this class manage mutable and queryable index
     information for individual channels.
 
     Such an index contains timestamp and index information for all
-    events of the associated channel as well as a buffer of unwritten
+    entries of the associated channel as well as a buffer of unwritten
     index information."))
 
 (defmethod put-entry ((index     io-index)
