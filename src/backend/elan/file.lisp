@@ -1,6 +1,6 @@
 ;;;; file.lisp --- Elan file format support.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -118,7 +118,6 @@
                        content))))))
 
 (defmethod close ((file file) &key abort)
-  "TODO(jmoringe): document"
   (declare (ignore abort))
 
   (when (member (backend-direction file) '(:output :io))
