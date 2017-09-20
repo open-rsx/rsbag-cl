@@ -46,10 +46,15 @@
    "Return a list of the timestamps for which entries are stored in
     CHANNEL of the data source represented by BACKEND."))
 
-(defgeneric get-entry (backend channel index)
+(defgeneric get-entry-at-index (backend channel index)
   (:documentation
-   "Retrieve and return the entry designated by INDEX of CHANNEL in
-    the data source represented by BACKEND."))
+   "Return the entry designated by INDEX of CHANNEL in the data source
+    represented by BACKEND."))
+
+(defgeneric get-entry-at-time (backend channel timestamp)
+  (:documentation
+   "Return the entry designated by TIMESTAMP of CHANNEL in the data
+    source represented by BACKEND."))
 
 (defgeneric put-entry (backend channel timestamp entry)
   (:documentation

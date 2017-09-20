@@ -64,9 +64,9 @@
                                          (channel integer))
   (first (nth channel (backend-%channels backend))))
 
-(defmethod rsbag.backend:get-entry ((backend mock-backend)
-                                    (channel integer)
-                                    (index   integer))
+(defmethod rsbag.backend:get-entry-at-index ((backend mock-backend)
+                                             (channel integer)
+                                             (index   integer))
   (let* ((channel (nth channel (backend-%channels backend)))
          (entry   (nth index (second channel))))
     (case entry

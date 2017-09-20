@@ -1,6 +1,6 @@
 ;;;; file.lisp --- High-level tests for the tidelog backend.
 ;;;;
-;;;; Copyright (C) 2013, 2015, 2016 Jan Moringen
+;;;; Copyright (C) 2013, 2015, 2016, 2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -25,8 +25,8 @@
                 channel))))
          ((&flet read-bag (data channel)
             (with-readable-log (backend data)
-              (values (rsbag.backend:get-entry backend channel 0)
-                      (rsbag.backend:get-entry backend channel 1)))))
+              (values (rsbag.backend:get-entry-at-index backend channel 0)
+                      (rsbag.backend:get-entry-at-index backend channel 1)))))
          ((&values channel data) (write-bag))
          ((&values entry-1* entry-2*) (read-bag data channel)))
     (ensure-same entry-1* entry-1 :test #'equalp)

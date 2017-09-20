@@ -81,7 +81,7 @@
   (check-type if-does-not-exist if-does-not-exist-policy)
 
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
-         (raw (or (rsbag.backend:get-entry backend id index)
+         (raw (or (rsbag.backend:get-entry-at-index backend id index)
                   (ecase if-does-not-exist
                     (:error (error 'no-such-entry
                                    :bag     (channel-bag channel)
@@ -99,7 +99,7 @@
   (check-type if-does-not-exist if-does-not-exist-policy)
 
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))
-    (or (rsbag.backend:get-entry backend id timestamp)
+    (or (rsbag.backend:get-entry-at-time backend id timestamp)
         (ecase if-does-not-exist
           (:error (error 'no-such-entry
                          :bag     (channel-bag channel)

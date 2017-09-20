@@ -280,6 +280,32 @@
   #-sbcl
   #.(error "Not implemented."))
 
+(defmethod get-entry-at-index ((file    file)
+                               (channel integer)
+                               (index   integer))
+  (let+ (((&accessors (stream backend-stream)
+                      (lock   rsbag.backend::backend-lock))
+          file)
+         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
+         (offset (index-index->offset index1 index)))
+    (bt:with-lock-held (lock)
+      (file-position stream (+ offset 12))
+      (let ((length (nibbles:read-ub32/le stream)))
+        (read-chunk-of-length length stream)))))
+
+(defmethod get-entry-at-time ((file      file)
+                              (channel   integer)
+                              (timestamp local-time:timestamp))
+  (let+ (((&accessors (stream backend-stream)
+                      (lock   rsbag.backend::backend-lock))
+          file)
+         (index  (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
+         (offset (index-timestamp->offset index timestamp)))
+    (bt:with-lock-held (lock)
+      (file-position stream (+ offset 12))
+      (let ((length (nibbles:read-ub32/le stream)))
+        (read-chunk-of-length length stream)))))
+
 (defmethod put-entry ((file      file)
                       (channel   integer)
                       (timestamp local-time:timestamp)
@@ -307,19 +333,6 @@
     ;; Update index. Abuse chnk-count for tracking offsets
     (put-entry index timestamp* (chnk-count buffer) (chnk-chunk-id buffer))
     (incf (chnk-count buffer) (+ 16 size)))) ; TODO(jmoringe): constants
-
-(defmethod get-entry ((file    file)
-                      (channel integer)
-                      (index   integer))
-  (let+ (((&accessors (stream backend-stream)
-                      (lock   rsbag.backend::backend-lock))
-          file)
-         (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
-         (offset (index-index->offset index1 index)))
-    (bt:with-lock-held (lock)
-      (file-position stream (+ offset 12))
-      (let ((length (nibbles:read-ub32/le stream)))
-        (read-chunk-of-length length stream)))))
 
 ;;; Buffering
 

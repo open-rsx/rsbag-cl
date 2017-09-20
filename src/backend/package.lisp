@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for backend module.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -38,7 +38,8 @@
    #:get-num-entries
    #:get-timestamps
 
-   #:get-entry
+   #:get-entry-at-index
+   #:get-entry-at-time
    #:put-entry)
 
   ;; Backend service and backend creation protocol

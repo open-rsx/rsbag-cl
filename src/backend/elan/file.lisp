@@ -184,6 +184,17 @@
   (map 'list (compose #'millisecs->timestamp #'car)
        (gethash channel (file-%data file))))
 
+(defmethod get-entry-at-index ((file    file)
+                               (channel integer)
+                               (index   integer))
+  (third (nth index (gethash channel (file-%data file)))))
+
+(defmethod get-entry-at-time ((file      file)
+                              (channel   integer)
+                              (timestamp local-time:timestamp))
+  (third (find timestamp (gethash channel (file-%data file))
+               :test #'local-time:timestamp= :key #'first)))
+
 (defmethod put-entry ((file      file)
                       (channel   integer)
                       (timestamp local-time:timestamp)
@@ -192,8 +203,3 @@
          (timestamp* (timestamp->millisecs timestamp)))
     (push (list timestamp* timestamp* entry)
           (gethash channel data))))
-
-(defmethod get-entry ((file    file)
-                      (channel integer)
-                      (index   integer))
-  (third (nth index (gethash channel (file-%data file)))))
