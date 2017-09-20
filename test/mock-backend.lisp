@@ -1,6 +1,6 @@
 ;;;; mock-backend.lisp --- Mock backend class for unit tests.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -73,12 +73,12 @@
       (error (error "~@<Simulated entry retrieval error~@:>"))
       (t     entry))))
 
-(defmethod rsbag.backend:put-entry ((backend mock-backend)
-                                    (channel integer)
-                                    (index   local-time:timestamp)
-                                    (entry   t))
+(defmethod rsbag.backend:put-entry ((backend   mock-backend)
+                                    (channel   integer)
+                                    (timestamp local-time:timestamp)
+                                    (entry     t))
   (let ((channel (nth channel (backend-%channels backend))))
-    (appendf (first channel) (list index))
+    (appendf (first channel) (list timestamp))
     (appendf (second channel) (list entry))))
 
 ;;; Convenience macros

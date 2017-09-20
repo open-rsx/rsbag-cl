@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Backend protocol of the cl-rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013, 2015, 2016 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -51,10 +51,10 @@
    "Retrieve and return the entry designated by INDEX of CHANNEL in
     the data source represented by BACKEND."))
 
-(defgeneric put-entry (backend channel index entry)
+(defgeneric put-entry (backend channel timestamp entry)
   (:documentation
-   "Store ENTRY at the position designated by INDEX in CHANNEL in the
-    data source represented by BACKEND."))
+   "Store ENTRY at the position designated by TIMESTAMP in CHANNEL in
+    the data source represented by BACKEND."))
 
 ;;; Stream protocol
 
