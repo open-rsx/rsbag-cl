@@ -61,13 +61,14 @@
 
 #+sbcl
 (defmethod channel-entries ((channel channel))
-  "Since CHANNEL is a sequence of its entries, nothing has to be done."
+  ;; Since CHANNEL is a sequence of its entries, nothing has to be
+  ;; done.
   channel)
 
 #+sbcl
 (defmethod channel-items ((channel channel))
-  "Return an instance of `channel-items' which presents pairs of
-   timestamps and entries."
+  ;; Return an instance of `channel-items' which presents pairs of
+  ;; timestamps and entries.
   (make-instance 'channel-items
                  :channel channel))
 
