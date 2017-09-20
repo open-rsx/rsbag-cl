@@ -112,12 +112,12 @@
 (defmethod index-count ((index input-index))
   (index-vector-length (index-entries index)))
 
-(defmethod index-offset ((index input-index)
-                         (thing integer))
+(defmethod index-index->offset ((index input-index)
+                                (thing integer))
   (index-vector-index->offset thing (index-entries index)))
 
-(defmethod index-offset ((index input-index)
-                         (thing local-time:timestamp))
+(defmethod index-timestamp->offset ((index input-index)
+                                    (thing local-time:timestamp))
   (index-vector-timestamp->offset thing (index-entries index)))
 
 (defmethod index-add-indxs ((index  input-index)

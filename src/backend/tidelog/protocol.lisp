@@ -93,11 +93,13 @@
   (:documentation
    "Return the number of entries stored in INDEX."))
 
-(defgeneric index-offset (index thing)
+(defgeneric index-index->offset (index index*)
   (:documentation
-   "Return the offset of the entry designated by THING in INDEX.
+   "Return the offset of the entry designated by INDEX* in INDEX."))
 
-    THING can be either an entry index or a timestamp."))
+(defgeneric index-timestamp->offset (index timestamp)
+  (:documentation
+   "Return the offset of the entry designated by TIMESTAMP in INDEX."))
 
 (defgeneric index-add-indxs (index indxs chunks)
   (:documentation

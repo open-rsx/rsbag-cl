@@ -315,7 +315,7 @@
                       (lock   rsbag.backend::backend-lock))
           file)
          (index1 (gethash channel (file-%indices file))) ; TODO(jmoringe): make a method?
-         (offset (index-offset index1 index)))
+         (offset (index-index->offset index1 index)))
     (bt:with-lock-held (lock)
       (file-position stream (+ offset 12))
       (let ((length (nibbles:read-ub32/le stream)))
