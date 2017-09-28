@@ -262,6 +262,14 @@
    "Return a sequence of `local-time:timestamp' objects representing
     the points in time for which CHANNEL contains entries."))
 
+(defgeneric channel-timestamps/raw (channel)
+  (:documentation
+   "Return a sequence of integers representing the points in time for
+    which CHANNEL contains entries.
+
+    The timestamps correspond to elapsed time since UNIX epoch in
+    nanoseconds."))
+
 (defgeneric channel-entries (channel)
   (:documentation
    "Return a sequence of the entries of CHANNEL."))
