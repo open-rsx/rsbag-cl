@@ -273,7 +273,8 @@
 
 (defgeneric entry (channel index
                    &key
-                   if-does-not-exist)
+                   if-does-not-exist
+                   transform)
   (:documentation
    "Return the entry at position or time INDEX in CHANNEL.
 
@@ -283,11 +284,15 @@
 
     IF-DOES-NOT-EXIST controls the behavior in case there is no entry
     for INDEX. Valid values are nil, which causes nil to be returned
-    and :error, which causes an error to be signaled."))
+    and :error, which causes an error to be signaled.
+
+    TRANSFORM controls the transformation applied to the retrieved
+    entry before returning it. It defaults to CHANNEL's transform."))
 
 (defgeneric (setf entry) (new-value channel index
                           &key
-                          if-exists)
+                          if-exists
+                          transform)
   (:documentation
    "Store NEW-VALUE as the value of the entry at position or time
     INDEX in CHANNEL.
@@ -299,7 +304,10 @@
     IF-EXISTS controls the behavior in case an entry is already stored
     at INDEX. Valid values are :error, which causes an error to be
     signaled, and :supersede, which causes the stored value to be
-    replaced."))
+    replaced.
+
+    TRANSFORM controls the transformation applied to NEW-VALUE before
+    storing it. It defaults to CHANNEL's transform."))
 
 ;; When available, channels additionally implement the sequence
 ;; protocol such that the channel appears as a sequence of its
