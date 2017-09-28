@@ -72,61 +72,70 @@
   (make-instance 'channel-items
                  :channel channel))
 
-;; TODO(jmoringe, 2011-12-02): entry methods are almost identical
-(defmethod entry ((channel channel)
-                  (index   integer)
-                  &key
-                  if-does-not-exist
-                  (transform        (channel-transform channel)))
+(defmethod entry :around ((channel channel)
+                          (index   t)
+                          &key
+                          (if-does-not-exist nil)
+                          (transform         (channel-transform channel)))
   (check-type if-does-not-exist if-does-not-exist-policy)
 
-  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
-         (raw (or (rsbag.backend:get-entry-at-index backend id index)
-                  (ecase if-does-not-exist
-                    (:error (error 'no-such-entry
-                                   :bag     (channel-bag channel)
-                                   :channel channel
-                                   :key     index))
-                    ((nil)  nil)))))
-    (if transform
-        (rsbag.transform:decode transform raw)
-        raw)))
+  (call-next-method channel index
+                    :if-does-not-exist if-does-not-exist
+                    :transform         transform))
 
-(defmethod entry ((channel   channel)
-                  (timestamp local-time:timestamp)
-                  &key
-                  if-does-not-exist)
-  (check-type if-does-not-exist if-does-not-exist-policy)
+(flet ((return-entry (channel index entry if-does-not-exist transform)
+         (let ((raw (or entry
+                        (ecase if-does-not-exist
+                          (:error (error 'no-such-entry
+                                         :bag     (channel-bag channel)
+                                         :channel channel
+                                         :key     index))
+                          ((nil)  nil)))))
+           (if transform
+               (rsbag.transform:decode transform raw)
+               raw))))
+  (declare (inline return-entry))
 
-  (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel))
-    (or (rsbag.backend:get-entry-at-time backend id timestamp)
-        (ecase if-does-not-exist
-          (:error (error 'no-such-entry
-                         :bag     (channel-bag channel)
-                         :channel channel
-                         :key     timestamp))
-          ((nil)  nil)))))
+  (defmethod entry ((channel channel)
+                    (index   integer)
+                    &key if-does-not-exist transform)
+    (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
+           (raw (rsbag.backend:get-entry-at-index backend id index)))
+      (return-entry channel index raw if-does-not-exist transform)))
 
-(defmethod (setf entry) :before ((new-value t)
+  (defmethod entry ((channel channel)
+                    (index   local-time:timestamp)
+                    &key
+                    if-does-not-exist transform)
+    (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
+           (raw (rsbag.backend:get-entry-at-time backend id index)))
+      (return-entry channel index raw if-does-not-exist transform))))
+
+(defmethod (setf entry) :around ((new-value t)
                                  (channel   channel)
                                  (index     t)
-                                 &key &allow-other-keys)
-  (unless (member (bag-direction (channel-bag channel)) '(:output :io))
-    (error 'direction-error
-           :bag                (channel-bag channel)
-           :expected-direction '(member :output :io))))
-
-(defmethod (setf entry) ((new-value t)
-                         (channel   channel)
-                         (index     local-time:timestamp)
-                         &key
-                         (if-exists :error)
-                         (transform (channel-transform channel)))
+                                 &key
+                                 (if-exists :error)
+                                 (transform (channel-transform channel)))
   (check-type if-exists if-exists-policy)
 
   (when (eq if-exists :supersede)
     (error "Superseding entries is not supported yet"))
 
+  (unless (member (bag-direction (channel-bag channel)) '(:output :io))
+    (error 'direction-error
+           :bag                (channel-bag channel)
+           :expected-direction '(member :output :io)))
+
+  (call-next-method new-value channel index
+                    :if-exists if-exists
+                    :transform transform))
+
+(defmethod (setf entry) ((new-value t)
+                         (channel   channel)
+                         (index     local-time:timestamp)
+                         &key if-exists transform)
+  (declare (ignore if-exists))
   (let+ (((&structure-r/o channel- (id %id) (backend %backend)) channel)
          (raw (if transform
                   (rsbag.transform:encode transform new-value)
