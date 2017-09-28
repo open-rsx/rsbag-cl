@@ -1,6 +1,6 @@
 ;;;; serialized.lisp --- Unit tests for the serialized view class.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2017 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -73,7 +73,7 @@
 
       (let+ ((flat (sort (copy-list (reduce #'append sequences)) #'<))
              (view (make-serialized-view sequences :compare #'<))
-             ((&values iterator limit from-end)
+             ((&values iterator &ign from-end)
               (sequence:make-simple-sequence-iterator view))
              ((&flet traverse (backward?)
                 (iter (repeat (length view))
