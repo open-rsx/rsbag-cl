@@ -1,6 +1,6 @@
 ;;;; cl-rsbag.asd ---
 ;;;;
-;;;; Copyright (C) 2011-2017 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -91,32 +91,34 @@
 
 ;;; System definition
 
-(defsystem :cl-rsbag
+(asdf:defsystem "cl-rsbag"
+  :description "Common Lisp implementation of rsbag."
+  :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+
   :version     #.(version/string)
-  :license     "LGPLv3" ; see COPYING file for details.
-  :description "Common Lisp implementation of rsbag."
-  :defsystem-depends-on (:cl-protobuf)
-  :depends-on  (:alexandria
-                :split-sequence
-                (:version :let-plus                      "0.2")
-                :iterate
-                :iterate-sequence
-                (:version :architecture.service-provider "0.1")
-                :more-conditions
-                (:version :log4cl                        "1.1.1")
-                (:version :utilities.print-items         "0.1")
-                (:version :utilities.binary-dump         "0.1")
+  :defsystem-depends-on ("cl-protobuf")
+  :depends-on  ("alexandria"
+                "split-sequence"
+                (:version "let-plus"                      "0.2")
+                "iterate"
+                "iterate-sequence"
+                (:version "architecture.service-provider" "0.1")
+                "more-conditions"
+                (:version "log4cl"                        "1.1.1")
+                (:version "utilities.print-items"         "0.1")
+                (:version "utilities.binary-dump"         "0.1")
 
-                :bordeaux-threads
-                :lparallel
-                :local-time
-                :nibbles
-                :pileup
+                "bordeaux-threads"
+                "lparallel"
+                "local-time"
+                "nibbles"
+                "pileup"
 
-                (:version :cl-rsb                        #.(version/string :revision? nil))
-                (:version :rsb-introspection             #.(version/string :revision? nil)))
+                (:version "cl-rsb"                        #.(version/string :revision? nil))
+                (:version "rsb-introspection"             #.(version/string :revision? nil)))
+
   :components  ((:module     "src/early"
                  :pathname   "src"
                  :serial     t
@@ -251,20 +253,22 @@
 
                               (:file       "construction"))))
 
-  :in-order-to ((test-op (test-op :cl-rsbag/test))))
+  :in-order-to ((test-op (test-op "cl-rsbag/test"))))
 
-(defsystem :cl-rsbag/test
+(asdf:defsystem "cl-rsbag/test"
+  :description "Unit tests for the cl-rsbag system."
+  :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+
   :version     #.(version/string)
-  :license     "LGPLv3" ; see COPYING file for details.
-  :description "Unit tests for the cl-rsbag system."
-  :depends-on  (:flexi-streams
-                (:version :lift                    "1.7.1")
+  :depends-on  ("flexi-streams"
+                (:version "lift"                    "1.7.1")
 
-                (:version :cl-rsbag                #.(version/string))
+                (:version "cl-rsbag"                #.(version/string))
 
-                (:version :rsb-transport-inprocess #.(version/string :revision? nil)))
+                (:version "rsb-transport-inprocess" #.(version/string :revision? nil)))
+
   :components  ((:module     "test"
                  :serial     t
                  :components ((:file       "package")
@@ -309,8 +313,7 @@
                               (:file       "recorded-timing")
                               (:file       "fixed-rate")
                               (:file       "as-fast-as-possible")
-                              (:file       "interactive")))))
+                              (:file       "interactive"))))
 
-(defmethod perform ((operation test-op)
-                    (component (eql (find-system :cl-rsbag/test))))
-  (funcall (find-symbol "RUN-TESTS" :lift) :config :generic))
+  :perform     (test-op (operation component)
+                 (funcall (find-symbol "RUN-TESTS" :lift) :config :generic)))

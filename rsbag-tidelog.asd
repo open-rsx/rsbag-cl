@@ -1,6 +1,6 @@
 ;;;; rsbag-tidelog.asd --- System definition for TIDELog backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -15,13 +15,15 @@
     (load (merge-pathnames "cl-rsbag.asd" *load-truename*))
     (values))
 
-(defsystem :rsbag-tidelog
+(asdf:defsystem "rsbag-tidelog"
+  :description "TIDE log file format backend for cl-rsbag."
+  :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3" ; see COPYING file for details.
-  :description "TIDE log file format backend for cl-rsbag."
-  :depends-on  ((:version :cl-rsbag #.(cl-rsbag-system:version/string)))
+  :depends-on  ((:version "cl-rsbag" #.(cl-rsbag-system:version/string)))
+
   :components  ((:module     "tidelog"
                  :pathname   "src/backend/tidelog"
                  :serial     t
@@ -43,19 +45,21 @@
 
                               (:file       "repair"))))
 
-  :in-order-to ((test-op (test-op :rsbag-tidelog/test))))
+  :in-order-to ((test-op (test-op "rsbag-tidelog/test"))))
 
-(defsystem :rsbag-tidelog/test
+(asdf:defsystem "rsbag-tidelog/test"
+  :description "Unit tests for the rsbag-tidelog system."
+  :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
+
   :version     #.(cl-rsbag-system:version/string)
-  :license     "LGPLv3" ; see COPYING file for details.
-  :description "Unit tests for the rsbag-tidelog system."
-  :depends-on  ((:version :lift          "1.7.1")
+  :depends-on  ((:version "lift"          "1.7.1")
 
-                (:version :rsbag-tidelog #.(cl-rsbag-system:version/string))
+                (:version "rsbag-tidelog" #.(cl-rsbag-system:version/string))
 
-                (:version :cl-rsbag/test #.(cl-rsbag-system:version/string)))
+                (:version "cl-rsbag/test" #.(cl-rsbag-system:version/string)))
+
   :components  ((:module     "tidelog"
                  :pathname   "test/backend/tidelog"
                  :serial     t
@@ -65,10 +69,9 @@
 
                               (:file       "file")
 
-                              (:file       "repair")))))
+                              (:file       "repair"))))
 
-(defmethod perform ((operation test-op)
-                    (component (eql (find-system :rsbag-tidelog/test))))
-  (funcall (find-symbol "RUN-TESTS" :lift)
-           :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
-                            "lift-tidelog.config")))
+  :perform     (test-op (operation component)
+                 (funcall (find-symbol "RUN-TESTS" :lift)
+                          :config (funcall (find-symbol "LIFT-RELATIVE-PATHNAME" :lift)
+                                           "lift-tidelog.config"))))
