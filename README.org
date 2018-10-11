@@ -29,15 +29,16 @@
 
   Load the system that provides the desired backend (or multiple):
 
-  + ~rsbag-tidelog~ :: Binary event log file format
+  + ~rsbag-tidelog~ :: Backend for the TIDElog binary event log file
+       format.
 
-  + ~rsbag-elan~ :: Experimental backend for generating [[https://tla.mpi.nl/tools/tla-tools/elan/][ELAN]] files
+  + ~rsbag-elan~ :: Experimental backend for [[https://tla.mpi.nl/tools/tla-tools/elan/][ELAN]] files.
 
   Load the system that provides the desired RSB transport (or
   multiple):
 
   + ~rsb-transport-inprocess~ :: All participant live in the same
-       process
+       process.
 
   + ~rsb-transport-socket~ :: Two or a small number of processes, on
        the same or on multiple machines.
@@ -50,7 +51,7 @@
 * Using
 
   The functionality provided by this system is typically used
-  via the [[https://github.com/open-rsx/rsbag-tools-cl][RSBag commandline tools.]]
+  via the [[https://github.com/open-rsx/rsbag-tools-cl][RSBag commandline tools]].
 
   Programmatically reading events from a log file looks like this:
 
@@ -105,12 +106,12 @@
 
   If you want to contribute to this project, please
 
-  + Submit your intended changes as coherent pull requests.
+  + submit your intended changes as coherent pull requests.
 
-  + Rebase onto the master branch and squash any fixups and
+  + rebase onto the master branch and squash any fixups and
     corrections.
 
-  + Make sure the unit tests pass.
+  + make sure the unit tests pass.
 
 * Acknowledgments
 
