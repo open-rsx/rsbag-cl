@@ -1,0 +1,125 @@
+#+OPTIONS: toc:nil num:nil
+
+* Introduction
+
+  This repository contains the Common Lisp implementation of RSBag,
+  the event logging and replay machinery for the [[https://github.com/open-rsx][Robotics Service Bus]]
+  middleware.
+
+  *The full documentation for RSBag can be found at
+  <https://docs.cor-lab.de/manual/rsbag-trunk/index.html>.*
+
+* Dependencies
+
+  At the moment, the code is not portable and can only be used with
+  the [[http://sbcl.org][SBCL]] implementation of Common Lisp. The main obstacle for
+  portability is the use of [[http://www.sbcl.org/manual/index.html#Extensible-Sequences][SBCL's extensible sequences]].
+
+  Dependencies not available via [[https://www.quicklisp.org/beta/][Quicklisp]] are:
+
+  + [[https://github.com/scymtym/iterate-sequence][iterate-sequence]]
+
+  + [[https://github.com/scymtym/network.spread][network.spread]] for using the [[http://www.spread.org][Spread]] transport
+
+  + [[https://github.com/scymtym/cl-protobuf][cl-protobuf]]
+
+  + [[https://github.com/open-rsx/rsb-cl][rsb]]
+
+* Building
+
+  Load the system that provides the desired backend (or multiple):
+
+  + ~rsbag-tidelog~ :: Binary event log file format
+
+  + ~rsbag-elan~ :: Experimental backend for generating [[https://tla.mpi.nl/tools/tla-tools/elan/][ELAN]] files
+
+  Load the system that provides the desired RSB transport (or
+  multiple):
+
+  + ~rsb-transport-inprocess~ :: All participant live in the same
+       process
+
+  + ~rsb-transport-socket~ :: Two or a small number of processes, on
+       the same or on multiple machines.
+
+  + ~rsb-transport-spread~ :: Many processes, potentially on many
+       machines. Uses the [[http://www.spread.org/][Spread group communication framework]].
+
+  Other systems provide additional converters, filters or transforms.
+
+* Using
+
+  The functionality provided by this system is typically used
+  via the [[https://github.com/open-rsx/rsbag-tools-cl][RSBag commandline tools.]]
+
+  Programmatically reading events from a log file looks like this:
+
+  #+BEGIN_SRC lisp :results output :exports both
+    (ql:quickload :rsbag-tidelog)
+
+    (rsbag:with-bag (bag "tobi-dataset-example.tide" :direction :input)
+      ;; The "bag" is opened and closed like a stream, but in contrast to
+      ;; streams consists of multiple random-access, time-indexed
+      ;; channels:
+      (print bag)
+      (let ((channels (sort (rsbag:bag-channels bag) #'> :key #'length)))
+        ;; Channels are extended sequences containing events:
+        (print (map 'list (lambda (channel)
+                            (cons (rsbag:channel-name channel) (length channel)))
+                    (subseq channels 0 10)))
+
+        (print (elt (first channels) 0))))
+  #+END_SRC
+
+  #+RESULTS:
+  #+begin_example
+  To load "rsbag-tidelog":
+    Load 1 ASDF system:
+      rsbag-tidelog
+  ; Loading "rsbag-tidelog"
+
+
+  #<BAG "tobi-dataset-example.tide" r- (282) {100DAC5CB3}>
+  (("/hri/percepts/legs/:.rst.hri.LegsList" . 72613)
+   ("/ros4rsb/laserscan/:.rst.vision.LaserScan" . 18921)
+   ("/ros4rsb/odometryData/:.rst.geometry.Pose" . 6475)
+   ("/ros4rsb/speedData/:.rst.kinematics.Twist" . 6475)
+   ("/ros4rsb/slampose/:.rst.geometry.Pose" . 6474)
+   ("/hri/persons/:.rst.hri.PersonHypotheses" . 6387)
+   ("/faces/:.rst.classification.ClassifiedRegions2D" . 3654)
+   ("/monitoring/muthr/statemachine/22337/:.rst.monitoring.ProcessCues" . 648)
+   ("/monitoring/muthr/rsbnavigation/20313/:.rst.monitoring.ProcessCues" . 648)
+   ("/monitoring/father/objectrecognition/20468/:.rst.monitoring.ProcessCues"
+    . 648))
+  #<RSB:EVENT /hri/percepts/legs/
+              #(10 22 13 179 146 69 64 21 111 18 3 60 29 253 164 194 68 37 0 0
+                122 67 40 1 10 22 13 242 172 36 192 21 111 18 3 60 29 243 249 69
+                69 37 0 0 122 67 40 0 10 22 13 109 84 185 190 21 111 18 3 60 29 1
+                60 51 69 37 0 0 122 67 40 0 10 22 13 100 21 122 190 21 111 18 3
+                60 29 1 0 138 69 37 0 0 122 67 40 0 10 22 13 170 ...) (168) ACA7EFB8>
+  #+end_example
+
+  For more information, see the full documentation mentioned [[*Introduction][above]].
+
+* Contributing
+
+  If you want to contribute to this project, please
+
+  + Submit your intended changes as coherent pull requests.
+
+  + Rebase onto the master branch and squash any fixups and
+    corrections.
+
+  + Make sure the unit tests pass.
+
+* Acknowledgments
+
+  The development of this software has been supported as follows:
+
+  + The development of this software was supported by CoR-Lab,
+    Research Institute for Cognition and Robotics Bielefeld
+    University.
+
+  + This work was supported by the Cluster of Excellence Cognitive
+    Interaction Technology ‘CITEC’ (EXC 277) at Bielefeld University,
+    which is funded by the German Research Foundation (DFG).
