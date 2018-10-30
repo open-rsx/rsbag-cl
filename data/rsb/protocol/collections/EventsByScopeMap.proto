@@ -1,0 +1,14 @@
+package rsb.protocol.collections;
+
+import "rsb/protocol/Notification.proto";
+
+message EventsByScopeMap {
+
+	message ScopeSet {
+		required bytes scope = 1;
+		repeated .rsb.protocol.Notification notifications = 2;
+	}
+	
+	repeated ScopeSet sets = 1;
+
+}
