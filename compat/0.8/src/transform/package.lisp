@@ -1,6 +1,6 @@
 ;;; package.lisp --- Package definition for the transform module.
 ;;
-;; Copyright (C) 2011-2013, 2016 Jan Moringen
+;; Copyright (C) 2011-2018 Jan Moringen
 ;;
 ;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 ;;
@@ -61,4 +61,4 @@
 
   (:documentation
    "This package contains the transformation protocol and
-infrastructure used in cl-rsbag."))
+infrastructure used in rsbag."))

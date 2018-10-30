@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Unit tests for the client-facing protocol.
 ;;;;
-;;;; Copyright (C) 2011-2017 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -11,7 +11,7 @@
   (:function
    (pathname/existing ()
      (asdf:system-relative-pathname
-      (asdf:find-system :cl-rsbag/test)
+      (asdf:find-system :rsbag/test)
       "test/data/minimal.mock")))
   (:function
    (namestring/existing ()

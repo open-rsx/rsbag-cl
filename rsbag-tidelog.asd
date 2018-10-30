@@ -12,17 +12,17 @@
 (cl:in-package #:rsbag-tidelog-system)
 
 #.(progn
-    (load (merge-pathnames "cl-rsbag.asd" *load-truename*))
+    (load (merge-pathnames "rsbag.asd" *load-truename*))
     (values))
 
 (asdf:defsystem "rsbag-tidelog"
-  :description "TIDE log file format backend for cl-rsbag."
+  :description "TIDE log file format backend for rsbag."
   :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
-  :version     #.(cl-rsbag-system:version/string)
-  :depends-on  ((:version "cl-rsbag" #.(cl-rsbag-system:version/string)))
+  :version     #.(rsbag-system:version/string)
+  :depends-on  ((:version "rsbag" #.(rsbag-system:version/string)))
 
   :components  ((:module     "tidelog"
                  :pathname   "src/backend/tidelog"
@@ -53,12 +53,12 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
-  :version     #.(cl-rsbag-system:version/string)
+  :version     #.(rsbag-system:version/string)
   :depends-on  ((:version "lift"          "1.7.1")
 
-                (:version "rsbag-tidelog" #.(cl-rsbag-system:version/string))
+                (:version "rsbag-tidelog" #.(rsbag-system:version/string))
 
-                (:version "cl-rsbag/test" #.(cl-rsbag-system:version/string)))
+                (:version "rsbag/test"    #.(rsbag-system:version/string)))
 
   :components  ((:module     "tidelog"
                  :pathname   "test/backend/tidelog"

@@ -1,6 +1,6 @@
 # CMakeLists.txt --- CMake build description file.
 #
-# Copyright (C) 2012, 2013, 2014, 2015, 2016 Jan Moringen
+# Copyright (C) 2012-2018 Jan Moringen
 #
 # Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -111,7 +111,7 @@ endfunction()
 
 # Project definition (version is grovelled from asd system definition,
 # possibly in combination with version.sexp file written below).
-set(SYSTEM_NAME "cl-rsbag")
+set(SYSTEM_NAME "rsbag")
 project(${SYSTEM_NAME} NONE)
 
 # Determine at least major and minor version components.

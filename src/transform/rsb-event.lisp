@@ -1,6 +1,6 @@
 ;;;; rsb-event.lisp --- (De)serialization of RSB events.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -79,7 +79,7 @@
 
 (defconstant +rsb-schema-name+
   (format-symbol :keyword "RSB-EVENT-~{~D~^.~}"
-                 (cl-rsbag-system:serialization-version/list)))
+                 (rsbag-system:serialization-version/list)))
 
 (defclass rsb-event ()
   ((wire-schema :initarg  :wire-schema

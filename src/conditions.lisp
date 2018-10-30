@@ -1,6 +1,6 @@
-;;;; conditions.lisp --- Conditions used in the cl-rsbag system.
+;;;; conditions.lisp --- Conditions used in the rsbag system.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

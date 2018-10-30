@@ -12,7 +12,7 @@
 (cl:in-package #:rsbag-builder-system)
 
 #.(progn
-    (load (merge-pathnames "cl-rsbag.asd" *load-truename*))
+    (load (merge-pathnames "rsbag.asd" *load-truename*))
     (values))
 
 (asdf:defsystem "rsbag-builder"
@@ -21,13 +21,13 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
-  :version     #.(cl-rsbag-system:version/string)
+  :version     #.(rsbag-system:version/string)
   :depends-on  ("alexandria"
                 "let-plus"
 
                 (:version "architecture.builder-protocol" "0.3")
 
-                (:version "cl-rsbag"                      #.(cl-rsbag-system:version/string)))
+                (:version "rsbag"                         #.(rsbag-system:version/string)))
 
   :components  ((:module     "builder"
                  :pathname   "src"
@@ -41,14 +41,14 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
-  :version     #.(cl-rsbag-system:version/string)
+  :version     #.(rsbag-system:version/string)
   :depends-on  ((:version "lift"                               "1.7.1")
 
                 (:version "architecture.builder-protocol/test" "0.3")
 
-                (:version "rsbag-builder"                      #.(cl-rsbag-system:version/string))
+                (:version "rsbag-builder"                      #.(rsbag-system:version/string))
 
-                (:version "cl-rsbag/test"                      #.(cl-rsbag-system:version/string)))
+                (:version "rsbag/test"                         #.(rsbag-system:version/string)))
 
   :components  ((:module     "builder"
                  :pathname   "test"

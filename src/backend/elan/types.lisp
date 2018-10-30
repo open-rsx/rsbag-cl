@@ -1,6 +1,6 @@
-;;;; types.lisp --- Types used in the cl-rsbag Elan backend.
+;;;; types.lisp --- Types used in the rsbag Elan backend.
 ;;;;
-;;;; Copyright (C) 2011-2017 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

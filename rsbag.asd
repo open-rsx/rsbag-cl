@@ -1,10 +1,10 @@
-;;;; cl-rsbag.asd ---
+;;;; rsbag.asd ---
 ;;;;
 ;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:defpackage #:cl-rsbag-system
+(cl:defpackage #:rsbag-system
   (:use
    #:cl
    #:asdf)
@@ -16,7 +16,7 @@
    #:serialization-version/list
    #:serialization-version/string))
 
-(cl:in-package #:cl-rsbag-system)
+(cl:in-package #:rsbag-system)
 
 ;;; Version stuff
 
@@ -91,7 +91,7 @@
 
 ;;; System definition
 
-(asdf:defsystem "cl-rsbag"
+(asdf:defsystem "rsbag"
   :description "Common Lisp implementation of rsbag."
   :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
@@ -116,7 +116,7 @@
                 "nibbles"
                 "pileup"
 
-                (:version "cl-rsb"                        #.(version/string :revision? nil))
+                (:version "rsb"                           #.(version/string :revision? nil))
                 (:version "rsb-introspection"             #.(version/string :revision? nil)))
 
   :components  ((:module     "src/early"
@@ -253,10 +253,10 @@
 
                               (:file       "construction"))))
 
-  :in-order-to ((test-op (test-op "cl-rsbag/test"))))
+  :in-order-to ((test-op (test-op "rsbag/test"))))
 
-(asdf:defsystem "cl-rsbag/test"
-  :description "Unit tests for the cl-rsbag system."
+(asdf:defsystem "rsbag/test"
+  :description "Unit tests for the rsbag system."
   :license     "LGPLv3" ; see COPYING file for details.
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
   :maintainer  "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
@@ -265,7 +265,7 @@
   :depends-on  ("flexi-streams"
                 (:version "lift"                    "1.7.1")
 
-                (:version "cl-rsbag"                #.(version/string))
+                (:version "rsbag"                   #.(version/string))
 
                 (:version "rsb-transport-inprocess" #.(version/string :revision? nil)))
 

@@ -1,6 +1,6 @@
-;;;; conditions.lisp --- Conditions used in the TIDE log backend of cl-rsbag.
+;;;; conditions.lisp --- Conditions used in the TIDE log backend of rsbag.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

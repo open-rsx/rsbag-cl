@@ -1,6 +1,6 @@
-;;;; macros.lisp --- Convenience macros provided by the cl-rsbag system.
+;;;; macros.lisp --- Convenience macros provided by the rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

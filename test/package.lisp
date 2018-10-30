@@ -1,6 +1,6 @@
-;;;; package.lisp --- Package definition for unit tests of the cl-rsbag system.
+;;;; package.lisp --- Package definition for unit tests of the rsbag system.
 ;;;;
-;;;; Copyright (C) 2011, 2012, 2013 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -27,11 +27,11 @@
    #:simple-bag)
 
   (:documentation
-   "This package contains unit tests for the cl-rsbag system"))
+   "This package contains unit tests for the rsbag system"))
 
 (cl:in-package #:rsbag.test)
 
 (deftestsuite root ()
   ()
   (:documentation
-   "Root unit test suite for the cl-rsbag system."))
+   "Root unit test suite for the rsbag system."))

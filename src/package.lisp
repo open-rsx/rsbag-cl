@@ -1,6 +1,6 @@
-;;;; package.lisp --- Package definition for the cl-rsbag system.
+;;;; package.lisp --- Package definition for the rsbag system.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

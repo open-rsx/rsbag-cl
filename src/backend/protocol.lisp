@@ -1,6 +1,6 @@
-;;;; protocol.lisp --- Backend protocol of the cl-rsbag system.
+;;;; protocol.lisp --- Backend protocol of the rsbag system.
 ;;;;
-;;;; Copyright (C) 2011-2017 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 

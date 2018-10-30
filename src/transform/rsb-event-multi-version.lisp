@@ -1,6 +1,6 @@
 ;;;; multi-version.lisp --- Load multiple versions of packages.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -60,7 +60,7 @@
 ;;; Current Version
 
 (define-serialization-version
-  #.(format nil "~{~D~^.~}" (cl-rsbag-system:serialization-version/list))
+  #.(format nil "~{~D~^.~}" (rsbag-system:serialization-version/list))
   :current? t)
 
 ;;; 0.8 Version
@@ -71,7 +71,7 @@
                             :rsbag.transform)
     (with-compilation-unit ()
       (let* ((path                  (asdf:system-relative-pathname
-                                     :cl-rsbag "compat/0.8/"))
+                                     :rsbag "compat/0.8/"))
              (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
                                           pbf:*proto-load-path*)))
         ;; Load relevant protocol buffer types.
@@ -90,7 +90,7 @@
         ;; conversion.
         (load (asdf:component-pathname
                (asdf:find-component
-                :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+                :rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
 (define-serialization-version "0.8")
 
@@ -102,7 +102,7 @@
                             :rsbag.transform)
     (with-compilation-unit ()
       (let* ((path                  (asdf:system-relative-pathname
-                                     :cl-rsbag "compat/0.7/"))
+                                     :rsbag "compat/0.7/"))
              (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
                                           pbf:*proto-load-path*)))
         ;; Load relevant protocol buffer types.
@@ -121,7 +121,7 @@
         ;; conversion.
         (load (asdf:component-pathname
                (asdf:find-component
-                :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+                :rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
 (define-serialization-version "0.7")
 
@@ -133,7 +133,7 @@
                             :rsbag.transform)
     (with-compilation-unit ()
       (let* ((path                  (asdf:system-relative-pathname
-                                     :cl-rsbag "compat/0.6/"))
+                                     :rsbag "compat/0.6/"))
              (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
                                           pbf:*proto-load-path*)))
         ;; Load relevant protocol buffer types.
@@ -152,7 +152,7 @@
         ;; conversion.
         (load (asdf:component-pathname
                (asdf:find-component
-                :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+                :rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
 (define-serialization-version "0.6")
 
@@ -165,7 +165,7 @@
                             :rsbag.transform)
     (with-compilation-unit ()
       (let* ((path                  (asdf:system-relative-pathname
-                                     :cl-rsbag "compat/0.5/"))
+                                     :rsbag "compat/0.5/"))
              (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
                                           pbf:*proto-load-path*)))
         ;; Load relevant protocol buffer types.
@@ -183,7 +183,7 @@
         ;; conversion.
         (load (asdf:component-pathname
                (asdf:find-component
-                :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+                :rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
 (define-serialization-version "0.5")
 
@@ -196,7 +196,7 @@
                             :rsbag.transform)
     (with-compilation-unit ()
       (let* ((path                  (asdf:system-relative-pathname
-                                     :cl-rsbag "compat/0.4/"))
+                                     :rsbag "compat/0.4/"))
              (pbf:*proto-load-path* (cons (merge-pathnames "data/" path)
                                           pbf:*proto-load-path*)))
         ;; Load relevant protocol buffer types.
@@ -213,6 +213,6 @@
         ;; conversion.
         (load (asdf:component-pathname
                (asdf:find-component
-                :cl-rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
+                :rsbag '("rsb-serialization" "rsb-event-payload-conversion"))))))))
 
 (define-serialization-version "0.4")

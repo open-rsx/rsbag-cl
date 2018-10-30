@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for backend module.
 ;;;;
-;;;; Copyright (C) 2011-2017 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -101,4 +101,4 @@
 
   (:documentation
    "This package contains protocol and implementation aids for file
-    format backends for cl-rsbag."))
+    format backends for rsbag."))
