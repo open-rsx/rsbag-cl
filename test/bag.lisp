@@ -1,6 +1,6 @@
 ;;;; bag.lisp --- Unit tests for the bag class.
 ;;;;
-;;;; Copyright (C) 2011-2016 Jan Moringen
+;;;; Copyright (C) 2011-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -77,7 +77,7 @@
       (setf (bag-channel bag "foo") '()))))
 
 (addtest (bag-root
-          :documenation
+          :documentation
           "Smoke test for `start-timestamp' and `end-timestamp'
            methods on `bag' class.")
   start+end-timestamp

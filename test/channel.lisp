@@ -1,6 +1,6 @@
 ;;;; channel.lisp --- Unit tests for the channel class.
 ;;;;
-;;;; Copyright (C) 2014, 2016 Jan Moringen
+;;;; Copyright (C) 2014-2018 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -35,7 +35,7 @@
             :does-not-matter))))
 
 (addtest (channel-root
-          :documetation
+          :documentation
           "Smoke test for `start-timestamp' and `end-timestamp'
            methods on `channel' class.")
   start+end-timestamp
